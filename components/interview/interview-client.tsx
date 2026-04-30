@@ -1,8 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import type { AssistantProfile } from '@/entities/assistant/model/types'
 
 type Pipeline = 'realtime_asr' | 'realtime_translate' | 'http'
 type SessionSummary = {
@@ -51,8 +52,9 @@ function looksLikeQuestion(line: string) {
   return /^(why|what|how|when|where|who|which|can|could|would|do|did|are|is|tell me|explain|почему|как|что|когда|зачем|где|можете|можешь|расскажите|расскажи|объясните|объясни|неге|қалай|қандай|не|қайда)\b/.test(text)
 }
 
-export function InterviewClient() {
-  const router = useRouter()
+export function InterviewClient({ settingsId }: { settingsId?: string }) {
+  const searchParams = useSearchParams()
+  const [isHydrated, setIsHydrated] = useState(false)
   const [pipeline, setPipeline] = useState<Pipeline>('realtime_asr')
   const [status, setStatus] = useState('Idle')
   const [transcriptLines, setTranscriptLines] = useState<string[]>([])
@@ -72,8 +74,8 @@ export function InterviewClient() {
   const [history, setHistory] = useState<
     SessionSummary[]
   >([])
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sentLineIndexes, setSentLineIndexes] = useState<Set<number>>(new Set())
+  const [activeAssistant, setActiveAssistant] = useState<AssistantProfile | null>(null)
 
   const streamRef = useRef<MediaStream | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -559,160 +561,67 @@ export function InterviewClient() {
     }
   }, [stopCapture])
 
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    const assistantId = String(
+      settingsId ||
+      searchParams?.get('settingsId') ||
+      searchParams?.get('assistantId') ||
+      searchParams?.get('assistant') ||
+      ''
+    )
+    const token = localStorage.getItem('auth_token') || ''
+    if (!assistantId || !token) {
+      setActiveAssistant(null)
+      return
+    }
+    const run = async () => {
+      const response = await fetch('/api/assistants', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const payload = (await response.json().catch(() => ({}))) as { assistants?: AssistantProfile[] }
+      if (!response.ok || !Array.isArray(payload.assistants)) return
+      const selected = payload.assistants.find((item) => item.id === assistantId) || null
+      setActiveAssistant(selected)
+      if (selected) {
+        const nextRole = String(selected.roleName || 'general').trim().toLowerCase()
+        setRole(nextRole || 'general')
+        setTargetPosition(String(selected.company || '').trim())
+        const lang = String(selected.language || '').trim()
+        if (lang) {
+          const normalized = lang.toLowerCase().includes('russian')
+            ? 'ru'
+            : lang.toLowerCase().includes('kazakh')
+              ? 'kk'
+              : lang.toLowerCase().includes('german')
+                ? 'de'
+                : lang.toLowerCase().includes('french')
+                  ? 'fr'
+                  : 'en'
+          setTranscriptLanguage(normalized)
+          setSuggestionLanguage(normalized)
+        }
+      }
+    }
+    void run()
+  }, [searchParams, settingsId])
+
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="flex min-h-screen">
-        <aside className={`fixed left-0 top-0 z-30 h-screen w-64 border-r border-slate-200 bg-white p-4 transition-transform md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="mb-4 text-lg font-bold text-slate-900">AssistantAI</div>
-          <nav className="space-y-1 text-sm">
-            <a className="block rounded px-3 py-2 text-slate-600 hover:bg-slate-100" href="/dashboard">Dashboard</a>
-            <a className="block rounded bg-orange-50 px-3 py-2 font-medium text-orange-600" href="/interview">Interview Assistant</a>
-            <a className="block rounded px-3 py-2 text-slate-600 hover:bg-slate-100" href="/sessions">Sessions</a>
-            <a className="block rounded px-3 py-2 text-slate-600 hover:bg-slate-100" href="/billing">Billing</a>
-          </nav>
-        </aside>
-
-        <div className="flex-1 md:ml-0">
-          <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4">
-            <div className="flex items-center gap-3">
-              <button className="rounded border border-slate-200 px-2 py-1 text-sm md:hidden" onClick={() => setSidebarOpen((v) => !v)}>
-                ☰
-              </button>
-              <h1 className="text-lg font-semibold text-slate-900">Interview Assistant</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              {isRunning ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Interview Active</span> : null}
-              <Button variant="outline" size="sm" onClick={() => router.push('/subscription')}>Plan</Button>
-            </div>
-          </header>
-
-          <div className="mx-auto max-w-7xl space-y-4 p-4 md:p-6">
-            <div className="rounded-xl border border-border bg-card p-4">
-              <div className="flex flex-wrap items-end gap-3">
-                <div>
-                  <label className="mb-1 block text-sm text-muted-foreground">Pipeline</label>
-                  <select
-                    value={pipeline}
-                    onChange={(e) => setPipeline(e.target.value as Pipeline)}
-                    className="h-10 rounded-md border border-border bg-background px-3"
-                  >
-                    <option value="realtime_asr">WebSocket: Realtime ASR</option>
-                    <option value="realtime_translate">WebSocket: Realtime Translate</option>
-                    <option value="http">HTTP: WebM chunks</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm text-muted-foreground">Role</label>
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="h-10 rounded-md border border-border bg-background px-3"
-                  >
-                    <option value="general">General interview</option>
-                    <option value="frontend">Frontend interview</option>
-                    <option value="backend">Backend interview</option>
-                    <option value="pm">PM interview</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm text-muted-foreground">Transcript language</label>
-                  <select
-                    value={transcriptLanguage}
-                    onChange={(e) => setTranscriptLanguage(e.target.value)}
-                    className="h-10 rounded-md border border-border bg-background px-3"
-                  >
-                    <option value="auto">Auto-detect</option>
-                    <option value="en">English</option>
-                    <option value="ru">Russian</option>
-                    <option value="kk">Kazakh</option>
-                    <option value="de">German</option>
-                    <option value="fr">French</option>
-                  </select>
-                </div>
-                {pipeline === 'realtime_translate' ? (
-                  <div>
-                    <label className="mb-1 block text-sm text-muted-foreground">Translate to</label>
-                    <select
-                      value={translateTarget}
-                      onChange={(e) => setTranslateTarget(e.target.value)}
-                      className="h-10 rounded-md border border-border bg-background px-3"
-                    >
-                      <option value="en">English</option>
-                      <option value="ru">Russian</option>
-                      <option value="kk">Kazakh</option>
-                      <option value="de">German</option>
-                      <option value="fr">French</option>
-                      <option value="zh">Chinese</option>
-                      <option value="es">Spanish</option>
-                    </select>
-                  </div>
-                ) : null}
-                <div>
-                  <label className="mb-1 block text-sm text-muted-foreground">Suggestion language</label>
-                  <select
-                    value={suggestionLanguage}
-                    onChange={(e) => setSuggestionLanguage(e.target.value)}
-                    className="h-10 rounded-md border border-border bg-background px-3"
-                  >
-                    <option value="en">English</option>
-                    <option value="ru">Russian</option>
-                    <option value="kk">Kazakh</option>
-                    <option value="de">German</option>
-                    <option value="fr">French</option>
-                  </select>
-                </div>
-                <div className="min-w-[220px] flex-1">
-                  <label className="mb-1 block text-sm text-muted-foreground">Target position</label>
-                  <input
-                    value={targetPosition}
-                    onChange={(e) => setTargetPosition(e.target.value)}
-                    placeholder="e.g. Frontend Engineer"
-                    className="h-10 w-full rounded-md border border-border bg-background px-3"
-                  />
-                </div>
-                <Button onClick={startCapture} disabled={isRunning}>Start capture</Button>
-                <Button variant="outline" onClick={stopCapture} disabled={!isRunning}>Stop</Button>
-                <Button variant="outline" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
-                  {isSuggesting ? 'Sending...' : 'Send suggestion'}
-                </Button>
-                <Button variant="outline" onClick={() => void saveSession()}>Save session</Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setTranscriptLines([])
-                    setTranscriptLineTimestamps([])
-                    setPartial('')
-                    setSentLineIndexes(new Set())
-                    lastSuggestedKeyRef.current = ''
-                  }}
-                >
-                  Clear transcript
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSuggestionPrimaryHistory([])
-                    setSuggestionClaudeHistory(ENABLE_CLAUDE_SUGGESTION ? [] : ['Claude suggestion is disabled.'])
-                    setSentLineIndexes(new Set())
-                    lastSuggestedKeyRef.current = ''
-                  }}
-                >
-                  Clear suggestions
-                </Button>
-                <span className="rounded-full border border-border bg-muted px-3 py-1 text-sm">{status}</span>
+    <main className="mx-auto max-w-7xl space-y-4">
+            {activeAssistant ? (
+              <div className="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900">
+                Assistant: <span className="font-semibold">{activeAssistant.name}</span>{' '}
+                {activeAssistant.roleName ? `• Role: ${activeAssistant.roleName}` : ''}
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <label className="text-sm text-muted-foreground">
-                  Resume (txt/pdf/docx):
-                  <input
-                    type="file"
-                    accept=".txt,.pdf,.docx"
-                    className="ml-2 text-xs"
-                    onChange={(e) => void uploadResume(e.target.files?.[0] || null)}
-                  />
-                </label>
-                <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs">{resumeStatus}</span>
-              </div>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
+              <Button onClick={startCapture} disabled={isRunning}>Start capture</Button>
+              <Button variant="outline" onClick={stopCapture} disabled={!isRunning}>Stop</Button>
+              <Button variant="outline" onClick={() => void saveSession()}>Save session</Button>
+              <span className="rounded-full border border-border bg-muted px-3 py-1 text-sm">{status}</span>
             </div>
 
             <div className="grid gap-4 lg:grid-cols-3">
@@ -819,7 +728,11 @@ export function InterviewClient() {
                   <div className="text-sm text-muted-foreground">No sessions yet.</div>
                 ) : history.map((item) => (
                   <div key={item.id} className="flex flex-wrap items-center gap-2 rounded border border-border p-2 text-sm">
-                    <span className="text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
+                    <span className="text-muted-foreground">
+                      {isHydrated
+                        ? new Date(item.createdAt).toLocaleString()
+                        : new Date(item.createdAt).toISOString().replace('T', ' ').slice(0, 19)}
+                    </span>
                     <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">{item.role}</span>
                     <Button size="sm" variant="outline" onClick={() => loadSession(item)}>Load</Button>
                     <a href={`/api/sessions/${item.id}/export`} target="_blank" className="text-xs text-orange-600 underline">
@@ -829,9 +742,6 @@ export function InterviewClient() {
                 ))}
               </div>
             </section>
-          </div>
-        </div>
-      </div>
     </main>
   )
 }
