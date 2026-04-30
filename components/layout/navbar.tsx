@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isAuthorized, setIsAuthorized] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,6 +18,16 @@ export function Navbar() {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const syncAuthState = () => {
+      const token = localStorage.getItem('auth_token') || ''
+      setIsAuthorized(Boolean(token))
+    }
+    syncAuthState()
+    window.addEventListener('storage', syncAuthState)
+    return () => window.removeEventListener('storage', syncAuthState)
   }, [])
 
   return (
@@ -53,12 +64,20 @@ export function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex md:items-center md:gap-3">
-            <Button variant="ghost" asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-            <Button asChild className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-full">
-              <Link href="/register">Start For Free</Link>
-            </Button>
+            {isAuthorized ? (
+              <Button asChild className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-full">
+                <Link href="/profile">My Assistant</Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/auth">Sign In</Link>
+                </Button>
+                <Button asChild className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-full">
+                  <Link href="/auth?mode=register">Start For Free</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -91,12 +110,20 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Button variant="ghost" asChild className="w-full justify-center">
-                  <Link href="/login">Sign In</Link>
-                </Button>
-                <Button asChild className="w-full bg-primary hover:bg-primary-hover text-primary-foreground rounded-full">
-                  <Link href="/register">Start For Free</Link>
-                </Button>
+                {isAuthorized ? (
+                  <Button asChild className="w-full bg-primary hover:bg-primary-hover text-primary-foreground rounded-full">
+                    <Link href="/profile">My Assistant</Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="ghost" asChild className="w-full justify-center">
+                      <Link href="/auth">Sign In</Link>
+                    </Button>
+                    <Button asChild className="w-full bg-primary hover:bg-primary-hover text-primary-foreground rounded-full">
+                      <Link href="/auth?mode=register">Start For Free</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

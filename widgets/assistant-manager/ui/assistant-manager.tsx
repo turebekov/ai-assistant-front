@@ -12,13 +12,19 @@ interface AssistantManagerProps {
 export function AssistantManager({ routeBase }: AssistantManagerProps) {
   const [assistants, setAssistants] = useState<AssistantProfile[]>([])
   const [loading, setLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [open, setOpen] = useState(false)
+  const [resumeFile, setResumeFile] = useState<File | null>(null)
+  const [resumeStatus, setResumeStatus] = useState('No resume selected')
+  const [saveError, setSaveError] = useState('')
   const [form, setForm] = useState<AssistantSettingsForm>({
     interviewType: 'Job Interview',
     roleName: '',
     companyName: '',
     details: '',
     interviewLanguage: 'English (USA)',
+    translateEnabled: false,
+    translateLanguage: 'en',
     profileName: '',
     suggestionTone: 'Friendly',
     promptStyle: 'Concise',
@@ -64,9 +70,39 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
   }, [])
 
   const onSave = async () => {
+    setIsSaving(true)
+    setSaveError('')
     const token = localStorage.getItem('auth_token') || ''
     const name = String(form.profileName || '').trim()
-    if (!token || !name) return
+    if (!token) {
+      setSaveError('Not authorized. Please sign in again.')
+      setIsSaving(false)
+      return
+    }
+    if (!name) {
+      setSaveError('Assistant name is required.')
+      setIsSaving(false)
+      return
+    }
+    let resumeText = ''
+    if (resumeFile) {
+      setResumeStatus('Parsing resume...')
+      const formData = new FormData()
+      formData.append('resume', resumeFile, resumeFile.name)
+      const parseResponse = await fetch('/api/resume/parse', {
+        method: 'POST',
+        body: formData,
+      })
+      const parsePayload = (await parseResponse.json().catch(() => ({}))) as { text?: string; error?: string; details?: string }
+      if (!parseResponse.ok) {
+        setResumeStatus(`Resume error: ${parsePayload.details || parsePayload.error || 'Parse failed'}`)
+        setIsSaving(false)
+        return
+      }
+      resumeText = String(parsePayload.text || '').trim()
+      setResumeStatus(resumeText ? `Resume loaded (${resumeFile.name})` : `Resume empty (${resumeFile.name})`)
+    }
+
     const response = await fetch('/api/assistants', {
       method: 'POST',
       headers: {
@@ -80,6 +116,12 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
         company: form.companyName,
         details: form.details,
         language: form.interviewLanguage,
+        translateEnabled: form.translateEnabled,
+        translate_enabled: form.translateEnabled,
+        translateLanguage: form.translateLanguage,
+        translate_language: form.translateLanguage,
+        resumeText,
+        resume_text: resumeText,
         tone: form.suggestionTone,
         promptStyle: form.promptStyle,
         codingAssistant: form.codingAssistant,
@@ -93,8 +135,15 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
         return
       }
       await loadAssistants()
+      setResumeFile(null)
+      setResumeStatus('No resume selected')
       setOpen(false)
+      setIsSaving(false)
+      return
     }
+    const errorPayload = (await response.json().catch(() => ({}))) as { error?: string; details?: string }
+    setSaveError(errorPayload.details || errorPayload.error || 'Assistant save failed')
+    setIsSaving(false)
   }
 
   return (
@@ -131,9 +180,16 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
         open={open}
         form={form}
         onChange={setForm}
+        resumeStatus={resumeStatus}
+        isSaving={isSaving}
+        onResumeFileChange={(file) => {
+          setResumeFile(file)
+          setResumeStatus(file ? `Selected: ${file.name}` : 'No resume selected')
+        }}
         onClose={() => setOpen(false)}
         onSave={() => void onSave()}
       />
+      {saveError ? <p className="mt-2 text-sm text-red-600">{saveError}</p> : null}
     </section>
   )
 }

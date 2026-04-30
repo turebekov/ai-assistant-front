@@ -99,8 +99,7 @@ export function GoogleAuthButton({ plan, mode, onError }: GoogleAuthButtonProps)
               if (payload.access?.plan) {
                 localStorage.setItem('auth_plan', payload.access.plan)
               }
-              if (payload.access?.hasSubscription) router.push('/interview')
-              else router.push('/subscription')
+              router.push('/profile')
             } catch (error) {
               onError(`Google auth error: ${error instanceof Error ? error.message : String(error)}`)
             }

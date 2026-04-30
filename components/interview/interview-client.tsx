@@ -71,6 +71,9 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
   const [suggestionLanguage, setSuggestionLanguage] = useState('en')
   const [isRunning, setIsRunning] = useState(false)
   const [isSuggesting, setIsSuggesting] = useState(false)
+  const [isAssistantLoading, setIsAssistantLoading] = useState(false)
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false)
+  const [isSessionSaving, setIsSessionSaving] = useState(false)
   const [history, setHistory] = useState<
     SessionSummary[]
   >([])
@@ -454,6 +457,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       return
     }
     try {
+      setIsSessionSaving(true)
       const response = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -465,10 +469,13 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       await loadHistory()
     } catch (e) {
       setStatus(`Save error: ${e instanceof Error ? e.message : String(e)}`)
+    } finally {
+      setIsSessionSaving(false)
     }
   }, [role, suggestionPrimaryHistory, transcriptText])
 
   const loadHistory = useCallback(async () => {
+    setIsHistoryLoading(true)
     try {
       const response = await fetch('/api/sessions')
       if (!response.ok) throw new Error('Cannot load history')
@@ -478,6 +485,8 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       setHistory(data.sessions || [])
     } catch {
       setHistory([])
+    } finally {
+      setIsHistoryLoading(false)
     }
   }, [])
 
@@ -496,30 +505,6 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
     setSentLineIndexes(new Set())
     lastSuggestedKeyRef.current = ''
     setStatus('Session loaded')
-  }
-
-  const uploadResume = async (file: File | null) => {
-    if (!file) {
-      setResumeText('')
-      setResumeStatus('No resume')
-      return
-    }
-    setResumeStatus('Parsing resume...')
-    const form = new FormData()
-    form.append('resume', file, file.name)
-    try {
-      const response = await fetch('/api/resume/parse', {
-        method: 'POST',
-        body: form,
-      })
-      const payload = (await response.json().catch(() => ({}))) as { text?: string; error?: string; details?: string }
-      if (!response.ok) throw new Error(payload.details || payload.error || 'Resume parse failed')
-      const text = String(payload.text || '').trim()
-      setResumeText(text)
-      setResumeStatus(text ? `Resume loaded (${file.name})` : `Resume empty (${file.name})`)
-    } catch (e) {
-      setResumeStatus(`Resume error: ${e instanceof Error ? e.message : String(e)}`)
-    }
   }
 
   useEffect(() => {
@@ -579,31 +564,43 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       return
     }
     const run = async () => {
-      const response = await fetch('/api/assistants', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = (await response.json().catch(() => ({}))) as { assistants?: AssistantProfile[] }
-      if (!response.ok || !Array.isArray(payload.assistants)) return
-      const selected = payload.assistants.find((item) => item.id === assistantId) || null
-      setActiveAssistant(selected)
-      if (selected) {
-        const nextRole = String(selected.roleName || 'general').trim().toLowerCase()
-        setRole(nextRole || 'general')
-        setTargetPosition(String(selected.company || '').trim())
-        const lang = String(selected.language || '').trim()
-        if (lang) {
-          const normalized = lang.toLowerCase().includes('russian')
-            ? 'ru'
-            : lang.toLowerCase().includes('kazakh')
-              ? 'kk'
-              : lang.toLowerCase().includes('german')
-                ? 'de'
-                : lang.toLowerCase().includes('french')
-                  ? 'fr'
-                  : 'en'
-          setTranscriptLanguage(normalized)
-          setSuggestionLanguage(normalized)
+      setIsAssistantLoading(true)
+      try {
+        const response = await fetch(`/api/assistants/${encodeURIComponent(assistantId)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const payload = (await response.json().catch(() => ({}))) as { assistant?: AssistantProfile }
+        if (!response.ok || !payload.assistant) return
+        const selected = payload.assistant
+        setActiveAssistant(selected)
+        if (selected) {
+          const nextRole = String(selected.roleName || 'general').trim().toLowerCase()
+          setRole(nextRole || 'general')
+          setTargetPosition(String(selected.company || '').trim())
+          setPipeline(selected.translateEnabled ? 'realtime_translate' : 'realtime_asr')
+          if (selected.translateEnabled) {
+            setTranslateTarget(String(selected.translateLanguage || 'en').trim() || 'en')
+          }
+          const nextResumeText = String(selected.resumeText || selected.resume_text || '').trim()
+          setResumeText(nextResumeText)
+          setResumeStatus(nextResumeText ? 'Resume loaded from assistant settings' : 'No resume')
+          const lang = String(selected.language || '').trim()
+          if (lang) {
+            const normalized = lang.toLowerCase().includes('russian')
+              ? 'ru'
+              : lang.toLowerCase().includes('kazakh')
+                ? 'kk'
+                : lang.toLowerCase().includes('german')
+                  ? 'de'
+                  : lang.toLowerCase().includes('french')
+                    ? 'fr'
+                    : 'en'
+            setTranscriptLanguage(normalized)
+            setSuggestionLanguage(normalized)
+          }
         }
+      } finally {
+        setIsAssistantLoading(false)
       }
     }
     void run()
@@ -620,9 +617,17 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
             <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
               <Button onClick={startCapture} disabled={isRunning}>Start capture</Button>
               <Button variant="outline" onClick={stopCapture} disabled={!isRunning}>Stop</Button>
-              <Button variant="outline" onClick={() => void saveSession()}>Save session</Button>
+              <Button variant="outline" onClick={() => void saveSession()} disabled={isSessionSaving}>
+                {isSessionSaving ? 'Saving session...' : 'Save session'}
+              </Button>
               <span className="rounded-full border border-border bg-muted px-3 py-1 text-sm">{status}</span>
             </div>
+            <div className="text-xs text-muted-foreground">
+              {isAssistantLoading ? 'Loading assistant settings... ' : ''}
+              {isHistoryLoading ? 'Loading history... ' : ''}
+              {isSuggesting ? 'Requesting suggestion... ' : ''}
+            </div>
+            <div className="text-xs text-muted-foreground">{resumeStatus}</div>
 
             <div className="grid gap-4 lg:grid-cols-3">
               <section className="rounded-xl border border-border bg-card">
@@ -721,7 +726,9 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
             <section className="rounded-xl border border-border bg-card p-3">
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-semibold">Session history</div>
-                <Button size="sm" variant="outline" onClick={() => void loadHistory()}>Refresh</Button>
+                <Button size="sm" variant="outline" onClick={() => void loadHistory()} disabled={isHistoryLoading}>
+                  {isHistoryLoading ? 'Refreshing...' : 'Refresh'}
+                </Button>
               </div>
               <div className="max-h-64 space-y-2 overflow-auto">
                 {history.length === 0 ? (

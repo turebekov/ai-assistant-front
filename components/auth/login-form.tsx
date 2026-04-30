@@ -64,7 +64,7 @@ export function LoginForm() {
       if (payload.access?.plan) {
         localStorage.setItem('auth_plan', payload.access.plan)
       }
-      router.push(payload.access?.hasSubscription ? '/interview' : '/subscription')
+      router.push('/profile')
     } catch {
       setServerError('Network error. Please try again.')
     } finally {

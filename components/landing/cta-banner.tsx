@@ -26,7 +26,7 @@ export function CTABanner() {
             asChild
             className="bg-white text-primary hover:bg-white/90 rounded-full px-8 gap-2"
           >
-            <Link href="/register">
+            <Link href="/auth?mode=register">
               Get Started For Free
               <ArrowRight className="h-4 w-4" />
             </Link>

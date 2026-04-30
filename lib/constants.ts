@@ -72,7 +72,6 @@ export const typography = {
 export const navLinks = [
   { href: '#how-it-works', label: 'How it works' },
   { href: '#features', label: 'Features' },
-  { href: '/meeting-translator', label: 'Meeting Translator' },
   { href: '#pricing', label: 'Pricing' },
   { href: '/blog', label: 'Blog' },
 ] as const
@@ -235,7 +234,7 @@ export const features = [
     icon: 'Languages',
     title: 'Live Meeting Translator',
     description: 'Translate any meeting in real-time. 50+ languages. Invisible overlay.',
-    link: '/meeting-translator',
+    link: '/profile/interview',
   },
 ] as const
 
@@ -267,7 +266,7 @@ export const footerLinks = {
     { label: 'Features', href: '#features' },
     { label: 'Pricing', href: '#pricing' },
     { label: 'How it works', href: '#how-it-works' },
-    { label: 'Meeting Translator', href: '/meeting-translator' },
+    { label: 'Meeting Translator', href: '/profile/interview' },
     { label: 'FAQ', href: '#faq' },
   ],
   company: [

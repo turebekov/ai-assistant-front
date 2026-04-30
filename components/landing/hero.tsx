@@ -41,7 +41,7 @@ export function Hero() {
                 asChild
                 className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-full px-8"
               >
-                <Link href="/register">Start For Free</Link>
+                <Link href="/auth?mode=register">Start For Free</Link>
               </Button>
               <Button
                 size="lg"

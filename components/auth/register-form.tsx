@@ -113,7 +113,7 @@ export function RegisterForm() {
       if (payload.access?.plan) {
         localStorage.setItem('auth_plan', payload.access.plan)
       }
-      router.push('/subscription')
+      router.push('/profile')
     } catch {
       setServerError('Network error. Please try again.')
     } finally {
