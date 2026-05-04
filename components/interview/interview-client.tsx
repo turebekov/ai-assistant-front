@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import type { AssistantProfile } from '@/entities/assistant/model/types'
 
@@ -53,6 +53,7 @@ function looksLikeQuestion(line: string) {
 }
 
 export function InterviewClient({ settingsId }: { settingsId?: string }) {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const [isHydrated, setIsHydrated] = useState(false)
   const [pipeline, setPipeline] = useState<Pipeline>('realtime_asr')
@@ -559,7 +560,12 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       ''
     )
     const token = localStorage.getItem('auth_token') || ''
-    if (!assistantId || !token) {
+    if (!token) {
+      setStatus('Unauthorized: redirecting to sign in.')
+      router.replace('/auth')
+      return
+    }
+    if (!assistantId) {
       setActiveAssistant(null)
       return
     }
@@ -570,7 +576,16 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
           headers: { Authorization: `Bearer ${token}` },
         })
         const payload = (await response.json().catch(() => ({}))) as { assistant?: AssistantProfile }
-        if (!response.ok || !payload.assistant) return
+        if (!response.ok || !payload.assistant) {
+          if (response.status === 401) {
+            setStatus('Unauthorized: sign in to load assistant settings.')
+          } else if (response.status === 404) {
+            setStatus('Assistant settings not found.')
+          } else {
+            setStatus('Failed to load assistant settings.')
+          }
+          return
+        }
         const selected = payload.assistant
         setActiveAssistant(selected)
         if (selected) {
@@ -604,7 +619,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       }
     }
     void run()
-  }, [searchParams, settingsId])
+  }, [router, searchParams, settingsId])
 
   return (
     <main className="mx-auto max-w-7xl space-y-4">

@@ -10,6 +10,8 @@ export type AssistantProfile = {
   translateLanguage?: string
   resumeText?: string
   resume_text?: string
+  contextText?: string
+  context_text?: string
   tone: string
   promptStyle: string
   codingAssistant: boolean

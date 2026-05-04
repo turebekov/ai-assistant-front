@@ -6,11 +6,12 @@ export const metadata: Metadata = {
 }
 
 interface MeetingsBySettingsPageProps {
-  params: { settingsId: string }
+  params: Promise<{ settingsId: string }> | { settingsId: string }
 }
 
-export default function MeetingsBySettingsPage({ params }: MeetingsBySettingsPageProps) {
-  const { settingsId } = params
+export default async function MeetingsBySettingsPage({ params }: MeetingsBySettingsPageProps) {
+  const resolvedParams = await Promise.resolve(params)
+  const { settingsId } = resolvedParams
 
   return (
     <section className="rounded-xl border border-border bg-card p-6">
