@@ -16,7 +16,9 @@ type SessionSummary = {
 }
 
 function backendWsBase() {
-  const raw = process.env.NEXT_PUBLIC_EXPRESS_BACKEND_URL?.trim() || 'http://localhost:4000'
+  const raw =
+    process.env.NEXT_PUBLIC_EXPRESS_BACKEND_URL?.trim() ||
+    'http://localhost:4000'
   const asUrl = new URL(raw)
   asUrl.protocol = asUrl.protocol === 'https:' ? 'wss:' : 'ws:'
   return asUrl.origin
