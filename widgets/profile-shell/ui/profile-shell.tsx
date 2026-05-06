@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProfileHeader } from './profile-header'
 import { ProfileSidebar } from './profile-sidebar'
+import { apiUrl } from '@/lib/api-url'
 
 interface AuthMeResponse {
   user?: { email?: string }
@@ -24,7 +25,7 @@ export function ProfileShell() {
 
     const run = async () => {
       try {
-        const response = await fetch('/api/auth/me', {
+        const response = await fetch(apiUrl('/api/auth/me'), {
           headers: { Authorization: `Bearer ${token}` },
         })
         const payload = (await response.json().catch(() => ({}))) as AuthMeResponse

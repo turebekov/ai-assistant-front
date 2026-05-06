@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { apiUrl } from '@/lib/api-url'
 
 type BackendPlan = 'free' | 'pro' | 'team'
 
@@ -30,7 +31,7 @@ export default function ProfileSubscriptionPage() {
     const run = async () => {
       setPlansLoading(true)
       try {
-        const response = await fetch('/api/subscription-plans')
+        const response = await fetch(apiUrl('/api/subscription-plans'))
         const payload = (await response.json().catch(() => ({}))) as { plans?: UiPlan[]; error?: string }
         if (!response.ok) {
           setStatus(payload.error || 'Cannot load subscription plans.')
@@ -57,7 +58,7 @@ export default function ProfileSubscriptionPage() {
     setStatus('')
     setLoadingPlanId(planId)
     try {
-      const response = await fetch('/api/auth/plan', {
+      const response = await fetch(apiUrl('/api/auth/plan'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

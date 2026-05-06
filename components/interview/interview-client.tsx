@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import type { AssistantProfile } from '@/entities/assistant/model/types'
+import { apiUrl } from '@/lib/api-url'
 
 type Pipeline = 'realtime_asr' | 'realtime_translate' | 'http'
 type SessionSummary = {
@@ -220,7 +221,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
     role: string
     language: string
   }) => {
-    const primaryReq = fetch('/api/suggest', {
+    const primaryReq = fetch(apiUrl('/api/suggest'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -230,7 +231,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       return String(payload.suggestion || '').trim()
     })
     const claudeReq = ENABLE_CLAUDE_SUGGESTION
-      ? fetch('/api/suggest-claude', {
+      ? fetch(apiUrl('/api/suggest-claude'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -316,7 +317,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       form.append('audio', ev.data, 'chunk.webm')
       form.append('language', transcriptLanguage)
       try {
-        const response = await fetch('/api/transcribe', { method: 'POST', body: form })
+        const response = await fetch(apiUrl('/api/transcribe'), { method: 'POST', body: form })
         const payload = (await response.json().catch(() => ({}))) as { text?: string; error?: string }
         if (!response.ok) throw new Error(payload.error || 'Transcribe failed')
         if (payload.text) {
@@ -461,7 +462,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
     }
     try {
       setIsSessionSaving(true)
-      const response = await fetch('/api/sessions', {
+      const response = await fetch(apiUrl('/api/sessions'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -480,7 +481,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
   const loadHistory = useCallback(async () => {
     setIsHistoryLoading(true)
     try {
-      const response = await fetch('/api/sessions')
+      const response = await fetch(apiUrl('/api/sessions'))
       if (!response.ok) throw new Error('Cannot load history')
       const data = (await response.json()) as {
         sessions?: Array<{ id: string; createdAt: string; role: string; language: string; transcript: string; suggestion: string }>
@@ -759,7 +760,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
                     </span>
                     <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">{item.role}</span>
                     <Button size="sm" variant="outline" onClick={() => loadSession(item)}>Load</Button>
-                    <a href={`/api/sessions/${item.id}/export`} target="_blank" className="text-xs text-orange-600 underline">
+                    <a href={apiUrl(`/api/sessions/${item.id}/export`)} target="_blank" className="text-xs text-orange-600 underline">
                       Export
                     </a>
                   </div>

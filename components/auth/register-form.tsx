@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import { GoogleAuthButton } from '@/components/auth/google-auth-button'
+import { apiUrl } from '@/lib/api-url'
 
 export function RegisterForm() {
   const router = useRouter()
@@ -91,7 +92,7 @@ export function RegisterForm() {
     setServerError('')
     setIsLoading(true)
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(apiUrl('/api/auth/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

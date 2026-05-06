@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { apiUrl } from '@/lib/api-url'
 
 declare global {
   interface Window {
@@ -59,7 +60,7 @@ export function GoogleAuthButton({ plan, mode, onError }: GoogleAuthButtonProps)
     const init = async () => {
       try {
         await ensureScript()
-        const cfgRes = await fetch('/api/public-config')
+        const cfgRes = await fetch(apiUrl('/api/public-config'))
         const cfg = (await cfgRes.json().catch(() => ({}))) as { googleClientId?: string }
         const clientId = String(cfg.googleClientId || '').trim()
         if (!clientId) {
@@ -81,7 +82,7 @@ export function GoogleAuthButton({ plan, mode, onError }: GoogleAuthButtonProps)
               return
             }
             try {
-              const response = await fetch('/api/auth/google', {
+              const response = await fetch(apiUrl('/api/auth/google'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ credential, plan }),

@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { CircleUserRound, CreditCard, LogOut, MessageCircleQuestion, User } from 'lucide-react'
 import { FeedbackSupportModal } from '@/widgets/feedback-support/ui/feedback-support-modal'
+import { apiUrl } from '@/lib/api-url'
 
 interface ProfileLayoutShellProps {
   children: React.ReactNode
@@ -53,7 +54,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
     }
     const run = async () => {
       try {
-        const meRes = await fetch('/api/auth/me', {
+        const meRes = await fetch(apiUrl('/api/auth/me'), {
           headers: { Authorization: `Bearer ${token}` },
         })
         const mePayload = (await meRes.json().catch(() => ({}))) as AuthMeResponse
@@ -94,7 +95,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
     setFeedbackSubmitting(true)
     setFeedbackError('')
     try {
-      const response = await fetch('/api/feedback', {
+      const response = await fetch(apiUrl('/api/feedback'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

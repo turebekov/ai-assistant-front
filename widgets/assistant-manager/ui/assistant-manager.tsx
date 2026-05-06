@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { AssistantSettingsModal } from '@/features/assistant-settings/ui/assistant-settings-modal'
 import type { AssistantProfile, AssistantSettingsForm } from '@/entities/assistant/model/types'
 import { Button } from '@/components/ui/button'
+import { apiUrl } from '@/lib/api-url'
 
 interface AssistantManagerProps {
   routeBase: '/profile/interview' | '/profile/meetings'
@@ -75,7 +76,7 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
     }
     setLoading(true)
     try {
-      const response = await fetch(isMeetings ? '/api/meeting-assistants' : '/api/assistants', {
+      const response = await fetch(apiUrl(isMeetings ? '/api/meeting-assistants' : '/api/assistants'), {
         headers: { Authorization: `Bearer ${token}` },
       })
       const payload = (await response.json().catch(() => ({}))) as { assistants?: AssistantProfile[] }
@@ -113,7 +114,7 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
       setResumeStatus(isMeetings ? 'Parsing file...' : 'Parsing resume...')
       const formData = new FormData()
       formData.append('resume', resumeFile, resumeFile.name)
-      const parseResponse = await fetch(isMeetings ? '/api/context/parse' : '/api/resume/parse', {
+      const parseResponse = await fetch(apiUrl(isMeetings ? '/api/context/parse' : '/api/resume/parse'), {
         method: 'POST',
         body: formData,
       })
@@ -136,7 +137,7 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
       ? `${baseEndpoint}/${encodeURIComponent(editingId)}`
       : baseEndpoint
     const method = mode === 'edit' ? 'PATCH' : 'POST'
-    const response = await fetch(endpoint, {
+    const response = await fetch(apiUrl(endpoint), {
       method,
       headers: {
         'Content-Type': 'application/json',
@@ -233,7 +234,7 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
     if (!ok) return
     setDeletingId(assistantId)
     try {
-      const response = await fetch(`${isMeetings ? '/api/meeting-assistants' : '/api/assistants'}/${encodeURIComponent(assistantId)}`, {
+      const response = await fetch(apiUrl(`${isMeetings ? '/api/meeting-assistants' : '/api/assistants'}/${encodeURIComponent(assistantId)}`), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })

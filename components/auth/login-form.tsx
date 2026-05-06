@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { GoogleAuthButton } from '@/components/auth/google-auth-button'
+import { apiUrl } from '@/lib/api-url'
 
 export function LoginForm() {
   const router = useRouter()
@@ -43,7 +44,7 @@ export function LoginForm() {
     setServerError('')
     setIsLoading(true)
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(apiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
