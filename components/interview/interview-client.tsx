@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { ChevronsRight, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { AssistantProfile } from '@/entities/assistant/model/types'
 import { apiUrl } from '@/lib/api-url'
+import { cn } from '@/lib/utils'
 
 type Pipeline = 'realtime_asr' | 'realtime_translate' | 'http'
 type SessionSummary = {
@@ -23,6 +25,16 @@ function backendWsBase() {
   const asUrl = new URL(raw)
   asUrl.protocol = asUrl.protocol === 'https:' ? 'wss:' : 'ws:'
   return asUrl.origin
+}
+
+function normalizeInterviewLanguage(language: string) {
+  const lang = String(language || '').trim().toLowerCase()
+  if (!lang) return 'en'
+  if (lang.includes('russian')) return 'ru'
+  if (lang.includes('kazakh')) return 'kk'
+  if (lang.includes('german')) return 'de'
+  if (lang.includes('french')) return 'fr'
+  return 'en'
 }
 
 function tailText(lines: string[], maxChars = 1000) {
@@ -72,7 +84,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
   const [targetPosition, setTargetPosition] = useState('')
   const [transcriptLanguage, setTranscriptLanguage] = useState('auto')
   const [translateTarget, setTranslateTarget] = useState('en')
-  const [suggestionLanguage, setSuggestionLanguage] = useState('en')
+  const [primaryInterviewLanguage, setPrimaryInterviewLanguage] = useState('en')
   const [isRunning, setIsRunning] = useState(false)
   const [isSuggesting, setIsSuggesting] = useState(false)
   const [isAssistantLoading, setIsAssistantLoading] = useState(false)
@@ -91,10 +103,12 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
   const processorRef = useRef<ScriptProcessorNode | null>(null)
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null)
   const previewRef = useRef<HTMLVideoElement | null>(null)
+  const transcriptScrollRef = useRef<HTMLDivElement | null>(null)
   const quietTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastSuggestedKeyRef = useRef('')
   const suggestionInFlightRef = useRef(false)
-  const ENABLE_CLAUDE_SUGGESTION = false
+  const [enableClaudeSuggestion, setEnableClaudeSuggestion] = useState(false)
+  const [sessionSidebarOpen, setSessionSidebarOpen] = useState(false)
   const SUGGEST_RECENT_LINES = 24
   const SUGGEST_SPLIT_PAUSE_MS = 4000
 
@@ -102,6 +116,12 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
     () => `${transcriptLines.join('\n')}${partial ? `\n${partial}` : ''}`.trim(),
     [partial, transcriptLines]
   )
+
+  useEffect(() => {
+    const el = transcriptScrollRef.current
+    if (!el) return
+    el.scrollTop = el.scrollHeight
+  }, [partial, transcriptLines])
 
   const stopRealtime = () => {
     try {
@@ -221,44 +241,41 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
     role: string
     language: string
   }) => {
-    const primaryReq = fetch(apiUrl('/api/suggest'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }).then(async (response) => {
-      const payload = (await response.json().catch(() => ({}))) as { suggestion?: string; error?: string; details?: string }
-      if (!response.ok) throw new Error(payload.details || payload.error || 'Suggestion request failed')
-      return String(payload.suggestion || '').trim()
-    })
-    const claudeReq = ENABLE_CLAUDE_SUGGESTION
-      ? fetch(apiUrl('/api/suggest-claude'), {
+    const provider = enableClaudeSuggestion ? 'claude' : 'qwen'
+    const timerLabel = `suggestion:${provider}:${Date.now()}`
+    console.time(timerLabel)
+    try {
+      if (enableClaudeSuggestion) {
+        const response = await fetch(apiUrl('/api/suggest-claude'), {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}`,
+          },
           body: JSON.stringify(body),
-        }).then(async (response) => {
-          const payload = (await response.json().catch(() => ({}))) as { suggestion?: string; error?: string; details?: string }
-          if (!response.ok) throw new Error(payload.details || payload.error || 'Claude suggestion request failed')
-          return String(payload.suggestion || '').trim()
         })
-      : Promise.resolve('Claude suggestion is disabled.')
+        const payload = (await response.json().catch(() => ({}))) as { suggestion?: string; error?: string; details?: string }
+        if (!response.ok) {
+          throw new Error(payload.details || payload.error || 'Claude suggestion request failed')
+        }
+        setSuggestionClaudeHistory((prev) => pushSuggestion(prev, String(payload.suggestion || '').trim()))
+        return
+      }
 
-    const [primaryRes, claudeRes] = await Promise.allSettled([primaryReq, claudeReq])
-    if (primaryRes.status === 'fulfilled') {
-      setSuggestionPrimaryHistory((prev) => pushSuggestion(prev, primaryRes.value))
-    } else {
-      setSuggestionPrimaryHistory((prev) =>
-        pushSuggestion(prev, `Suggestion error: ${primaryRes.reason instanceof Error ? primaryRes.reason.message : String(primaryRes.reason)}`)
-      )
+      const response = await fetch(apiUrl('/api/suggest'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const payload = (await response.json().catch(() => ({}))) as { suggestion?: string; error?: string; details?: string }
+      if (!response.ok) {
+        throw new Error(payload.details || payload.error || 'Suggestion request failed')
+      }
+      setSuggestionPrimaryHistory((prev) => pushSuggestion(prev, String(payload.suggestion || '').trim()))
+    } finally {
+      console.timeEnd(timerLabel)
     }
-    if (claudeRes.status === 'fulfilled') {
-      const answer = ENABLE_CLAUDE_SUGGESTION ? claudeRes.value : `Question:\n${questionText}\n\nAnswer:\n${claudeRes.value}`
-      setSuggestionClaudeHistory((prev) => pushSuggestion(prev, answer))
-    } else {
-      setSuggestionClaudeHistory((prev) =>
-        pushSuggestion(prev, `Suggestion error: ${claudeRes.reason instanceof Error ? claudeRes.reason.message : String(claudeRes.reason)}`)
-      )
-    }
-  }, [pushSuggestion])
+  }, [enableClaudeSuggestion, pushSuggestion])
 
   const requestSuggestion = useCallback(async (source: 'manual' | 'quiet' = 'manual') => {
     if (suggestionInFlightRef.current) return
@@ -278,7 +295,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       interview_role: role,
       target_position: targetPosition,
       role,
-      language: suggestionLanguage,
+      language: primaryInterviewLanguage,
     }
     const key = block ? block.key : `${body.transcript}::manual::${body.language}`
     if (source === 'quiet' && lastSuggestedKeyRef.current === key) {
@@ -306,7 +323,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       suggestionInFlightRef.current = false
       setIsSuggesting(false)
     }
-  }, [extractLatestQuestionBlock, resumeText, role, runSuggestionForPayload, suggestionLanguage, targetPosition, transcriptText])
+  }, [extractLatestQuestionBlock, primaryInterviewLanguage, resumeText, role, runSuggestionForPayload, targetPosition, transcriptText])
 
   const startHttp = async (audioStream: MediaStream) => {
     const mr = new MediaRecorder(audioStream, { mimeType: 'audio/webm' })
@@ -453,7 +470,9 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       role,
       language: 'auto',
       transcript: transcriptText,
-      suggestion: String(suggestionPrimaryHistory[0] || '').trim(),
+      suggestion: String(
+        (enableClaudeSuggestion ? suggestionClaudeHistory[0] : suggestionPrimaryHistory[0]) || ''
+      ).trim(),
       notes: '',
     }
     if (!payload.transcript && !payload.suggestion) {
@@ -476,7 +495,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
     } finally {
       setIsSessionSaving(false)
     }
-  }, [role, suggestionPrimaryHistory, transcriptText])
+  }, [enableClaudeSuggestion, role, suggestionClaudeHistory, suggestionPrimaryHistory, transcriptText])
 
   const loadHistory = useCallback(async () => {
     setIsHistoryLoading(true)
@@ -504,8 +523,13 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
     setTranscriptLineTimestamps(new Array(nextLines.length).fill(Date.now()))
     setPartial('')
     const loadedSuggestion = String(item.suggestion || '').trim()
-    setSuggestionPrimaryHistory(loadedSuggestion ? [loadedSuggestion] : [])
-    setSuggestionClaudeHistory(ENABLE_CLAUDE_SUGGESTION ? [] : ['Claude suggestion is disabled.'])
+    if (enableClaudeSuggestion) {
+      setSuggestionClaudeHistory(loadedSuggestion ? [loadedSuggestion] : [])
+      setSuggestionPrimaryHistory([])
+    } else {
+      setSuggestionPrimaryHistory(loadedSuggestion ? [loadedSuggestion] : [])
+      setSuggestionClaudeHistory([])
+    }
     setSentLineIndexes(new Set())
     lastSuggestedKeyRef.current = ''
     setStatus('Session loaded')
@@ -516,16 +540,30 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
   }, [loadHistory])
 
   useEffect(() => {
-    if (!ENABLE_CLAUDE_SUGGESTION) {
-      setSuggestionClaudeHistory(['Claude suggestion is disabled.'])
+    const token = localStorage.getItem('auth_token') || ''
+    const storedPlan = (localStorage.getItem('auth_plan') || '').toLowerCase()
+    if (storedPlan === 'pro_claude') {
+      setEnableClaudeSuggestion(true)
+      return
     }
+    if (!token) return
+    void (async () => {
+      try {
+        const response = await fetch(apiUrl('/api/auth/me'), {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const payload = (await response.json().catch(() => ({}))) as {
+          user?: { plan?: string }
+          access?: { plan?: string }
+        }
+        if (!response.ok) return
+        const plan = String(payload.user?.plan || payload.access?.plan || '').toLowerCase()
+        setEnableClaudeSuggestion(plan === 'pro_claude')
+      } catch {
+        // ignore plan lookup errors
+      }
+    })()
   }, [])
-
-  useEffect(() => {
-    if (transcriptLanguage !== 'auto') {
-      setSuggestionLanguage(transcriptLanguage)
-    }
-  }, [transcriptLanguage])
 
   useEffect(() => {
     if (!isRunning) return
@@ -602,20 +640,9 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
           const nextResumeText = String(selected.resumeText || selected.resume_text || '').trim()
           setResumeText(nextResumeText)
           setResumeStatus(nextResumeText ? 'Resume loaded from assistant settings' : 'No resume')
-          const lang = String(selected.language || '').trim()
-          if (lang) {
-            const normalized = lang.toLowerCase().includes('russian')
-              ? 'ru'
-              : lang.toLowerCase().includes('kazakh')
-                ? 'kk'
-                : lang.toLowerCase().includes('german')
-                  ? 'de'
-                  : lang.toLowerCase().includes('french')
-                    ? 'fr'
-                    : 'en'
-            setTranscriptLanguage(normalized)
-            setSuggestionLanguage(normalized)
-          }
+          const interviewLanguage = normalizeInterviewLanguage(String(selected.language || ''))
+          setPrimaryInterviewLanguage(interviewLanguage)
+          setTranscriptLanguage(interviewLanguage)
         }
       } finally {
         setIsAssistantLoading(false)
@@ -625,7 +652,13 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
   }, [router, searchParams, settingsId])
 
   return (
-    <main className="mx-auto max-w-7xl space-y-4">
+    <>
+      <main
+        className={cn(
+          'mx-auto w-full max-w-none space-y-4 pr-14 transition-[padding] duration-200',
+          sessionSidebarOpen && 'md:pr-[23.5rem]'
+        )}
+      >
             {activeAssistant ? (
               <div className="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900">
                 Assistant: <span className="font-semibold">{activeAssistant.name}</span>{' '}
@@ -647,8 +680,14 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
             </div>
             <div className="text-xs text-muted-foreground">{resumeStatus}</div>
 
-            <div className="grid gap-4 lg:grid-cols-3">
-              <section className="rounded-xl border border-border bg-card">
+            <div className="flex min-h-[60vh] items-stretch">
+              <div className="flex min-w-0 flex-1 flex-col gap-4 lg:flex-row lg:items-stretch">
+              <div className="flex min-h-[60vh] flex-col gap-4 lg:w-[30%] lg:shrink-0">
+                <section className="rounded-xl border border-border bg-card p-3">
+                  <div className="mb-2 text-sm font-semibold">Tab preview</div>
+                  <video ref={previewRef} className="aspect-video w-full rounded-md border border-border bg-black object-contain" autoPlay muted playsInline />
+                </section>
+              <section className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card">
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
                   <span>Live transcript</span>
                   <Button
@@ -665,7 +704,10 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
                     Clear
                   </Button>
                 </header>
-                <div className="h-[380px] overflow-auto whitespace-pre-wrap p-3 text-sm">
+                <div
+                  ref={transcriptScrollRef}
+                  className="h-[380px] overflow-auto whitespace-pre-wrap p-3 text-sm"
+                >
                   {transcriptLines.map((line, idx) => (
                     <div
                       key={`${idx}-${line.slice(0, 12)}`}
@@ -677,7 +719,10 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
                   {partial ? <div className="text-muted-foreground">... {partial}</div> : null}
                 </div>
               </section>
-              <section className="rounded-xl border border-border bg-card">
+              </div>
+              <div className="flex min-h-[60vh] min-w-0 flex-1 flex-col">
+              {!enableClaudeSuggestion ? (
+              <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
                   <span>AI suggestion (Qwen)</span>
                   <div className="flex items-center gap-2">
@@ -697,7 +742,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
                     </Button>
                   </div>
                 </header>
-                <div className="h-[380px] overflow-auto whitespace-pre-wrap p-3 text-sm">
+                <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3 text-sm">
                   {suggestionPrimaryHistory.length === 0 ? (
                     <span className="text-muted-foreground">No suggestion yet.</span>
                   ) : (
@@ -709,20 +754,29 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
                   )}
                 </div>
               </section>
-              <section className="rounded-xl border border-border bg-card">
+              ) : null}
+              {enableClaudeSuggestion ? (
+              <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
                   <span>AI suggestion (Claude)</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setSuggestionClaudeHistory(ENABLE_CLAUDE_SUGGESTION ? [] : ['Claude suggestion is disabled.'])
-                    }}
-                  >
-                    Clear
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
+                      {isSuggesting ? 'Sending...' : 'Send'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSuggestionClaudeHistory([])
+                        setSentLineIndexes(new Set())
+                        lastSuggestedKeyRef.current = ''
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  </div>
                 </header>
-                <div className="h-[380px] overflow-auto whitespace-pre-wrap p-3 text-sm">
+                <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3 text-sm">
                   {suggestionClaudeHistory.length === 0 ? (
                     <span className="text-muted-foreground">No suggestion yet.</span>
                   ) : (
@@ -734,24 +788,35 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
                   )}
                 </div>
               </section>
-            </div>
-
-            <section className="rounded-xl border border-border bg-card p-3">
-              <div className="mb-2 text-sm font-semibold">Tab preview</div>
-              <video ref={previewRef} className="h-[260px] w-full rounded-md border border-border bg-black object-contain" autoPlay muted playsInline />
-            </section>
-
-            <section className="rounded-xl border border-border bg-card p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="text-sm font-semibold">Session history</div>
-                <Button size="sm" variant="outline" onClick={() => void loadHistory()} disabled={isHistoryLoading}>
-                  {isHistoryLoading ? 'Refreshing...' : 'Refresh'}
-                </Button>
+              ) : null}
               </div>
-              <div className="max-h-64 space-y-2 overflow-auto">
-                {history.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">No sessions yet.</div>
-                ) : history.map((item) => (
+            </div>
+            </div>
+      </main>
+      <div className="fixed right-0 top-16 z-20 flex h-[calc(100dvh-4rem)] border-l border-slate-200 bg-white">
+        {sessionSidebarOpen ? (
+          <aside className="hidden h-full w-80 shrink-0 flex-col md:flex">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Hide session history"
+                  onClick={() => setSessionSidebarOpen(false)}
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+                <h2 className="text-sm font-semibold text-slate-900">Session history</h2>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => void loadHistory()} disabled={isHistoryLoading}>
+                {isHistoryLoading ? 'Refreshing...' : 'Refresh'}
+              </Button>
+            </div>
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
+              {history.length === 0 ? (
+                <div className="text-sm text-muted-foreground">No sessions yet.</div>
+              ) : (
+                history.map((item) => (
                   <div key={item.id} className="flex flex-wrap items-center gap-2 rounded border border-border p-2 text-sm">
                     <span className="text-muted-foreground">
                       {isHydrated
@@ -764,9 +829,28 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
                       Export
                     </a>
                   </div>
-                ))}
-              </div>
-            </section>
-    </main>
+                ))
+              )}
+            </div>
+          </aside>
+        ) : null}
+        <div className="flex h-full w-14 shrink-0 flex-col items-center gap-2 py-3">
+          <button
+            type="button"
+            aria-label="Session history"
+            title="Session history"
+            onClick={() => setSessionSidebarOpen((open) => !open)}
+            className={cn(
+              'flex h-11 w-11 items-center justify-center rounded-xl border transition-colors',
+              sessionSidebarOpen
+                ? 'border-violet-200 bg-violet-100 text-violet-700'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+            )}
+          >
+            <FileText className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </>
   )
 }

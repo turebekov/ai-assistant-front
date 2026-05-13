@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Mic, Brain, Eye, Smartphone, History, Globe, Languages } from 'lucide-react'
+import { Mic, Brain, Eye, History, Globe, Languages } from 'lucide-react'
 import Link from 'next/link'
 import { FeatureCard } from '@/components/design-system/feature-card'
 import { features } from '@/lib/constants'
@@ -10,7 +10,6 @@ const iconMap = {
   Mic,
   Brain,
   Eye,
-  Smartphone,
   History,
   Globe,
   Languages,

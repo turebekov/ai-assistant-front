@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
 
-type BackendPlan = 'free' | 'pro' | 'team'
+type BackendPlan = 'free' | 'pro' | 'pro_claude' | 'team'
 
 type UiPlan = {
   id: string
@@ -92,7 +92,7 @@ export default function ProfileSubscriptionPage() {
       <section className="mx-auto max-w-6xl rounded-2xl border border-border bg-card p-6 shadow-sm">
         <h1 className="text-center text-4xl font-bold tracking-tight text-foreground">Choose your plan.</h1>
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Pick the billing period that works best for you.
+          Choose the monthly plan that fits your interview workflow.
         </p>
         {status && <p className="mt-3 text-sm text-destructive">{status}</p>}
 

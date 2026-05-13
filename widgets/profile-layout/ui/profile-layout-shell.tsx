@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { CircleUserRound, CreditCard, LogOut, MessageCircleQuestion, User } from 'lucide-react'
+import { ArrowLeft, CircleUserRound, CreditCard, LogOut, MessageCircleQuestion, User } from 'lucide-react'
 import { FeedbackSupportModal } from '@/widgets/feedback-support/ui/feedback-support-modal'
 import { apiUrl } from '@/lib/api-url'
 
@@ -38,6 +38,15 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
   const [feedbackFollowUp, setFeedbackFollowUp] = useState(true)
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
   const [feedbackError, setFeedbackError] = useState('')
+
+  const isAssistantSession = useMemo(
+    () => /^\/profile\/(interview|meetings)\/[^/]+$/.test(pathname || ''),
+    [pathname]
+  )
+  const assistantSessionBackHref = useMemo(() => {
+    if (pathname?.includes('/profile/meetings/')) return '/profile/meetings'
+    return '/profile/interview'
+  }, [pathname])
 
   const pageTitle = useMemo(() => {
     if (pathname?.includes('/profile/interview')) return 'Interview Assistant'
@@ -128,24 +137,38 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="flex min-h-screen">
-        {sidebarOpen ? (
+        {!isAssistantSession && sidebarOpen ? (
           <button
             aria-label="Close sidebar overlay"
             className="fixed inset-0 z-20 bg-black/30 md:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         ) : null}
-        <AssistantSidebar
-          pathname={pathname || ''}
-          sidebarOpen={sidebarOpen}
-          onSignOut={signOut}
-        />
+        {!isAssistantSession ? (
+          <AssistantSidebar
+            pathname={pathname || ''}
+            sidebarOpen={sidebarOpen}
+            onSignOut={signOut}
+          />
+        ) : null}
         <div className="flex-1 md:ml-0">
           <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4">
             <div className="flex items-center gap-3">
-              <button className="rounded border border-slate-200 px-2 py-1 text-sm md:hidden" onClick={() => setSidebarOpen((v) => !v)}>
-                ☰
-              </button>
+              {isAssistantSession ? (
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label="Back to assistants"
+                  title="Back to assistants"
+                  onClick={() => router.push(assistantSessionBackHref)}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              ) : (
+                <button className="rounded border border-slate-200 px-2 py-1 text-sm md:hidden" onClick={() => setSidebarOpen((v) => !v)}>
+                  ☰
+                </button>
+              )}
               <h1 className="text-lg font-semibold text-slate-900">{pageTitle}</h1>
             </div>
             <div className="flex items-center gap-2">
@@ -195,7 +218,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
               </DropdownMenu>
             </div>
           </header>
-          <main className="p-4 md:p-6">{children}</main>
+          <main className={isAssistantSession ? 'p-2 md:p-3' : 'p-4 md:p-6'}>{children}</main>
         </div>
       </div>
       <FeedbackSupportModal
