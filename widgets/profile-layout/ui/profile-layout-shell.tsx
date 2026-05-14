@@ -21,6 +21,7 @@ interface ProfileLayoutShellProps {
 }
 
 interface AuthMeResponse {
+  token?: string
   user?: { email?: string; plan?: string }
   access?: { plan?: string }
 }
@@ -73,15 +74,20 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
           router.replace('/auth')
           return
         }
+        if (mePayload.token) {
+          localStorage.setItem('auth_token', mePayload.token)
+        }
         setEmail(String(mePayload.user?.email || ''))
-        setPlan(
-          String(
-            mePayload.user?.plan ||
+        const nextPlan = String(
+          mePayload.user?.plan ||
             mePayload.access?.plan ||
             localStorage.getItem('auth_plan') ||
             'free'
-          ).toLowerCase()
-        )
+        ).toLowerCase()
+        setPlan(nextPlan)
+        if (mePayload.access?.plan) {
+          localStorage.setItem('auth_plan', mePayload.access.plan)
+        }
       } finally {
         setLoading(false)
       }
