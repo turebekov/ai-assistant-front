@@ -1,5 +1,4 @@
-'use client'
-      import type { Metadata } from 'next'
+import type { Metadata } from 'next'
 import { SITE_URL, type PageSeoConfig } from './site'
 
 const defaultOgImage = {
