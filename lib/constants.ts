@@ -73,6 +73,7 @@ export const navLinks = [
   { href: '/interview-assistant', label: 'Interview Assistant' },
   { href: '/meeting-translator', label: 'Meeting Translator' },
   { href: '/pricing', label: 'Pricing' },
+  { href: '/blog', label: 'Blog' },
 ] as const
 
 // Company logos for social proof
@@ -256,6 +257,7 @@ export const footerLinks = {
     { label: 'Interview Assistant', href: '/interview-assistant' },
     { label: 'Meeting Translator', href: '/meeting-translator' },
     { label: 'Pricing', href: '/pricing' },
+    { label: 'Blog', href: '/blog' },
     { label: 'How it works', href: '/#how-it-works' },
     { label: 'FAQ', href: '/#faq' },
   ],

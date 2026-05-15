@@ -14,10 +14,10 @@ export function Testimonials() {
           className="text-center mb-12 lg:mb-16"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-dark mb-4">
-            Отзывы
+            Reviews
           </h2>
           <p className="text-lg text-gray max-w-2xl mx-auto">
-            JobTap — новый проект. Отзывов пока нет. Станьте одним из первых пользователей.
+            JobTap is a new product — we don&apos;t have public reviews yet. Be among the first to try it.
           </p>
         </motion.div>
 
@@ -30,9 +30,9 @@ export function Testimonials() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
             <MessageSquareOff className="h-7 w-7 text-gray" />
           </div>
-          <p className="text-base font-medium text-dark">Отзывов пока нет</p>
+          <p className="text-base font-medium text-dark">No reviews yet</p>
           <p className="mt-2 text-sm text-gray">
-            После первого собеседования с JobTap вы сможете оставить отзыв.
+            After your first interview with JobTap, you&apos;ll be able to share feedback here.
           </p>
         </motion.div>
       </div>

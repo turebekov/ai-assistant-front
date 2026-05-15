@@ -11,7 +11,7 @@ export function LogosStrip() {
     <section className="py-12 border-y border-border bg-light-gray/50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <p className="text-center text-sm text-gray mb-8">
-          Поможем устроиться в компании вроде
+          We&apos;ll help you land roles at companies like
         </p>
 
         {/* Infinite scroll container */}

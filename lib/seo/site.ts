@@ -95,6 +95,21 @@ export const SEO_PAGES = {
     sitemapPriority: 0.3,
     changeFrequency: 'yearly',
   },
+  blog: {
+    path: '/blog',
+    title: 'Blog — AI Interview & Meeting Guides | JobTap',
+    description:
+      'Expert guides on AI interview assistants, STAR method, FAANG prep, Zoom translation, and using JobTap for real-time coaching.',
+    keywords: [
+      'AI interview blog',
+      'interview tips 2025',
+      'meeting translation guide',
+      'STAR method interview',
+    ],
+    openGraphTitle: 'JobTap Blog — Interview & Meeting AI Guides',
+    sitemapPriority: 0.9,
+    changeFrequency: 'weekly',
+  },
 } as const satisfies Record<string, PageSeoConfig>
 
 export const SITEMAP_PAGES: PageSeoConfig[] = [
@@ -102,6 +117,7 @@ export const SITEMAP_PAGES: PageSeoConfig[] = [
   SEO_PAGES.interviewAssistant,
   SEO_PAGES.meetingTranslator,
   SEO_PAGES.pricing,
+  SEO_PAGES.blog,
   SEO_PAGES.auth,
   SEO_PAGES.privacy,
   SEO_PAGES.terms,

@@ -24,7 +24,7 @@ export function Hero() {
           >
             <Badge variant="accent" className="mb-6">
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-              Новый проект JobTap
+              New — JobTap is live
             </Badge>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-dark leading-tight tracking-tight text-balance">
