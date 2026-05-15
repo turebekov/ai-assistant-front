@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { YandexMetrika } from '@/components/analytics/yandex-metrika'
 import { buildPageMetadata } from '@/lib/seo/metadata'
 import { SEO_PAGES, SITE_URL } from '@/lib/seo/site'
 import './globals.css'
@@ -100,6 +101,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased" suppressHydrationWarning>
         {children}
+        <YandexMetrika />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
