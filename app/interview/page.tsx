@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function InterviewPage() {
-  redirect('/profile/interview')
+  redirect('/interview-assistant')
 }
-

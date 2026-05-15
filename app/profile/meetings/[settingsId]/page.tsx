@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { InterviewClient } from '@/components/interview/interview-client'
 
 export const metadata: Metadata = {
-  title: 'Meetings Session - AssistantAI',
+  title: 'Meetings Session',
   description: 'Meetings assistant session with live transcript and AI suggestions.',
 }
 

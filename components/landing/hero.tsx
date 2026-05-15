@@ -28,7 +28,7 @@ export function Hero() {
             </Badge>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-dark leading-tight tracking-tight text-balance">
-              Ace Your Interview with Real-Time AI Coaching
+              AI Interview Assistant — Real-Time Coaching for Your Next Interview
             </h1>
 
             <p className="mt-6 text-lg text-gray leading-relaxed max-w-xl">

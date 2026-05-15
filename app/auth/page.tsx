@@ -1,12 +1,11 @@
 import { Suspense } from 'react'
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 import { AuthLayout } from '@/components/auth/auth-layout'
 import { AuthEntry } from '@/components/auth/auth-entry'
+import { buildPageMetadata } from '@/lib/seo/metadata'
+import { SEO_PAGES } from '@/lib/seo/site'
 
-export const metadata: Metadata = {
-  title: 'Sign In',
-  description: 'Sign in to your JobTap account.',
-}
+export const metadata: Metadata = buildPageMetadata(SEO_PAGES.auth)
 
 function AuthFormFallback() {
   return (

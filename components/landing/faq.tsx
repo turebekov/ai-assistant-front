@@ -43,7 +43,7 @@ export function FAQ() {
             Frequently Asked Questions
           </h2>
           <p className="text-lg text-gray">
-            Everything you need to know about AssistantAI
+            Everything you need to know about JobTap
           </p>
         </motion.div>
 

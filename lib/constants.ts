@@ -1,4 +1,4 @@
-// AssistantAI Design System Constants
+// JobTap Design System Constants
 
 export const colors = {
   primary: '#2563EB',
@@ -70,10 +70,9 @@ export const typography = {
 
 // Navigation links
 export const navLinks = [
-  { href: '#how-it-works', label: 'How it works' },
-  { href: '#features', label: 'Features' },
-  { href: '#pricing', label: 'Pricing' },
-  { href: '/blog', label: 'Blog' },
+  { href: '/interview-assistant', label: 'Interview Assistant' },
+  { href: '/meeting-translator', label: 'Meeting Translator' },
+  { href: '/pricing', label: 'Pricing' },
 ] as const
 
 // Company logos for social proof
@@ -142,15 +141,15 @@ export const pricingPlans = [
 export const faqItems = [
   {
     question: 'Is it really invisible during screen sharing?',
-    answer: 'Yes! AssistantAI uses advanced overlay technology that is specifically designed to be invisible to screen sharing software like Zoom, Google Meet, and Microsoft Teams. The suggestions appear only on your screen and are not captured by any screen recording or sharing software.',
+    answer: 'Yes! JobTap uses advanced overlay technology that is specifically designed to be invisible to screen sharing software like Zoom, Google Meet, and Microsoft Teams. The suggestions appear only on your screen and are not captured by any screen recording or sharing software.',
   },
   {
     question: 'Which platforms does it support?',
-    answer: 'AssistantAI works with all major video conferencing platforms including Google Meet, Zoom, Microsoft Teams, and WebEx. Our web app works directly in your browser.',
+    answer: 'JobTap works with all major video conferencing platforms including Google Meet, Zoom, Microsoft Teams, and WebEx. Our web app works directly in your browser.',
   },
   {
     question: 'Does it record my voice?',
-    answer: 'No, AssistantAI only captures and analyzes the interviewer\'s voice to provide relevant suggestions. Your voice is never recorded or stored. We prioritize your privacy and security.',
+    answer: 'No, JobTap only captures and analyzes the interviewer\'s voice to provide relevant suggestions. Your voice is never recorded or stored. We prioritize your privacy and security.',
   },
   {
     question: 'Is my interview data private?',
@@ -162,7 +161,7 @@ export const faqItems = [
   },
   {
     question: 'What languages are supported?',
-    answer: 'Currently, AssistantAI supports English, Russian, and Kazakh. We are actively working on adding more languages including Spanish, French, German, and Mandarin Chinese.',
+    answer: 'Currently, JobTap supports English, Russian, and Kazakh. We are actively working on adding more languages including Spanish, French, German, and Mandarin Chinese.',
   },
 ] as const
 
@@ -174,7 +173,7 @@ export const testimonials = [
     company: 'Google',
     avatar: 'SC',
     rating: 5,
-    quote: 'AssistantAI helped me ace my Google interview! The real-time suggestions were incredibly helpful for system design questions. I got the offer within a week.',
+    quote: 'JobTap helped me ace my Google interview! The real-time suggestions were incredibly helpful for system design questions. I got the offer within a week.',
   },
   {
     name: 'Michael Rodriguez',
@@ -225,7 +224,7 @@ export const features = [
     icon: 'Languages',
     title: 'Live Meeting Translator',
     description: 'Translate any meeting in real-time. 50+ languages. Invisible overlay.',
-    link: '/profile/interview',
+    link: '/meeting-translator',
   },
 ] as const
 
@@ -240,7 +239,7 @@ export const howItWorksSteps = [
   {
     step: 2,
     title: 'AI Listens & Analyzes',
-    description: 'AssistantAI captures only the interviewer\'s voice and analyzes questions in real-time.',
+    description: 'JobTap captures only the interviewer\'s voice and analyzes questions in real-time.',
     icon: 'Headphones',
   },
   {
@@ -254,11 +253,11 @@ export const howItWorksSteps = [
 // Footer links
 export const footerLinks = {
   product: [
-    { label: 'Features', href: '#features' },
-    { label: 'Pricing', href: '#pricing' },
-    { label: 'How it works', href: '#how-it-works' },
-    { label: 'Meeting Translator', href: '/profile/interview' },
-    { label: 'FAQ', href: '#faq' },
+    { label: 'Interview Assistant', href: '/interview-assistant' },
+    { label: 'Meeting Translator', href: '/meeting-translator' },
+    { label: 'Pricing', href: '/pricing' },
+    { label: 'How it works', href: '/#how-it-works' },
+    { label: 'FAQ', href: '/#faq' },
   ],
   company: [
     { label: 'Contact', href: 'mailto:support@jobtap.app' },

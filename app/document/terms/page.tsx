@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LegalDocumentLayout } from '@/components/legal/legal-document-layout'
+import { buildPageMetadata } from '@/lib/seo/metadata'
+import { SEO_PAGES } from '@/lib/seo/site'
 
-export const metadata: Metadata = {
-  title: 'Terms and Conditions | AssistantAI',
-  description: 'Terms and Conditions for AssistantAI (JobTap) interview and meeting assistant.',
-}
+export const metadata: Metadata = buildPageMetadata(SEO_PAGES.terms)
 
 const CONTACT_EMAIL = 'support@jobtap.app'
 

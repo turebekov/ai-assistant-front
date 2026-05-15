@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { AssistantManager } from '@/widgets/assistant-manager/ui/assistant-manager'
 
 export const metadata: Metadata = {
-  title: 'Meetings Assistant - AssistantAI',
+  title: 'Meetings Assistant',
   description: 'Meetings assistant workspace.',
 }
 
