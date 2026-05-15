@@ -1,8 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { TestimonialCard } from '@/components/design-system/testimonial-card'
-import { testimonials } from '@/lib/constants'
+import { MessageSquareOff } from 'lucide-react'
 
 export function Testimonials() {
   return (
@@ -15,22 +14,27 @@ export function Testimonials() {
           className="text-center mb-12 lg:mb-16"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-dark mb-4">
-            50,000+ candidates already succeeded
+            Отзывы
           </h2>
           <p className="text-lg text-gray max-w-2xl mx-auto">
-            Join thousands of job seekers who landed their dream jobs
+            JobTap — новый проект. Отзывов пока нет. Станьте одним из первых пользователей.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {testimonials.map((testimonial, index) => (
-            <TestimonialCard
-              key={testimonial.name}
-              {...testimonial}
-              index={index}
-            />
-          ))}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mx-auto max-w-lg rounded-2xl border border-dashed border-border bg-light-gray/50 px-8 py-12 text-center"
+        >
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+            <MessageSquareOff className="h-7 w-7 text-gray" />
+          </div>
+          <p className="text-base font-medium text-dark">Отзывов пока нет</p>
+          <p className="mt-2 text-sm text-gray">
+            После первого собеседования с JobTap вы сможете оставить отзыв.
+          </p>
+        </motion.div>
       </div>
     </section>
   )

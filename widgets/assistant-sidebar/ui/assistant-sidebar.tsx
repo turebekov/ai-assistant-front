@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { CreditCard, ExternalLink, LogOut, Monitor, Waves } from 'lucide-react'
+import { JobTapLogo } from '@/components/brand/jobtap-logo'
 
 interface AssistantSidebarProps {
   pathname: string
@@ -16,7 +17,9 @@ export function AssistantSidebar({
 }: AssistantSidebarProps) {
   return (
     <aside className={`fixed left-0 top-0 z-30 h-screen w-72 border-r border-border bg-card p-3 transition-transform md:static md:translate-x-0 md:p-4 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-      <div className="mb-3 px-1 text-base font-bold text-foreground md:mb-4 md:text-lg">AssistantAI</div>
+      <div className="mb-4 px-1">
+        <JobTapLogo href="/profile" variant="light" iconSize={32} />
+      </div>
       <div className="px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground md:text-xs">Workspace</div>
       <nav className="mt-2 space-y-2 text-sm">
         <Link

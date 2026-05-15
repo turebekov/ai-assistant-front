@@ -4,8 +4,8 @@ import { AuthLayout } from '@/components/auth/auth-layout'
 import { AuthEntry } from '@/components/auth/auth-entry'
 
 export const metadata: Metadata = {
-  title: 'Sign In - AssistantAI',
-  description: 'Sign in to your AssistantAI account.',
+  title: 'Sign In',
+  description: 'Sign in to your JobTap account.',
 }
 
 function AuthFormFallback() {

@@ -24,7 +24,7 @@ export function Hero() {
           >
             <Badge variant="accent" className="mb-6">
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-              Rated #1 AI Interview Assistant
+              Новый проект JobTap
             </Badge>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-dark leading-tight tracking-tight text-balance">
@@ -32,7 +32,7 @@ export function Hero() {
             </h1>
 
             <p className="mt-6 text-lg text-gray leading-relaxed max-w-xl">
-              AssistantAI listens to your interviewer and delivers instant answer suggestions — completely invisible to screen sharing.
+              JobTap listens to your interviewer and delivers instant answer suggestions — completely invisible to screen sharing.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4">

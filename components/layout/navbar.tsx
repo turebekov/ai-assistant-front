@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Brain, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
+import { JobTapLogo } from '@/components/brand/jobtap-logo'
 import { Button } from '@/components/ui/button'
 import { navLinks } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -41,13 +42,7 @@ export function Navbar() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Brain className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold text-dark">AssistantAI</span>
-          </Link>
+          <JobTapLogo href="/" variant="light" iconSize={32} />
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:gap-8">

@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ChevronsRight, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { AssistantProfile } from '@/entities/assistant/model/types'
+import { useAssistantUsage } from '@/contexts/assistant-usage-context'
 import { apiUrl } from '@/lib/api-url'
+import type { AssistantUsageQuota } from '@/lib/assistant-usage'
 import { cn } from '@/lib/utils'
 
 type Pipeline = 'realtime_asr' | 'realtime_translate' | 'http'
@@ -76,6 +78,7 @@ export function InterviewClient({
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { usage, refresh, setUsage } = useAssistantUsage()
   const [isHydrated, setIsHydrated] = useState(false)
   const [pipeline, setPipeline] = useState<Pipeline>('realtime_asr')
   const [status, setStatus] = useState('Idle')
@@ -115,6 +118,10 @@ export function InterviewClient({
   const suggestionInFlightRef = useRef(false)
   const [enableClaudeSuggestion, setEnableClaudeSuggestion] = useState(false)
   const [sessionSidebarOpen, setSessionSidebarOpen] = useState(false)
+  const captureStartedAtRef = useRef<number | null>(null)
+  const reportedCaptureSecondsRef = useRef(0)
+  const usageTickRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const stopCaptureRef = useRef<(() => void) | null>(null)
   const SUGGEST_RECENT_LINES = 24
   const SUGGEST_SPLIT_PAUSE_MS = 4000
 
@@ -147,25 +154,78 @@ export function InterviewClient({
     wsRef.current = null
   }
 
-  const stopCapture = useCallback(() => {
-    stopRealtime()
-    if (quietTimerRef.current) {
-      clearTimeout(quietTimerRef.current)
-      quietTimerRef.current = null
+  const flushCaptureUsage = useCallback(async (): Promise<boolean> => {
+    if (captureStartedAtRef.current === null) return false
+    const totalElapsed = Math.floor((Date.now() - captureStartedAtRef.current) / 1000)
+    const delta = totalElapsed - reportedCaptureSecondsRef.current
+    if (delta <= 0) return false
+
+    const token = localStorage.getItem('auth_token') || ''
+    if (!token) return false
+
+    try {
+      const response = await fetch(apiUrl('/api/usage/report'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ seconds: delta }),
+      })
+      const payload = (await response.json().catch(() => ({}))) as { usage?: AssistantUsageQuota }
+      reportedCaptureSecondsRef.current += delta
+      if (response.ok && payload.usage) {
+        setUsage(payload.usage)
+        if (!payload.usage.unlimited && (payload.usage.remainingSeconds ?? 0) <= 0) {
+          return true
+        }
+      }
+    } catch {
+      // ignore report errors
     }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop()
+    return false
+  }, [setUsage])
+
+  const clearUsageTick = useCallback(() => {
+    if (usageTickRef.current) {
+      clearInterval(usageTickRef.current)
+      usageTickRef.current = null
     }
-    mediaRecorderRef.current = null
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop())
-    }
-    streamRef.current = null
-    if (previewRef.current) previewRef.current.srcObject = null
-    setPartial('')
-    setIsRunning(false)
-    setStatus('Stopped')
   }, [])
+
+  const stopCapture = useCallback(() => {
+    void (async () => {
+      clearUsageTick()
+      const limitReached = await flushCaptureUsage()
+      captureStartedAtRef.current = null
+      reportedCaptureSecondsRef.current = 0
+
+      stopRealtime()
+      if (quietTimerRef.current) {
+        clearTimeout(quietTimerRef.current)
+        quietTimerRef.current = null
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop()
+      }
+      mediaRecorderRef.current = null
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop())
+      }
+      streamRef.current = null
+      if (previewRef.current) previewRef.current.srcObject = null
+      setPartial('')
+      setIsRunning(false)
+      setStatus(
+        limitReached
+          ? 'Free plan limit reached (60 minutes). Upgrade to continue.'
+          : 'Stopped'
+      )
+      void refresh()
+    })()
+  }, [clearUsageTick, flushCaptureUsage, refresh])
+
+  stopCaptureRef.current = stopCapture
 
   const cleanupCaptureResources = useCallback(() => {
     stopRealtime()
@@ -446,7 +506,14 @@ export function InterviewClient({
   const startCapture = async () => {
     const token = localStorage.getItem('auth_token') || ''
     if (!token) {
-      setStatus('Not authorized. Capture can start, but save/suggest may be limited.')
+      setStatus('Sign in required to start capture.')
+      router.push('/auth')
+      return
+    }
+    const quota = await refresh()
+    if (quota && !quota.unlimited && (quota.remainingSeconds ?? 0) <= 0) {
+      setStatus('Free plan limit reached (60 minutes total). Upgrade your plan to continue.')
+      return
     }
     try {
       setStatus('Starting capture...')
@@ -462,6 +529,18 @@ export function InterviewClient({
 
       if (pipeline === 'http') await startHttp(audioOnly)
       else await startRealtime(audioOnly)
+
+      captureStartedAtRef.current = Date.now()
+      reportedCaptureSecondsRef.current = 0
+      clearUsageTick()
+      usageTickRef.current = setInterval(() => {
+        void (async () => {
+          const limitReached = await flushCaptureUsage()
+          if (limitReached) {
+            stopCaptureRef.current?.()
+          }
+        })()
+      }, 15000)
 
       setIsRunning(true)
       setStatus('Capture is running')
@@ -696,7 +775,17 @@ export function InterviewClient({
               </div>
             ) : null}
             <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
-              <Button onClick={startCapture} disabled={isRunning}>Start capture</Button>
+              <Button
+                onClick={startCapture}
+                disabled={
+                  isRunning ||
+                  (usage !== null &&
+                    !usage.unlimited &&
+                    (usage.remainingSeconds ?? 0) <= 0)
+                }
+              >
+                Start capture
+              </Button>
               <Button variant="outline" onClick={stopCapture} disabled={!isRunning}>Stop</Button>
               <Button variant="outline" onClick={() => void saveSession()} disabled={isSessionSaving}>
                 {isSessionSaving ? 'Saving session...' : 'Save session'}
@@ -709,7 +798,6 @@ export function InterviewClient({
               {isSuggesting ? 'Requesting suggestion... ' : ''}
             </div>
             <div className="text-xs text-muted-foreground">{resumeStatus}</div>
-
             <div className="flex min-h-[60vh] items-stretch">
               <div className="flex min-w-0 flex-1 flex-col gap-4 lg:flex-row lg:items-stretch">
               <div className="flex min-h-[60vh] flex-col gap-4 lg:w-[30%] lg:shrink-0">

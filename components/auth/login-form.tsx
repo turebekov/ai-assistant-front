@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { JobTapLogo } from '@/components/brand/jobtap-logo'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -75,21 +76,13 @@ export function LoginForm() {
 
   return (
     <div>
-      {/* Mobile logo */}
-      <div className="lg:hidden mb-8 text-center">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <svg className="h-6 w-6 text-primary-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2a9 9 0 0 1 9 9c0 3.1-1.6 5.8-4 7.4V21a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-2.6A9 9 0 0 1 12 2z" />
-            </svg>
-          </div>
-          <span className="text-2xl font-bold text-dark">AssistantAI</span>
-        </Link>
+      <div className="lg:hidden mb-8 flex justify-center">
+        <JobTapLogo href="/" variant="light" iconSize={40} />
       </div>
 
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-dark">Welcome back</h1>
-        <p className="mt-2 text-gray">Sign in to your AssistantAI account</p>
+        <p className="mt-2 text-gray">Sign in to your JobTap account</p>
       </div>
 
       <GoogleAuthButton mode="login" plan="free" onError={setServerError} />

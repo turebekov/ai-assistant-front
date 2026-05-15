@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Brain, Twitter, Linkedin, Github } from 'lucide-react'
+import { Twitter, Linkedin, Github } from 'lucide-react'
+import { JobTapLogo } from '@/components/brand/jobtap-logo'
 import { footerLinks } from '@/lib/constants'
 
 export function Footer() {
@@ -9,12 +10,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <Brain className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold text-dark">AssistantAI</span>
-            </Link>
+            <JobTapLogo href="/" variant="light" iconSize={32} />
             <p className="mt-4 text-sm text-gray leading-relaxed">
               Real-time AI coaching for your interviews. Get instant suggestions invisible to screen sharing.
             </p>
@@ -105,7 +101,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-border">
           <p className="text-sm text-gray text-center">
-            &copy; {new Date().getFullYear()} AssistantAI. All rights reserved.
+            &copy; {new Date().getFullYear()} JobTap. All rights reserved.
           </p>
         </div>
       </div>

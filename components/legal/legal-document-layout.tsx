@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Brain } from 'lucide-react'
+import { JobTapLogo } from '@/components/brand/jobtap-logo'
 
 type LegalDocumentLayoutProps = {
   title: string
@@ -16,12 +16,7 @@ export function LegalDocumentLayout({
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-background">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Brain className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold text-dark">AssistantAI</span>
-          </Link>
+          <JobTapLogo href="/" variant="light" iconSize={32} />
           <Link
             href="/"
             className="text-sm text-gray transition-colors hover:text-primary"
@@ -48,7 +43,7 @@ export function LegalDocumentLayout({
       <footer className="mt-8 border-t border-border bg-light-gray">
         <div className="mx-auto flex max-w-3xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
           <p className="text-sm text-gray">
-            &copy; {new Date().getFullYear()} AssistantAI. All rights reserved.
+            &copy; {new Date().getFullYear()} JobTap. All rights reserved.
           </p>
           <div className="flex flex-wrap justify-center gap-6">
             <Link href="/document/policy" className="text-sm font-medium text-primary">

@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Briefcase, CreditCard, Home, LogOut, MessageSquare, Video } from 'lucide-react'
+import { Briefcase, CreditCard, Home, LogOut, Video } from 'lucide-react'
+import { JobTapLogo } from '@/components/brand/jobtap-logo'
 
 interface ProfileSidebarProps {
   onSignOut: () => void
@@ -17,11 +18,8 @@ const bottomItems = [{ href: '/profile/subscription', label: 'Subscription', ico
 export function ProfileSidebar({ onSignOut }: ProfileSidebarProps) {
   return (
     <aside className="w-64 border-r border-border bg-card p-4">
-      <div className="mb-6 flex items-center gap-2">
-        <div className="rounded-lg bg-primary p-2 text-primary-foreground">
-          <MessageSquare className="h-4 w-4" />
-        </div>
-        <span className="text-lg font-semibold">AssistantAI</span>
+      <div className="mb-6">
+        <JobTapLogo href="/profile" variant="light" iconSize={32} />
       </div>
 
       <nav className="space-y-1">
