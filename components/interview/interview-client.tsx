@@ -67,7 +67,13 @@ function looksLikeQuestion(line: string) {
   return /^(why|what|how|when|where|who|which|can|could|would|do|did|are|is|tell me|explain|почему|как|что|когда|зачем|где|можете|можешь|расскажите|расскажи|объясните|объясни|неге|қалай|қандай|не|қайда)\b/.test(text)
 }
 
-export function InterviewClient({ settingsId }: { settingsId?: string }) {
+export function InterviewClient({
+  settingsId,
+  mode = 'interview',
+}: {
+  settingsId?: string
+  mode?: 'interview' | 'meetings'
+}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isHydrated, setIsHydrated] = useState(false)
@@ -291,7 +297,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
     const body = {
       transcript: transcriptForPayload,
       resume_text: resumeText,
-      scenario: 'job_interview',
+      scenario: mode === 'meetings' ? 'meeting' : 'job_interview',
       interview_role: role,
       target_position: targetPosition,
       role,
@@ -323,7 +329,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       suggestionInFlightRef.current = false
       setIsSuggesting(false)
     }
-  }, [extractLatestQuestionBlock, primaryInterviewLanguage, resumeText, role, runSuggestionForPayload, targetPosition, transcriptText])
+  }, [extractLatestQuestionBlock, mode, primaryInterviewLanguage, resumeText, role, runSuggestionForPayload, targetPosition, transcriptText])
 
   const startHttp = async (audioStream: MediaStream) => {
     const mr = new MediaRecorder(audioStream, { mimeType: 'audio/webm' })
@@ -613,9 +619,13 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
     const run = async () => {
       setIsAssistantLoading(true)
       try {
-        const response = await fetch(`/api/assistants/${encodeURIComponent(assistantId)}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const base = mode === 'meetings' ? '/api/meeting-assistants' : '/api/assistants'
+        const response = await fetch(
+          apiUrl(`${base}/${encodeURIComponent(assistantId)}`),
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
         const payload = (await response.json().catch(() => ({}))) as { assistant?: AssistantProfile }
         if (!response.ok || !payload.assistant) {
           if (response.status === 401) {
@@ -637,9 +647,25 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
           if (selected.translateEnabled) {
             setTranslateTarget(String(selected.translateLanguage || 'en').trim() || 'en')
           }
-          const nextResumeText = String(selected.resumeText || selected.resume_text || '').trim()
+          const nextResumeText = (() => {
+            if (mode === 'meetings') {
+              const ctx = String(
+                selected.contextText ?? selected.context_text ?? ''
+              ).trim()
+              if (ctx) return ctx
+            }
+            return String(selected.resumeText ?? selected.resume_text ?? '').trim()
+          })()
           setResumeText(nextResumeText)
-          setResumeStatus(nextResumeText ? 'Resume loaded from assistant settings' : 'No resume')
+          setResumeStatus(
+            mode === 'meetings'
+              ? nextResumeText
+                ? 'Meeting context loaded from assistant'
+                : 'No meeting context'
+              : nextResumeText
+                ? 'Resume loaded from assistant settings'
+                : 'No resume'
+          )
           const interviewLanguage = normalizeInterviewLanguage(String(selected.language || ''))
           setPrimaryInterviewLanguage(interviewLanguage)
           setTranscriptLanguage(interviewLanguage)
@@ -649,7 +675,7 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       }
     }
     void run()
-  }, [router, searchParams, settingsId])
+  }, [mode, router, searchParams, settingsId])
 
   return (
     <>
@@ -661,8 +687,12 @@ export function InterviewClient({ settingsId }: { settingsId?: string }) {
       >
             {activeAssistant ? (
               <div className="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900">
-                Assistant: <span className="font-semibold">{activeAssistant.name}</span>{' '}
-                {activeAssistant.roleName ? `• Role: ${activeAssistant.roleName}` : ''}
+                {mode === 'meetings' ? 'Meeting assistant' : 'Assistant'}:{' '}
+                <span className="font-semibold">{activeAssistant.name}</span>
+                {activeAssistant.interviewType
+                  ? ` • ${mode === 'meetings' ? 'Type' : 'Interview'}: ${activeAssistant.interviewType}`
+                  : ''}
+                {activeAssistant.roleName ? ` • Role: ${activeAssistant.roleName}` : ''}
               </div>
             ) : null}
             <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">

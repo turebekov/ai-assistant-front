@@ -1,8 +1,10 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
+import { InterviewClient } from '@/components/interview/interview-client'
 
 export const metadata: Metadata = {
   title: 'Meetings Session - AssistantAI',
-  description: 'Meetings assistant session by selected settings.',
+  description: 'Meetings assistant session with live transcript and AI suggestions.',
 }
 
 interface MeetingsBySettingsPageProps {
@@ -12,16 +14,15 @@ interface MeetingsBySettingsPageProps {
 export default async function MeetingsBySettingsPage({ params }: MeetingsBySettingsPageProps) {
   const resolvedParams = await Promise.resolve(params)
   const { settingsId } = resolvedParams
-
   return (
-    <section className="rounded-xl border border-border bg-card p-6">
-      <h1 className="text-xl font-semibold">Meetings Assistant</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Opened by settings id: <span className="font-mono">{settingsId}</span>
-      </p>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Meetings assistant workspace is ready for integration.
-      </p>
-    </section>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[50vh] items-center justify-center text-muted-foreground">
+          Loading session…
+        </div>
+      }
+    >
+      <InterviewClient settingsId={settingsId} mode="meetings" />
+    </Suspense>
   )
 }

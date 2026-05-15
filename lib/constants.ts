@@ -261,15 +261,11 @@ export const footerLinks = {
     { label: 'FAQ', href: '#faq' },
   ],
   company: [
-    { label: 'About', href: '/about' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Careers', href: '/careers' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'Contact', href: 'mailto:support@jobtap.app' },
   ],
   legal: [
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Terms of Service', href: '/terms' },
-    { label: 'Cookie Policy', href: '/cookies' },
+    { label: 'Privacy Policy', href: '/document/policy' },
+    { label: 'Terms and Conditions', href: '/document/terms' },
   ],
   social: [
     { label: 'Twitter', href: 'https://twitter.com/assistantai' },

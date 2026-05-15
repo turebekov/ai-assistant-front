@@ -1,8 +1,8 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://assistantai.io'
-  
+  const baseUrl = 'https://www.jobtap.app'
+
   return [
     {
       url: baseUrl,
@@ -11,35 +11,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/login`,
+      url: `${baseUrl}/auth`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
     },
     {
-      url: `${baseUrl}/register`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/privacy`,
+      url: `${baseUrl}/document/policy`,
       lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.3,
     },
-    // Russian pages
     {
-      url: `${baseUrl}/ru`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/ru/privacy`,
+      url: `${baseUrl}/document/terms`,
       lastModified: new Date(),
       changeFrequency: 'yearly',
-      priority: 0.2,
+      priority: 0.3,
     },
   ]
 }
