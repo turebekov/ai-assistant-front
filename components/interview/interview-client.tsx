@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import type { AssistantProfile } from '@/entities/assistant/model/types'
 import { useAssistantUsage } from '@/contexts/assistant-usage-context'
 import { apiUrl } from '@/lib/api-url'
+import { PAID_SUBSCRIPTIONS_ENABLED } from '@/lib/billing/config'
 import type { AssistantUsageQuota } from '@/lib/assistant-usage'
 import { cn } from '@/lib/utils'
 
@@ -218,7 +219,9 @@ export function InterviewClient({
       setIsRunning(false)
       setStatus(
         limitReached
-          ? 'Free plan limit reached (60 minutes). Upgrade to continue.'
+          ? PAID_SUBSCRIPTIONS_ENABLED
+            ? 'Free plan limit reached (60 minutes). Upgrade to continue.'
+            : 'Free plan limit reached (60 minutes). Paid upgrades are coming soon.'
           : 'Stopped'
       )
       void refresh()
@@ -512,7 +515,11 @@ export function InterviewClient({
     }
     const quota = await refresh()
     if (quota && !quota.unlimited && (quota.remainingSeconds ?? 0) <= 0) {
-      setStatus('Free plan limit reached (60 minutes total). Upgrade your plan to continue.')
+      setStatus(
+        PAID_SUBSCRIPTIONS_ENABLED
+          ? 'Free plan limit reached (60 minutes total). Upgrade your plan to continue.'
+          : 'Free plan limit reached (60 minutes total). Paid upgrades are coming soon.'
+      )
       return
     }
     try {

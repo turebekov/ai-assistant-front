@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
+import { PAID_SUBSCRIPTIONS_ENABLED } from '@/lib/billing/config'
 
 type BackendPlan = 'free' | 'pro' | 'pro_claude' | 'team'
 
@@ -18,6 +19,7 @@ type UiPlan = {
   cta: string
   highlighted?: boolean
   badge?: string
+  available?: boolean
 }
 
 export default function ProfileSubscriptionPage() {
@@ -167,6 +169,11 @@ export default function ProfileSubscriptionPage() {
   }
 
   const onPlanCta = (plan: UiPlan) => {
+    const available = plan.available ?? (plan.backendPlan === 'free' || PAID_SUBSCRIPTIONS_ENABLED)
+    if (!available) {
+      setStatus('Paid plans are coming soon. Please use the free plan for now.')
+      return
+    }
     if (plan.backendPlan === 'free') {
       void choosePlan('free', plan.id)
       return
@@ -183,7 +190,9 @@ export default function ProfileSubscriptionPage() {
       <section className="mx-auto max-w-6xl rounded-2xl border border-border bg-card p-6 shadow-sm">
         <h1 className="text-center text-4xl font-bold tracking-tight text-foreground">Choose your plan.</h1>
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Choose the monthly plan that fits your interview workflow.
+          {PAID_SUBSCRIPTIONS_ENABLED
+            ? 'Choose the monthly plan that fits your interview workflow.'
+            : 'Only the free plan is available right now. Paid subscriptions are coming soon.'}
         </p>
         {info && <p className="mt-3 text-sm text-emerald-600 dark:text-emerald-500">{info}</p>}
         {status && <p className="mt-3 text-sm text-destructive">{status}</p>}
@@ -192,17 +201,28 @@ export default function ProfileSubscriptionPage() {
           <p className="mt-8 text-center text-sm text-muted-foreground">Loading plans...</p>
         ) : (
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {plans.map((plan) => (
+          {plans.map((plan) => {
+            const available =
+              plan.available ?? (plan.backendPlan === 'free' || PAID_SUBSCRIPTIONS_ENABLED)
+            return (
             <article
               key={plan.id}
               className={`relative flex h-full flex-col rounded-2xl p-5 ${
-                plan.highlighted
+                !available ? 'opacity-75 ' : ''
+              }${
+                plan.highlighted && available
                   ? 'border-2 border-primary bg-primary/5 shadow-sm'
                   : 'border border-border bg-background'
               }`}
             >
               {plan.badge ? (
-                <span className="absolute -top-3 right-4 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                <span
+                  className={`absolute -top-3 right-4 rounded-full px-3 py-1 text-xs font-semibold ${
+                    available
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
                   {plan.badge}
                 </span>
               ) : null}
@@ -220,14 +240,14 @@ export default function ProfileSubscriptionPage() {
               </ul>
               <Button
                 className="mt-6 w-full"
-                variant={plan.highlighted ? 'default' : 'outline'}
+                variant={plan.highlighted && available ? 'default' : 'outline'}
                 onClick={() => onPlanCta(plan)}
-                disabled={loadingPlanId !== null}
+                disabled={!available || loadingPlanId !== null}
               >
                 {loadingPlanId === plan.id ? 'Saving...' : plan.cta}
               </Button>
             </article>
-          ))}
+          )})}
           </div>
         )}
       </section>

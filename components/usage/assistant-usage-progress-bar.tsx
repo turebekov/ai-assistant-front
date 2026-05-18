@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress'
 import { useAssistantUsageOptional } from '@/contexts/assistant-usage-context'
 import { formatUsageMinutes, usagePercentUsed } from '@/lib/assistant-usage'
 import { cn } from '@/lib/utils'
+import { PAID_SUBSCRIPTIONS_ENABLED } from '@/lib/billing/config'
 
 type AssistantUsageProgressBarProps = {
   className?: string
@@ -49,11 +50,17 @@ export function AssistantUsageProgressBar({ className }: AssistantUsageProgressB
         />
         {isDepleted ? (
           <p className="text-xs text-amber-900">
-            Limit reached.{' '}
-            <Link href="/profile/subscription" className="font-semibold underline">
-              Upgrade your plan
-            </Link>{' '}
-            for unlimited assistant time.
+            {PAID_SUBSCRIPTIONS_ENABLED ? (
+              <>
+                Limit reached.{' '}
+                <Link href="/profile/subscription" className="font-semibold underline">
+                  Upgrade your plan
+                </Link>{' '}
+                for unlimited assistant time.
+              </>
+            ) : (
+              <>Free plan limit reached. Paid upgrades are coming soon.</>
+            )}
           </p>
         ) : null}
       </div>

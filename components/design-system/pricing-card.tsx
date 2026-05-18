@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,8 @@ interface PricingCardProps {
   badge?: string
   isAnnual?: boolean
   index?: number
+  disabled?: boolean
+  href?: string
 }
 
 export function PricingCard({
@@ -30,8 +33,11 @@ export function PricingCard({
   badge,
   isAnnual = false,
   index = 0,
+  disabled = false,
+  href,
 }: PricingCardProps) {
   const displayPrice = isAnnual ? Math.round(price * 0.8) : price
+  const showBadge = badge && (!disabled || badge === 'Coming soon')
 
   return (
     <motion.div
@@ -41,18 +47,22 @@ export function PricingCard({
       transition={{ duration: 0.5, delay: index * 0.1 }}
       className={cn(
         'relative flex flex-col rounded-2xl p-8 shadow-card border',
-        highlighted
+        disabled && 'opacity-75',
+        highlighted && !disabled
           ? 'border-primary bg-card ring-2 ring-primary'
           : 'border-border bg-card'
       )}
     >
-      {badge && (
+      {showBadge ? (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge variant="warning" className="bg-warning text-warning-foreground shadow-sm">
+          <Badge
+            variant={disabled ? 'secondary' : 'warning'}
+            className={cn('shadow-sm', !disabled && 'bg-warning text-warning-foreground')}
+          >
             {badge}
           </Badge>
         </div>
-      )}
+      ) : null}
 
       <div className="mb-6">
         <h3 className="text-xl font-semibold text-dark">{name}</h3>
@@ -78,16 +88,31 @@ export function PricingCard({
         ))}
       </ul>
 
-      <Button
-        className={cn(
-          'w-full rounded-full',
-          highlighted
-            ? 'bg-primary hover:bg-primary-hover text-primary-foreground'
-            : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
-        )}
-      >
-        {cta}
-      </Button>
+      {disabled || !href ? (
+        <Button
+          className={cn(
+            'w-full rounded-full',
+            highlighted && !disabled
+              ? 'bg-primary hover:bg-primary-hover text-primary-foreground'
+              : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
+          )}
+          disabled={disabled}
+        >
+          {cta}
+        </Button>
+      ) : (
+        <Button
+          asChild
+          className={cn(
+            'w-full rounded-full',
+            highlighted
+              ? 'bg-primary hover:bg-primary-hover text-primary-foreground'
+              : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
+          )}
+        >
+          <Link href={href}>{cta}</Link>
+        </Button>
+      )}
     </motion.div>
   )
 }

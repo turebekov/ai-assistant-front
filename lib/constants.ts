@@ -98,6 +98,7 @@ export const pricingPlans = [
     features: [
       'Interview assistant: 60 minutes total',
       'Meetings assistant supported',
+      'Live meeting translation',
       '1 AI assistant',
       'Basic context uploads',
     ],
@@ -112,6 +113,7 @@ export const pricingPlans = [
     features: [
       'Interview assistant supported',
       'Meetings assistant supported',
+      'Live meeting translation',
       'Unlimited AI assistants',
       'AI suggestions with Qwen',
       'Additional files (up to 5MB each)',
@@ -126,6 +128,7 @@ export const pricingPlans = [
     description: 'Billed monthly',
     features: [
       'Everything in Monthly Plan',
+      'Live meeting translation',
       'Parallel Claude coaching responses',
       'Stronger reasoning for complex interview questions',
       'Sharper STAR-style answer framing',
