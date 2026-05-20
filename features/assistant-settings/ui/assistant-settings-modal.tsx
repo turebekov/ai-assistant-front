@@ -6,6 +6,7 @@ import type {
   AssistantFormFieldErrorKey,
   AssistantSettingsForm,
 } from '@/entities/assistant/model/types'
+import { LanguageSelect } from '@/components/language-select'
 import { cn } from '@/lib/utils'
 
 interface AssistantSettingsModalProps {
@@ -150,17 +151,11 @@ export function AssistantSettingsModal({
             </div>
             <div className="space-y-1">
               {fieldLabel('Interview / session language', false)}
-              <select
-                className="h-10 w-full rounded-md border border-slate-200 px-3"
+              <LanguageSelect
+                variant="session"
                 value={form.interviewLanguage}
-                onChange={(e) => onChange({ ...form, interviewLanguage: e.target.value })}
-              >
-                <option value="English (USA)">English (USA)</option>
-                <option value="Russian">Russian</option>
-                <option value="Kazakh">Kazakh</option>
-                <option value="German">German</option>
-                <option value="French">French</option>
-              </select>
+                onChange={(interviewLanguage) => onChange({ ...form, interviewLanguage })}
+              />
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -171,17 +166,11 @@ export function AssistantSettingsModal({
               Enable Translate
             </label>
             {form.translateEnabled ? (
-              <select
-                className="h-10 w-full rounded-md border border-slate-200 px-3"
+              <LanguageSelect
+                variant="translate"
                 value={form.translateLanguage}
-                onChange={(e) => onChange({ ...form, translateLanguage: e.target.value })}
-              >
-                <option value="en">Translate to English</option>
-                <option value="ru">Translate to Russian</option>
-                <option value="kk">Translate to Kazakh</option>
-                <option value="de">Translate to German</option>
-                <option value="fr">Translate to French</option>
-              </select>
+                onChange={(translateLanguage) => onChange({ ...form, translateLanguage })}
+              />
             ) : null}
           </div>
           <div className="space-y-3">

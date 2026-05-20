@@ -9,6 +9,11 @@ import { useAssistantUsage } from '@/contexts/assistant-usage-context'
 import { apiUrl } from '@/lib/api-url'
 import { PAID_SUBSCRIPTIONS_ENABLED } from '@/lib/billing/config'
 import type { AssistantUsageQuota } from '@/lib/assistant-usage'
+import {
+  DEFAULT_LANGUAGE_CODE,
+  normalizeInterviewLanguage,
+  toFormLanguageValue,
+} from '@/lib/languages'
 import { cn } from '@/lib/utils'
 
 type Pipeline = 'realtime_asr' | 'realtime_translate' | 'http'
@@ -28,16 +33,6 @@ function backendWsBase() {
   const asUrl = new URL(raw)
   asUrl.protocol = asUrl.protocol === 'https:' ? 'wss:' : 'ws:'
   return asUrl.origin
-}
-
-function normalizeInterviewLanguage(language: string) {
-  const lang = String(language || '').trim().toLowerCase()
-  if (!lang) return 'en'
-  if (lang.includes('russian')) return 'ru'
-  if (lang.includes('kazakh')) return 'kk'
-  if (lang.includes('german')) return 'de'
-  if (lang.includes('french')) return 'fr'
-  return 'en'
 }
 
 function tailText(lines: string[], maxChars = 1000) {
@@ -93,8 +88,8 @@ export function InterviewClient({
   const [role, setRole] = useState('general')
   const [targetPosition, setTargetPosition] = useState('')
   const [transcriptLanguage, setTranscriptLanguage] = useState('auto')
-  const [translateTarget, setTranslateTarget] = useState('en')
-  const [primaryInterviewLanguage, setPrimaryInterviewLanguage] = useState('en')
+  const [translateTarget, setTranslateTarget] = useState(DEFAULT_LANGUAGE_CODE)
+  const [primaryInterviewLanguage, setPrimaryInterviewLanguage] = useState(DEFAULT_LANGUAGE_CODE)
   const [isRunning, setIsRunning] = useState(false)
   const [isSuggesting, setIsSuggesting] = useState(false)
   const [isAssistantLoading, setIsAssistantLoading] = useState(false)
@@ -422,7 +417,7 @@ export function InterviewClient({
       `${wsBase}/ws/realtime-asr?mode=${
         pipeline === 'realtime_translate' ? 'translate' : 'asr'
       }&source=${encodeURIComponent(transcriptLanguage || 'auto')}&target=${encodeURIComponent(
-        translateTarget || 'en'
+        translateTarget || DEFAULT_LANGUAGE_CODE
       )}`
     )
     wsRef.current = ws
@@ -731,7 +726,9 @@ export function InterviewClient({
           setTargetPosition(String(selected.company || '').trim())
           setPipeline(selected.translateEnabled ? 'realtime_translate' : 'realtime_asr')
           if (selected.translateEnabled) {
-            setTranslateTarget(String(selected.translateLanguage || 'en').trim() || 'en')
+            setTranslateTarget(
+              toFormLanguageValue(String(selected.translateLanguage || DEFAULT_LANGUAGE_CODE)),
+            )
           }
           const nextResumeText = (() => {
             if (mode === 'meetings') {

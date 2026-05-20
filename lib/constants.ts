@@ -1,5 +1,7 @@
 // JobTap Design System Constants (see lib/design-system for token source)
 
+import { formatSupportedLanguagesList, SUPPORTED_LANGUAGES } from '@/lib/languages'
+
 export const colors = {
   primary: '#FF8516',
   primaryHover: '#EA760E',
@@ -170,7 +172,7 @@ export const faqItems = [
   },
   {
     question: 'What languages are supported?',
-    answer: 'Currently, JobTap supports English, Russian, and Kazakh. We are actively working on adding more languages including Spanish, French, German, and Mandarin Chinese.',
+    answer: `JobTap supports ${formatSupportedLanguagesList()} — with real-time audio transcription and AI answer suggestions in each language.`,
   },
 ] as const
 
@@ -227,12 +229,12 @@ export const features = [
   {
     icon: 'Globe',
     title: 'Multilingual',
-    description: 'Full support for English, Russian, and Kazakh with more languages coming soon.',
+    description: `Audio and text support for ${SUPPORTED_LANGUAGES.length} languages including ${formatSupportedLanguagesList()}.`,
   },
   {
     icon: 'Languages',
     title: 'Live Meeting Translator',
-    description: 'Translate any meeting in real-time. 50+ languages. Invisible overlay.',
+    description: `Translate any meeting in real-time across ${SUPPORTED_LANGUAGES.length} supported languages. Invisible overlay.`,
     link: '/meeting-translator',
   },
 ] as const

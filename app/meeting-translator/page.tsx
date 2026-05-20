@@ -4,6 +4,7 @@ import { Globe, Languages, Subtitles, Video } from 'lucide-react'
 import { MarketingPageShell } from '@/components/marketing/marketing-page-shell'
 import { SeoLandingHero } from '@/components/marketing/seo-landing-hero'
 import { Button } from '@/components/ui/button'
+import { SUPPORTED_LANGUAGES } from '@/lib/languages'
 import { buildPageMetadata } from '@/lib/seo/metadata'
 import { SEO_PAGES } from '@/lib/seo/site'
 
@@ -12,8 +13,9 @@ export const metadata: Metadata = buildPageMetadata(SEO_PAGES.meetingTranslator)
 const highlights = [
   {
     icon: Languages,
-    title: '50+ languages',
-    description: 'Live translation and captions for calls, interviews, and team meetings.',
+    title: `${SUPPORTED_LANGUAGES.length} languages`,
+    description:
+      'Live translation and captions for calls, interviews, and team meetings — Chinese, Russian, French, German, Portuguese, Spanish, Italian, Korean, Japanese, and Cantonese.',
   },
   {
     icon: Video,

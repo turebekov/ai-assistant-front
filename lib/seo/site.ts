@@ -1,5 +1,10 @@
+import { formatSupportedLanguagesList, SUPPORTED_LANGUAGES } from '@/lib/languages'
+
 /** Canonical site URL for SEO (www). */
 export const SITE_URL = 'https://www.jobtap.app'
+
+const SUPPORTED_LANG_COUNT = SUPPORTED_LANGUAGES.length
+const SUPPORTED_LANG_PHRASE = formatSupportedLanguagesList()
 
 export type PageSeoConfig = {
   path: string
@@ -17,7 +22,7 @@ export const SEO_PAGES = {
     path: '',
     title: 'JobTap — AI Interview Assistant & Meeting Translator',
     description:
-      'Ace your job interview with real-time AI coaching. JobTap listens to your interviewer and delivers instant answer suggestions — invisible to screen sharing. Translate any meeting live in 50+ languages.',
+      `Ace your job interview with real-time AI coaching. JobTap listens to your interviewer and delivers instant answer suggestions — invisible to screen sharing. Translate any meeting live in ${SUPPORTED_LANG_COUNT} languages: ${SUPPORTED_LANG_PHRASE}.`,
     keywords: [
       'AI interview assistant',
       'real-time interview help',
@@ -47,14 +52,14 @@ export const SEO_PAGES = {
     path: '/meeting-translator',
     title: 'Live Meeting Translator — Translate Zoom, Meet, Teams in Real-Time | JobTap',
     description:
-      "Translate any online meeting, call or interview live in 50+ languages. JobTap's AI meeting translator works with Google Meet, Zoom Web and Microsoft Teams. Instant captions in your language.",
+      `Translate any online meeting, call or interview live in ${SUPPORTED_LANG_COUNT} languages (${SUPPORTED_LANG_PHRASE}). JobTap's AI meeting translator works with Google Meet, Zoom Web and Microsoft Teams. Instant captions in your language.`,
     keywords: [
       'AI meeting translator',
       'translate zoom meeting live',
       'real-time meeting translation',
       'live call translator',
     ],
-    openGraphTitle: 'Translate Any Meeting Live — 50+ Languages',
+    openGraphTitle: `Translate Any Meeting Live — ${SUPPORTED_LANG_COUNT} Languages`,
     sitemapPriority: 0.95,
     changeFrequency: 'weekly',
   },

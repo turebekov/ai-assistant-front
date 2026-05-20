@@ -10,6 +10,7 @@ import type {
 } from '@/entities/assistant/model/types'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
+import { DEFAULT_LANGUAGE_CODE, toFormLanguageValue } from '@/lib/languages'
 
 interface AssistantManagerProps {
   routeBase: '/profile/interview' | '/profile/meetings'
@@ -34,9 +35,9 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
     roleName: '',
     companyName: '',
     details: '',
-    interviewLanguage: 'English (USA)',
+    interviewLanguage: DEFAULT_LANGUAGE_CODE,
     translateEnabled: false,
-    translateLanguage: 'en',
+    translateLanguage: DEFAULT_LANGUAGE_CODE,
     profileName: '',
     suggestionTone: 'Friendly',
     promptStyle: 'Concise',
@@ -59,9 +60,9 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
       roleName: '',
       companyName: '',
       details: '',
-      interviewLanguage: 'English (USA)',
+      interviewLanguage: DEFAULT_LANGUAGE_CODE,
       translateEnabled: false,
-      translateLanguage: 'en',
+      translateLanguage: DEFAULT_LANGUAGE_CODE,
       profileName: '',
       suggestionTone: 'Friendly',
       promptStyle: 'Concise',
@@ -242,9 +243,11 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
       roleName: String(assistant.roleName || ''),
       companyName: String(assistant.company || ''),
       details: String(assistant.details || ''),
-      interviewLanguage: String(assistant.language || 'English (USA)'),
+      interviewLanguage: toFormLanguageValue(String(assistant.language || DEFAULT_LANGUAGE_CODE)),
       translateEnabled: Boolean(assistant.translateEnabled),
-      translateLanguage: String(assistant.translateLanguage || 'en'),
+      translateLanguage: toFormLanguageValue(
+        String(assistant.translateLanguage || DEFAULT_LANGUAGE_CODE),
+      ),
       profileName: String(assistant.name || ''),
       suggestionTone: String(assistant.tone || 'Friendly'),
       promptStyle: String(assistant.promptStyle || 'Concise'),
