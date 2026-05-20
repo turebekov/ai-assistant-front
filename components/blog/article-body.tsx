@@ -9,7 +9,11 @@ export function ArticleBody({ blocks }: { blocks: BlogBlock[] }) {
         switch (block.type) {
           case 'h2':
             return (
-              <h2 key={index} className="mt-10 text-2xl font-bold text-dark first:mt-0">
+              <h2
+                key={index}
+                id={block.id}
+                className="mt-10 scroll-mt-28 text-2xl font-bold text-dark first:mt-0"
+              >
                 {block.text}
               </h2>
             )
@@ -40,6 +44,65 @@ export function ArticleBody({ blocks }: { blocks: BlogBlock[] }) {
                   <li key={item}>{item}</li>
                 ))}
               </ol>
+            )
+          case 'toc':
+            return (
+              <nav key={index} aria-label="Table of contents" className="not-prose mt-4">
+                <ol className="list-decimal space-y-2 pl-6 text-base">
+                  {block.items.map((item) => (
+                    <li key={item.href}>
+                      <a
+                        href={item.href}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            )
+          case 'table':
+            return (
+              <div key={index} className="not-prose mt-6 overflow-x-auto">
+                <table className="w-full min-w-[480px] border-collapse text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50">
+                      {block.headers.map((header) => (
+                        <th key={header} className="px-4 py-3 font-semibold text-dark">
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {block.rows.map((row, rowIndex) => (
+                      <tr key={rowIndex} className="border-b border-border">
+                        {row.map((cell, cellIndex) => (
+                          <td key={cellIndex} className="px-4 py-3 text-gray">
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          case 'links':
+            return (
+              <div key={index} className="not-prose mt-10">
+                <p className="text-sm font-semibold text-dark">{block.title}</p>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {block.items.map((item) => (
+                    <li key={item.href}>
+                      <Link href={item.href} className="text-primary hover:underline">
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )
           case 'cta':
             return (

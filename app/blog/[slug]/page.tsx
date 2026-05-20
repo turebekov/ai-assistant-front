@@ -78,13 +78,18 @@ export default async function BlogPostPage({ params }: PageProps) {
             ← Back to blog
           </Link>
           <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <time dateTime={post.publishedAt}>
-              {new Date(post.publishedAt).toLocaleDateString('en-US', {
+            <time dateTime={post.updatedAt ?? post.publishedAt}>
+              {new Date(post.updatedAt ?? post.publishedAt).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
               })}
             </time>
+            {post.updatedAt && post.updatedAt !== post.publishedAt ? (
+              <>
+                <span className="text-xs">(updated)</span>
+              </>
+            ) : null}
             <span>·</span>
             <span>{post.readingTimeMinutes} min read</span>
             <span>·</span>
