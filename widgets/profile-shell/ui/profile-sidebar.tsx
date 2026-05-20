@@ -29,7 +29,7 @@ export function ProfileSidebar({ onSignOut }: ProfileSidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-nav hover:bg-muted hover:text-nav-text-hover dark:text-slate-300 dark:hover:text-white"
             >
               <Icon className="h-4 w-4" />
               {item.label}
@@ -43,7 +43,7 @@ export function ProfileSidebar({ onSignOut }: ProfileSidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-nav hover:bg-muted hover:text-nav-text-hover dark:text-slate-300 dark:hover:text-white"
             >
               <Icon className="h-4 w-4" />
               {item.label}
@@ -56,7 +56,7 @@ export function ProfileSidebar({ onSignOut }: ProfileSidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-nav hover:bg-muted hover:text-nav-text-hover dark:text-slate-300 dark:hover:text-white"
             >
               <Icon className="h-4 w-4" />
               {item.label}

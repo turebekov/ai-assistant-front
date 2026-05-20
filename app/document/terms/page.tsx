@@ -90,7 +90,7 @@ export default function TermsPage() {
         <h2>7. Privacy Policy</h2>
         <p>
           Your use of the Service is subject to our{' '}
-          <Link href="/document/policy" className="text-primary underline">
+          <Link href="/document/policy" className="text-link underline">
             Privacy Policy
           </Link>
           , which is incorporated into these Terms by reference.
@@ -165,7 +165,7 @@ export default function TermsPage() {
         <h2>15. Contact Information</h2>
         <p>
           If you have any questions about these Terms, please contact us at{' '}
-          <Link href={`mailto:${CONTACT_EMAIL}`} className="text-primary underline">
+          <Link href={`mailto:${CONTACT_EMAIL}`} className="text-link underline">
             {CONTACT_EMAIL}
           </Link>
           .

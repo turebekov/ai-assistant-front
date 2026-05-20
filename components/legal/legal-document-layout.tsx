@@ -19,7 +19,7 @@ export function LegalDocumentLayout({
           <JobTapLogo href="/" variant="light" iconSize={32} />
           <Link
             href="/"
-            className="text-sm text-gray transition-colors hover:text-primary"
+            className="text-sm font-medium text-nav transition-colors hover:text-nav-text-hover hover:underline"
           >
             Back to Home
           </Link>
@@ -27,8 +27,8 @@ export function LegalDocumentLayout({
       </header>
 
       <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
-        <h1 className="text-3xl font-bold tracking-tight text-dark sm:text-4xl">{title}</h1>
-        <div className="mt-8 space-y-8 text-gray leading-relaxed [&_h2]:mt-10 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-dark [&_p]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6">
+        <h1 className="text-3xl font-bold tracking-tight text-heading sm:text-4xl">{title}</h1>
+        <div className="mt-8 space-y-8 legal-doc-prose text-gray leading-relaxed [&_h2]:mt-10 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-heading [&_p]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6">
           {children}
         </div>
         <p className="mt-12 text-sm text-muted-foreground">
@@ -46,12 +46,12 @@ export function LegalDocumentLayout({
             &copy; {new Date().getFullYear()} JobTap. All rights reserved.
           </p>
           <div className="flex flex-wrap justify-center gap-6">
-            <Link href="/document/policy" className="text-sm font-medium text-primary">
+            <Link href="/document/policy" className="text-sm font-medium text-nav hover:text-nav-text-hover hover:underline">
               Privacy Policy
             </Link>
             <Link
               href="/document/terms"
-              className="text-sm text-gray transition-colors hover:text-primary"
+              className="text-sm text-nav transition-colors hover:text-nav-text-hover hover:underline"
             >
               Terms and Conditions
             </Link>

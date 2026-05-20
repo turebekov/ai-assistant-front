@@ -7,7 +7,7 @@ import { PAID_SUBSCRIPTIONS_ENABLED } from '@/lib/billing/config'
 
 export function Pricing() {
   return (
-    <section id="pricing" className="py-16 lg:py-24 bg-light-gray">
+    <section id="pricing" className="py-16 lg:py-24 bg-white">
       <motion.div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -15,7 +15,7 @@ export function Pricing() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-dark mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-heading mb-4">
             Simple, transparent pricing
           </h2>
           <p className="text-lg text-gray max-w-2xl mx-auto">

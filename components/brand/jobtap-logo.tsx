@@ -39,7 +39,7 @@ export function JobTapLogo({
           aria-hidden
         />
         <span className="text-xl font-bold leading-none">
-          <span className="text-dark">Job</span>
+          <span className="text-heading">Job</span>
           <span className="text-primary">Tap</span>
         </span>
       </span>

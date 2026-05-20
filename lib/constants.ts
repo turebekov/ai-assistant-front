@@ -1,14 +1,19 @@
-// JobTap Design System Constants
+// JobTap Design System Constants (see lib/design-system for token source)
 
 export const colors = {
-  primary: '#2563EB',
-  primaryHover: '#1E40AF',
-  accent: '#DBEAFE',
+  primary: '#FF8516',
+  primaryHover: '#EA760E',
+  primaryActive: '#CF680C',
+  primaryLight: '#FFF5EC',
+  accent: '#FFF5EC',
   success: '#10B981',
   warning: '#F59E0B',
   destructive: '#EF4444',
-  dark: '#111827',
-  gray: '#6B7280',
+  /** Navy heading ink (`text-heading`), not `bg-dark` */
+  heading: '#0F1724',
+  /** Surface teal (`bg-dark`); matches globals `--dark` */
+  dark: '#00756A',
+  gray: '#4B5563',
   grayLight: '#9CA3AF',
   lightGray: '#F9FAFB',
   white: '#FFFFFF',
@@ -44,17 +49,17 @@ export const typography = {
   h1: {
     size: '56px',
     weight: 'bold',
-    color: colors.dark,
+    color: colors.heading,
   },
   h2: {
     size: '36px',
     weight: '600',
-    color: colors.dark,
+    color: colors.heading,
   },
   h3: {
     size: '24px',
     weight: '600',
-    color: colors.dark,
+    color: colors.heading,
   },
   body: {
     size: '16px',

@@ -286,12 +286,12 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
                 </div>
                 <div className="mt-4 flex items-center justify-between">
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => openEdit(assistant)}>
+                    <Button size="sm" variant="neutral" onClick={() => openEdit(assistant)}>
                       Settings
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="destructive"
                       disabled={deletingId === assistant.id}
                       onClick={() => void onDelete(assistant.id)}
                     >

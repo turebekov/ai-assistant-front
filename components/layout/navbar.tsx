@@ -34,7 +34,7 @@ export function Navbar() {
   return (
     <nav
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        'nav-site fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         isScrolled
           ? 'bg-background/95 backdrop-blur-sm shadow-card'
           : 'bg-transparent'
@@ -50,7 +50,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-gray transition-colors hover:text-primary"
+                className="text-sm font-medium text-nav transition-colors hover:text-nav-text-hover dark:text-slate-200 dark:hover:text-white"
               >
                 {link.label}
               </Link>
@@ -65,7 +65,7 @@ export function Navbar() {
               </Button>
             ) : (
               <>
-                <Button variant="ghost" asChild>
+                <Button variant="ghost" asChild className="text-nav hover:bg-transparent hover:text-nav-text-hover dark:text-slate-200 dark:hover:text-white">
                   <Link href="/auth">Sign In</Link>
                 </Button>
                 <Button asChild className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-full">
@@ -78,7 +78,7 @@ export function Navbar() {
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden p-2 text-gray hover:text-dark"
+            className="md:hidden p-2 text-gray hover:text-heading"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -98,7 +98,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium text-gray hover:text-primary"
+                  className="text-sm font-medium text-nav transition-colors hover:text-nav-text-hover dark:text-slate-200 dark:hover:text-white"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
@@ -111,7 +111,7 @@ export function Navbar() {
                   </Button>
                 ) : (
                   <>
-                    <Button variant="ghost" asChild className="w-full justify-center">
+                    <Button variant="ghost" asChild className="w-full justify-center text-nav hover:bg-muted hover:text-nav-text-hover dark:text-slate-200 dark:hover:text-white">
                       <Link href="/auth">Sign In</Link>
                     </Button>
                     <Button asChild className="w-full bg-primary hover:bg-primary-hover text-primary-foreground rounded-full">

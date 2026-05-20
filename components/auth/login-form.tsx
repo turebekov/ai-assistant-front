@@ -81,7 +81,7 @@ export function LoginForm() {
       </div>
 
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-dark">Welcome back</h1>
+        <h1 className="text-2xl font-bold text-heading">Welcome back</h1>
         <p className="mt-2 text-gray">Sign in to your JobTap account</p>
       </div>
 
@@ -120,7 +120,7 @@ export function LoginForm() {
             <Label htmlFor="password">Password</Label>
             <Link
               href="/forgot-password"
-              className="text-sm text-primary hover:underline"
+              className="text-sm hover:underline"
             >
               Forgot password?
             </Link>
@@ -138,7 +138,7 @@ export function LoginForm() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray hover:text-dark"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray hover:text-heading"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (
@@ -155,7 +155,7 @@ export function LoginForm() {
 
         <Button
           type="submit"
-          className="w-full h-11 bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg"
+          className="w-full h-11 rounded-full bg-primary text-base font-medium leading-none text-primary-foreground shadow-none hover:bg-primary-hover"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -174,7 +174,7 @@ export function LoginForm() {
 
       <p className="mt-6 text-center text-sm text-gray">
         {"Don't have an account? "}
-        <Link href="/auth?mode=register" className="text-primary hover:underline font-medium">
+        <Link href="/auth?mode=register" className="font-medium hover:underline">
           Sign up
         </Link>
       </p>

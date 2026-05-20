@@ -51,7 +51,7 @@ export function FeedbackSupportModal({
         </DialogHeader>
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">
           <p className="font-medium text-primary">Want to improve our product?</p>
-          <Button variant="outline" size="sm" className="mt-2">
+          <Button variant="neutral" size="sm" className="mt-2">
             Take our simple survey
           </Button>
         </div>
@@ -98,7 +98,7 @@ export function FeedbackSupportModal({
         </label>
         {feedbackError ? <p className="text-sm text-destructive">{feedbackError}</p> : null}
         <DialogFooter className="sm:justify-between">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="neutral" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={feedbackSubmitting}>

@@ -153,7 +153,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
       <div className="flex items-center gap-3">
         {isAssistantSession ? (
           <Button
-            variant="outline"
+            variant="neutral"
             size="icon-sm"
             aria-label="Back to assistants"
             title="Back to assistants"
@@ -163,7 +163,8 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
           </Button>
         ) : (
           <button
-            className="rounded border border-slate-200 px-2 py-1 text-sm md:hidden"
+            type="button"
+            className="rounded-full border border-gray-700/45 px-2 py-1 text-sm text-gray-800 hover:bg-gray-900/[0.06] md:hidden dark:border-gray-500 dark:text-gray-100 dark:hover:bg-white/10"
             onClick={() => setSidebarOpen((v) => !v)}
           >
             ☰
@@ -179,7 +180,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
       </div>
       <div className="flex items-center gap-2">
         <Button
-          variant="outline"
+          variant="neutral"
           size="icon-sm"
           onClick={() => setFeedbackOpen(true)}
           aria-label="Feedback and Support"
@@ -190,10 +191,10 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <div className="relative">
-              <Button variant="outline" size="icon-sm" aria-label="Profile menu" title="Profile">
+              <Button variant="neutral" size="icon-sm" aria-label="Profile menu" title="Profile">
                 <CircleUserRound className="h-4 w-4" />
               </Button>
-              <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+              <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shadow-sm shadow-primary/35">
                 {plan.toUpperCase()}
               </span>
             </div>
@@ -206,7 +207,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-default">
               <span className="text-muted-foreground">Plan:</span>
-              <span className="ml-1 capitalize">{plan}</span>
+              <span className="ml-1 font-semibold capitalize text-primary">{plan}</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/profile')}>
               <User className="h-4 w-4" />
@@ -229,7 +230,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
   const mainClassName = isAssistantSession ? 'p-2 md:p-3' : 'p-4 md:p-6'
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <div className="flex min-h-screen">
         {!isAssistantSession && sidebarOpen ? (
           <button

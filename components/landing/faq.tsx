@@ -25,7 +25,10 @@ const faqJsonLd = {
 
 export function FAQ() {
   return (
-    <section id="faq" className="py-16 lg:py-24">
+    <section
+      id="faq"
+      className="py-16 lg:py-24 bg-gradient-to-b from-landing-mint-soft via-background to-background"
+    >
       {/* FAQ JSON-LD Schema */}
       <script
         type="application/ld+json"
@@ -39,7 +42,7 @@ export function FAQ() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-dark mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-heading mb-4">
             Frequently Asked Questions
           </h2>
           <p className="text-lg text-gray">
@@ -56,7 +59,7 @@ export function FAQ() {
           <Accordion type="single" collapsible className="w-full">
             {faqItems.map((item, index) => (
               <AccordionItem key={index} value={`item-${index}`} className="border-border">
-                <AccordionTrigger className="text-left text-dark hover:text-primary hover:no-underline py-4">
+                <AccordionTrigger className="text-left text-heading hover:text-link hover:no-underline py-4">
                   {item.question}
                 </AccordionTrigger>
                 <AccordionContent className="text-gray leading-relaxed pb-4">

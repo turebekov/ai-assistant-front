@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 
 export function ArticleBody({ blocks }: { blocks: BlogBlock[] }) {
   return (
-    <div className="prose prose-slate max-w-none prose-headings:text-dark prose-p:text-gray prose-li:text-gray">
+    <div className="prose prose-slate article-body-prose max-w-none prose-headings:text-heading prose-p:text-gray prose-li:text-gray">
       {blocks.map((block, index) => {
         switch (block.type) {
           case 'h2':
@@ -12,14 +12,14 @@ export function ArticleBody({ blocks }: { blocks: BlogBlock[] }) {
               <h2
                 key={index}
                 id={block.id}
-                className="mt-10 scroll-mt-28 text-2xl font-bold text-dark first:mt-0"
+                className="mt-10 scroll-mt-28 text-2xl font-bold text-heading first:mt-0"
               >
                 {block.text}
               </h2>
             )
           case 'h3':
             return (
-              <h3 key={index} className="mt-8 text-xl font-semibold text-dark">
+              <h3 key={index} className="mt-8 text-xl font-semibold text-heading">
                 {block.text}
               </h3>
             )
@@ -53,7 +53,7 @@ export function ArticleBody({ blocks }: { blocks: BlogBlock[] }) {
                     <li key={item.href}>
                       <a
                         href={item.href}
-                        className="font-medium text-primary hover:underline"
+                        className="font-medium text-nav hover:text-nav-text-hover hover:underline dark:text-slate-300 dark:hover:text-white"
                       >
                         {item.label}
                       </a>
@@ -69,7 +69,7 @@ export function ArticleBody({ blocks }: { blocks: BlogBlock[] }) {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       {block.headers.map((header) => (
-                        <th key={header} className="px-4 py-3 font-semibold text-dark">
+                        <th key={header} className="px-4 py-3 font-semibold text-heading">
                           {header}
                         </th>
                       ))}
@@ -92,11 +92,11 @@ export function ArticleBody({ blocks }: { blocks: BlogBlock[] }) {
           case 'links':
             return (
               <div key={index} className="not-prose mt-10">
-                <p className="text-sm font-semibold text-dark">{block.title}</p>
+                <p className="text-sm font-semibold text-heading">{block.title}</p>
                 <ul className="mt-3 space-y-2 text-sm">
                   {block.items.map((item) => (
                     <li key={item.href}>
-                      <Link href={item.href} className="text-primary hover:underline">
+                      <Link href={item.href} className="text-link hover:underline">
                         {item.label}
                       </Link>
                     </li>
@@ -110,7 +110,7 @@ export function ArticleBody({ blocks }: { blocks: BlogBlock[] }) {
                 key={index}
                 className="not-prose mt-10 rounded-2xl border border-primary/20 bg-accent/50 p-6 sm:p-8"
               >
-                <h3 className="text-lg font-bold text-dark">{block.title}</h3>
+                <h3 className="text-lg font-bold text-heading">{block.title}</h3>
                 <p className="mt-2 text-sm text-gray">{block.body}</p>
                 <Button asChild className="mt-4 rounded-full">
                   <Link href={block.href}>{block.label}</Link>

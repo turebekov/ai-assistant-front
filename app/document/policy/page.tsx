@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
           processing is handled by our merchant of record,{' '}
           <a
             href="https://www.lemonsqueezy.com"
-            className="text-primary underline"
+            className="text-link underline"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -145,7 +145,7 @@ export default function PrivacyPolicyPage() {
         <h2>11. Contact Us</h2>
         <p>
           If you have any questions about this Privacy Policy, please contact us at{' '}
-          <Link href={`mailto:${CONTACT_EMAIL}`} className="text-primary underline">
+          <Link href={`mailto:${CONTACT_EMAIL}`} className="text-link underline">
             {CONTACT_EMAIL}
           </Link>
           .

@@ -3,91 +3,150 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/**
+ * JobTap design system — IvyPanda-inspired service UI:
+ * orange CTAs (#FF8516), teal surfaces (#00756a), Inter, pill buttons.
+ */
 :root {
-  /* AssistantAI Design System Colors */
-  --primary: #2563EB;
-  --primary-hover: #1E40AF;
-  --primary-foreground: #FFFFFF;
-  
-  --accent: #DBEAFE;
-  --accent-foreground: #1E40AF;
-  
-  --success: #10B981;
-  --success-foreground: #FFFFFF;
-  
-  --warning: #F59E0B;
-  --warning-foreground: #FFFFFF;
-  
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-  
-  --dark: #111827;
-  --gray: #6B7280;
-  --gray-light: #9CA3AF;
-  --light-gray: #F9FAFB;
-  --white: #FFFFFF;
-  --border: #E5E7EB;
-  
-  /* Semantic tokens */
-  --background: #FFFFFF;
+  /* Primary — warm orange CTA */
+  --primary: #ff8516;
+  --primary-hover: #ea760e;
+  --primary-active: #cf680c;
+  --primary-light: #fff5ec;
+  --primary-border: #ffc896;
+  --primary-foreground: #ffffff;
+
+  /* Surfaces & text */
+  --accent: #fff5ec;
+  --accent-foreground: #111827;
+
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --success-light: #ecfdf5;
+
+  --warning: #f59e0b;
+  --warning-foreground: #111827;
+  --warning-light: #fffbeb;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --info: #3b82f6;
+  --info-light: #eff6ff;
+
+  /* Primary nav / large links (Ivy-style) — not orange, not blue inline */
+  --nav-text: #163141;
+  --nav-text-hover: #0f2330;
+
+  /* Teal surfaces (`bg-dark`); heading / strong text uses `--heading` */
+  --dark: #00756a;
+  --heading: #0f1724;
+  --dark-mid: #1a2540;
+  --dark-light: #243050;
+
+  --gray: #4b5563;
+  --gray-light: #9ca3af;
+  --light-gray: #f9fafb;
+  --white: #ffffff;
+  --border: #e5e7eb;
+
+  /* Semantic app tokens */
+  --background: #f6faff;
   --foreground: #111827;
-  --card: #FFFFFF;
+  --card: #ffffff;
   --card-foreground: #111827;
-  --popover: #FFFFFF;
+  --popover: #ffffff;
   --popover-foreground: #111827;
-  --secondary: #F9FAFB;
+  --secondary: #f9fafb;
   --secondary-foreground: #111827;
-  --muted: #F9FAFB;
-  --muted-foreground: #6B7280;
-  --input: #E5E7EB;
-  --ring: #2563EB;
-  
+  --muted: #f9fafb;
+  --muted-foreground: #6b7280;
+  --input: #e5e7eb;
+  --ring: #ff8516;
+
+  --footer-background: #eff0f0;
+
+  /* Hyperlinks — blue in body copy only (see `.article-body-prose`) */
+  --link-color: #2f65da;
+  --link-hover: #2547ad;
+
   /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
   --radius-full: 9999px;
   --radius: 12px;
-  
+
   /* Shadows */
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-elevated: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
-  --shadow-focus: 0 0 0 3px rgba(37,99,235,0.3);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 4px 6px rgb(0 0 0 / 0.07), 0 2px 4px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.1), 0 4px 6px rgb(0 0 0 / 0.05);
+  --shadow-xl: 0 20px 25px rgb(0 0 0 / 0.1), 0 10px 10px rgb(0 0 0 / 0.04);
+  --shadow-orange: 0 4px 14px rgb(255 133 22 / 0.35);
+  --shadow-orange-lg: 0 6px 20px rgb(255 133 22 / 0.45);
+  --shadow-card: var(--shadow-sm);
+  --shadow-elevated: var(--shadow-lg);
+  --shadow-focus: 0 0 0 3px rgb(255 133 22 / 0.15);
+
+  /* Landing page — mint surfaces + teal band (marketing) */
+  --landing-teal: #00756a;
+  --landing-mint: #e5f5f4;
+  --landing-mint-soft: #f2faf9;
+  --landing-hero-fade: #e5f5f4;
 }
 
 .dark {
-  --primary: #3B82F6;
-  --primary-hover: #60A5FA;
-  --primary-foreground: #FFFFFF;
-  
-  --accent: #1E3A5F;
-  --accent-foreground: #DBEAFE;
-  
-  --background: #0F172A;
-  --foreground: #F9FAFB;
-  --card: #1E293B;
-  --card-foreground: #F9FAFB;
-  --popover: #1E293B;
-  --popover-foreground: #F9FAFB;
-  --secondary: #1E293B;
-  --secondary-foreground: #F9FAFB;
-  --muted: #334155;
-  --muted-foreground: #94A3B8;
-  --input: #334155;
-  --border: #334155;
-  --ring: #3B82F6;
-  
-  --dark: #F9FAFB;
-  --gray: #94A3B8;
-  --gray-light: #64748B;
-  --light-gray: #1E293B;
-  --white: #0F172A;
+  --primary: #ff8516;
+  --primary-hover: #ffa047;
+  --primary-active: #ea760e;
+  --primary-light: rgb(255 133 22 / 0.12);
+  --primary-border: rgb(255 133 22 / 0.35);
+  --primary-foreground: #ffffff;
+
+  --accent: #1a2540;
+  --accent-foreground: #fff5ec;
+
+  --background: #0f1724;
+  --foreground: #f9fafb;
+  --card: #1a2540;
+  --card-foreground: #f9fafb;
+  --popover: #1a2540;
+  --popover-foreground: #f9fafb;
+  --secondary: #243050;
+  --secondary-foreground: #f9fafb;
+  --muted: #243050;
+  --muted-foreground: #94a3b8;
+  --input: #243050;
+  --border: rgb(255 255 255 / 0.08);
+  --ring: #ff8516;
+
+  --footer-background: #1a2540;
+
+  --link-color: #6b9eff;
+  --link-hover: #9bbcff;
+
+  --nav-text: #cbd5e1;
+  --nav-text-hover: #f1f5f9;
+
+  --dark: #00756a;
+  --heading: #f9fafb;
+  --gray: #94a3b8;
+  --gray-light: #64748b;
+  --light-gray: #1a2540;
+  --white: #0f1724;
+
+  --shadow-card: 0 4px 6px rgb(0 0 0 / 0.25);
+  --shadow-elevated: 0 20px 40px rgb(0 0 0 / 0.35);
+  --shadow-focus: 0 0 0 3px rgb(255 133 22 / 0.25);
 }
 
 @theme inline {
   --font-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback', monospace;
-  
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -96,6 +155,9 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-light: var(--primary-light);
+  --color-primary-border: var(--primary-border);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -112,17 +174,30 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-link: var(--link-color);
+  --color-link-hover: var(--link-hover);
+  --color-nav-text: var(--nav-text);
+  --color-nav-text-hover: var(--nav-text-hover);
   --color-dark: var(--dark);
+  --color-heading: var(--heading);
+  --color-dark-mid: var(--dark-mid);
+  --color-dark-light: var(--dark-light);
   --color-gray: var(--gray);
   --color-gray-light: var(--gray-light);
   --color-light-gray: var(--light-gray);
-  
+  --color-footer-background: var(--footer-background);
+  --color-landing-teal: var(--landing-teal);
+  --color-landing-mint: var(--landing-mint);
+  --color-landing-mint-soft: var(--landing-mint-soft);
+  --color-landing-hero-fade: var(--landing-hero-fade);
+
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
   --radius-full: var(--radius-full);
-  
+
   --shadow-card: var(--shadow-card);
   --shadow-elevated: var(--shadow-elevated);
   --shadow-focus: var(--shadow-focus);
@@ -133,18 +208,46 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
-  
-  /* Typography */
+
+  /* No default link color — use .text-link, .text-nav, or .article-body-prose scope */
+
+  /* Main site header — large nav */
+  nav.nav-site > div a:not([data-slot='button']) {
+    color: var(--nav-text);
+    text-decoration: none;
+  }
+  nav.nav-site > div a:not([data-slot='button']):hover {
+    color: var(--nav-text-hover);
+  }
+
+  /* Blog / legal: blue links only in paragraph body copy (not TOC / feature blocks) */
+  .article-body-prose.prose p a:not([data-slot='button']) {
+    color: var(--link-color);
+    text-underline-offset: 0.15em;
+  }
+  .article-body-prose.prose p a:not([data-slot='button']):hover {
+    color: var(--link-hover);
+  }
+
+  /* Legal pages: same blue for inline links in article text */
+  .legal-doc-prose p a:not([data-slot='button']) {
+    color: var(--link-color);
+    text-underline-offset: 0.15em;
+  }
+  .legal-doc-prose p a:not([data-slot='button']):hover {
+    color: var(--link-hover);
+  }
+
   h1 {
-    @apply text-5xl font-bold text-dark tracking-tight;
+    @apply text-5xl font-bold text-heading tracking-tight;
   }
   h2 {
-    @apply text-4xl font-semibold text-dark tracking-tight;
+    @apply text-4xl font-semibold text-heading tracking-tight;
   }
   h3 {
-    @apply text-2xl font-semibold text-dark;
+    @apply text-2xl font-semibold text-heading;
   }
   p {
     @apply text-base text-gray leading-relaxed;
@@ -154,7 +257,6 @@
   }
 }
 
-/* Custom scrollbar */
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -162,5 +264,20 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.4s ease-out both;
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }

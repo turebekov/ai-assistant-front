@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 
 export function CTABanner() {
   return (
-    <section className="py-16 lg:py-24 bg-primary-hover">
+    <section className="py-16 lg:py-24 bg-dark">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -24,7 +24,7 @@ export function CTABanner() {
           <Button
             size="lg"
             asChild
-            className="bg-white text-primary hover:bg-white/90 rounded-full px-8 gap-2"
+            className="bg-white text-heading hover:bg-white/90 rounded-full px-8 gap-2"
           >
             <Link href="/auth?mode=register">
               Get Started For Free

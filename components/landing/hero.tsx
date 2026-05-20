@@ -8,7 +8,7 @@ import { Badge } from '@/components/design-system/badge'
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-24 pb-16 lg:pt-32 lg:pb-24">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-landing-mint-soft to-landing-hero-fade pt-24 pb-16 lg:pt-32 lg:pb-24">
       {/* Background gradient blob */}
       <div className="absolute top-0 right-0 -z-10 w-[600px] h-[600px] opacity-30 blur-3xl">
         <div className="absolute inset-0 bg-gradient-to-br from-accent via-primary/20 to-transparent rounded-full" />
@@ -27,7 +27,7 @@ export function Hero() {
               New — JobTap is live
             </Badge>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-dark leading-tight tracking-tight text-balance">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-heading leading-tight tracking-tight text-balance">
               AI Interview Assistant — Real-Time Coaching for Your Next Interview
             </h1>
 
@@ -67,7 +67,7 @@ export function Hero() {
                 ))}
               </div>
               <p className="text-sm text-gray">
-                Trusted by <span className="font-semibold text-dark">50,000+</span> job seekers
+                Trusted by <span className="font-semibold text-heading">50,000+</span> job seekers
               </p>
             </div>
           </motion.div>
@@ -117,7 +117,7 @@ export function Hero() {
                     </div>
                     <span className="text-xs font-medium text-primary">AI Suggestion</span>
                   </div>
-                  <p className="text-sm text-dark leading-relaxed">
+                  <p className="text-sm text-heading leading-relaxed">
                     Mention your experience with <span className="text-primary font-medium">microservices architecture</span> and how you scaled the system to handle 10x traffic.
                   </p>
                 </motion.div>

@@ -52,7 +52,7 @@ export default function MeetingTranslatorPage() {
                 className="rounded-2xl border border-border bg-card p-6 shadow-card"
               >
                 <item.icon className="mb-4 h-8 w-8 text-primary" aria-hidden />
-                <h2 className="text-lg font-semibold text-dark">{item.title}</h2>
+                <h2 className="text-lg font-semibold text-heading">{item.title}</h2>
                 <p className="mt-2 text-sm leading-relaxed text-gray">{item.description}</p>
               </div>
             ))}

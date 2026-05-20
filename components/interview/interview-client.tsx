@@ -793,8 +793,8 @@ export function InterviewClient({
               >
                 Start capture
               </Button>
-              <Button variant="outline" onClick={stopCapture} disabled={!isRunning}>Stop</Button>
-              <Button variant="outline" onClick={() => void saveSession()} disabled={isSessionSaving}>
+              <Button variant="neutral" onClick={stopCapture} disabled={!isRunning}>Stop</Button>
+              <Button variant="neutral" onClick={() => void saveSession()} disabled={isSessionSaving}>
                 {isSessionSaving ? 'Saving session...' : 'Save session'}
               </Button>
               <span className="rounded-full border border-border bg-muted px-3 py-1 text-sm">{status}</span>
@@ -817,7 +817,7 @@ export function InterviewClient({
                   <span>Live transcript</span>
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="neutral"
                     onClick={() => {
                       setTranscriptLines([])
                       setTranscriptLineTimestamps([])
@@ -851,12 +851,12 @@ export function InterviewClient({
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
                   <span>AI suggestion (Qwen)</span>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
+                    <Button variant="neutral" size="sm" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
                       {isSuggesting ? 'Sending...' : 'Send'}
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="neutral"
                       onClick={() => {
                         setSuggestionPrimaryHistory([])
                         setSentLineIndexes(new Set())
@@ -885,12 +885,12 @@ export function InterviewClient({
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
                   <span>AI suggestion (Claude)</span>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
+                    <Button variant="neutral" size="sm" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
                       {isSuggesting ? 'Sending...' : 'Send'}
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="neutral"
                       onClick={() => {
                         setSuggestionClaudeHistory([])
                         setSentLineIndexes(new Set())
@@ -933,7 +933,7 @@ export function InterviewClient({
                 </Button>
                 <h2 className="text-sm font-semibold text-slate-900">Session history</h2>
               </div>
-              <Button size="sm" variant="outline" onClick={() => void loadHistory()} disabled={isHistoryLoading}>
+              <Button size="sm" variant="neutral" onClick={() => void loadHistory()} disabled={isHistoryLoading}>
                 {isHistoryLoading ? 'Refreshing...' : 'Refresh'}
               </Button>
             </div>
@@ -949,8 +949,8 @@ export function InterviewClient({
                         : new Date(item.createdAt).toISOString().replace('T', ' ').slice(0, 19)}
                     </span>
                     <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">{item.role}</span>
-                    <Button size="sm" variant="outline" onClick={() => loadSession(item)}>Load</Button>
-                    <a href={apiUrl(`/api/sessions/${item.id}/export`)} target="_blank" className="text-xs text-orange-600 underline">
+                    <Button size="sm" variant="neutral" onClick={() => loadSession(item)}>Load</Button>
+                    <a href={apiUrl(`/api/sessions/${item.id}/export`)} target="_blank" className="text-xs text-link underline hover:text-link-hover">
                       Export
                     </a>
                   </div>

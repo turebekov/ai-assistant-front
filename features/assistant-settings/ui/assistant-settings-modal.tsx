@@ -119,7 +119,7 @@ export function AssistantSettingsModal({
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancel</Button>
+          <Button variant="neutral" onClick={onClose} disabled={isSaving}>Cancel</Button>
           <Button onClick={onSave} disabled={isSaving}>
             {isSaving ? 'Saving...' : mode === 'edit' ? 'Update' : 'Save'}
           </Button>

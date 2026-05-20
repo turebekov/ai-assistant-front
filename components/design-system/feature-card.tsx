@@ -34,7 +34,7 @@ export function FeatureCard({
       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent text-primary mb-4 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
         <Icon className="h-6 w-6" />
       </div>
-      <h3 className="text-lg font-semibold text-dark mb-2">{title}</h3>
+      <h3 className="text-lg font-semibold text-heading mb-2">{title}</h3>
       <p className="text-sm text-gray leading-relaxed">{description}</p>
     </motion.div>
   )

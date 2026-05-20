@@ -211,7 +211,7 @@ export default function ProfileSubscriptionPage() {
                 !available ? 'opacity-75 ' : ''
               }${
                 plan.highlighted && available
-                  ? 'border-2 border-primary bg-primary/5 shadow-sm'
+                  ? 'border-2 border-primary bg-card shadow-md shadow-primary/10'
                   : 'border border-border bg-background'
               }`}
             >
@@ -226,21 +226,27 @@ export default function ProfileSubscriptionPage() {
                   {plan.badge}
                 </span>
               ) : null}
-              <div className={`rounded-lg px-3 py-2 ${plan.highlighted ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                <div className={`text-sm font-semibold ${plan.highlighted ? 'text-primary-foreground' : 'text-foreground'}`}>{plan.title}</div>
-                <div className={`text-3xl font-bold ${plan.highlighted ? 'text-primary-foreground' : 'text-foreground'}`}>
+              <div
+                className={`rounded-xl border px-3 py-2.5 ${
+                  plan.highlighted
+                    ? 'border-primary/35 bg-gradient-to-br from-primary-light/80 via-background to-background text-heading'
+                    : 'border-transparent bg-muted'
+                }`}
+              >
+                <div className="text-sm font-semibold text-heading">{plan.title}</div>
+                <div className={`text-3xl font-bold ${plan.highlighted ? 'text-primary' : 'text-foreground'}`}>
                   {plan.priceLabel}
                 </div>
-                <p className={`mt-1 text-xs ${plan.highlighted ? 'text-primary-foreground/90' : 'text-muted-foreground'}`}>{plan.billingNote}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{plan.billingNote}</p>
               </div>
-              <ul className={`mt-4 min-h-28 flex-1 space-y-2 text-sm ${plan.highlighted ? 'text-foreground/90' : 'text-muted-foreground'}`}>
+              <ul className="mt-4 min-h-28 flex-1 space-y-2 text-sm text-muted-foreground">
                 {plan.features.map((feature) => (
                   <li key={feature}>• {feature}</li>
                 ))}
               </ul>
               <Button
                 className="mt-6 w-full"
-                variant={plan.highlighted && available ? 'default' : 'outline'}
+                variant={available ? 'default' : 'neutral'}
                 onClick={() => onPlanCta(plan)}
                 disabled={!available || loadingPlanId !== null}
               >

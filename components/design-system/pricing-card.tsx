@@ -65,13 +65,13 @@ export function PricingCard({
       ) : null}
 
       <div className="mb-6">
-        <h3 className="text-xl font-semibold text-dark">{name}</h3>
+        <h3 className="text-xl font-semibold text-heading">{name}</h3>
         <p className="mt-1 text-sm text-gray">{description}</p>
       </div>
 
       <div className="mb-6">
         <div className="flex items-baseline">
-          <span className="text-4xl font-bold text-dark">${displayPrice}</span>
+          <span className="text-4xl font-bold text-heading">${displayPrice}</span>
           <span className="ml-1 text-gray">/{period}</span>
         </div>
         {isAnnual && price > 0 && (

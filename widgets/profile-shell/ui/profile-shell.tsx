@@ -55,7 +55,7 @@ export function ProfileShell() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <div className="flex min-h-screen">
         <ProfileSidebar onSignOut={signOut} />
         <div className="flex-1">

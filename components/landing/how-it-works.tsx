@@ -12,7 +12,7 @@ const iconMap = {
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-16 lg:py-24">
+    <section id="how-it-works" className="py-16 lg:py-24 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -20,7 +20,7 @@ export function HowItWorks() {
           viewport={{ once: true }}
           className="text-center mb-12 lg:mb-16"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-dark mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-heading mb-4">
             How It Works
           </h2>
           <p className="text-lg text-gray max-w-2xl mx-auto">
@@ -55,7 +55,7 @@ export function HowItWorks() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-semibold text-dark mb-3">
+                <h3 className="text-xl font-semibold text-heading mb-3">
                   {step.title}
                 </h3>
                 <p className="text-gray leading-relaxed">

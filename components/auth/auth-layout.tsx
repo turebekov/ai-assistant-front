@@ -26,7 +26,7 @@ const features = [
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-[45%] bg-primary-hover p-12 flex-col justify-between">
+      <div className="hidden lg:flex lg:w-[45%] bg-dark p-12 flex-col justify-between">
         <div>
           <JobTapLogo href="/" variant="dark" iconSize={40} />
 

@@ -137,7 +137,7 @@ export function RegisterForm() {
       </div>
 
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-dark">Create your account</h1>
+        <h1 className="text-2xl font-bold text-heading">Create your account</h1>
         <p className="mt-2 text-gray">Start for free — no credit card required</p>
       </div>
 
@@ -217,7 +217,7 @@ export function RegisterForm() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray hover:text-dark"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray hover:text-heading"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (
@@ -268,11 +268,11 @@ export function RegisterForm() {
           />
           <Label htmlFor="terms" className="text-sm text-gray leading-tight cursor-pointer">
             I agree to the{' '}
-            <Link href="/document/terms" className="text-primary hover:underline">
+            <Link href="/document/terms" className="hover:underline">
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link href="/document/policy" className="text-primary hover:underline">
+            <Link href="/document/policy" className="hover:underline">
               Privacy Policy
             </Link>
           </Label>
@@ -283,7 +283,7 @@ export function RegisterForm() {
 
         <Button
           type="submit"
-          className="w-full h-11 bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg"
+          className="w-full h-11 rounded-full bg-primary text-base font-medium leading-none text-primary-foreground shadow-none hover:bg-primary-hover"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -302,7 +302,7 @@ export function RegisterForm() {
 
       <p className="mt-6 text-center text-sm text-gray">
         Already have an account?{' '}
-        <Link href="/auth" className="text-primary hover:underline font-medium">
+        <Link href="/auth" className="font-medium hover:underline">
           Sign in
         </Link>
       </p>

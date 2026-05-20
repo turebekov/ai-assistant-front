@@ -17,7 +17,10 @@ const iconMap = {
 
 export function Features() {
   return (
-    <section id="features" className="py-16 lg:py-24 bg-light-gray">
+    <section
+      id="features"
+      className="py-16 lg:py-24 border-y border-landing-teal/12 bg-landing-mint"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -25,7 +28,7 @@ export function Features() {
           viewport={{ once: true }}
           className="text-center mb-12 lg:mb-16"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-dark mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-heading mb-4">
             Everything you need to ace any interview
           </h2>
           <p className="text-lg text-gray max-w-2xl mx-auto">

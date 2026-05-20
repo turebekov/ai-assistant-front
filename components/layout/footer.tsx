@@ -5,13 +5,13 @@ import { footerLinks } from '@/lib/constants'
 
 export function Footer() {
   return (
-    <footer className="bg-light-gray border-t border-border">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+    <footer className="border-t border-border bg-footer-background text-gray">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
             <JobTapLogo href="/" variant="light" iconSize={32} />
-            <p className="mt-4 text-sm text-gray leading-relaxed">
+            <p className="mt-4 text-sm leading-relaxed text-gray">
               Real-time AI coaching for your interviews. Get instant suggestions invisible to screen sharing.
             </p>
             {/* Social links */}
@@ -20,7 +20,7 @@ export function Footer() {
                 href={footerLinks.social[0].href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray hover:text-primary transition-colors"
+                className="text-nav transition-colors hover:text-nav-text-hover"
                 aria-label="Twitter"
               >
                 <Twitter className="h-5 w-5" />
@@ -29,7 +29,7 @@ export function Footer() {
                 href={footerLinks.social[1].href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray hover:text-primary transition-colors"
+                className="text-nav transition-colors hover:text-nav-text-hover"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="h-5 w-5" />
@@ -38,7 +38,7 @@ export function Footer() {
                 href={footerLinks.social[2].href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray hover:text-primary transition-colors"
+                className="text-nav transition-colors hover:text-nav-text-hover"
                 aria-label="GitHub"
               >
                 <Github className="h-5 w-5" />
@@ -48,13 +48,13 @@ export function Footer() {
 
           {/* Product */}
           <div>
-            <h3 className="text-sm font-semibold text-dark">Product</h3>
+            <h3 className="text-sm font-semibold text-nav">Product</h3>
             <ul className="mt-4 space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray hover:text-primary transition-colors"
+                    className="text-sm text-nav transition-colors hover:text-nav-text-hover hover:underline"
                   >
                     {link.label}
                   </Link>
@@ -65,13 +65,13 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="text-sm font-semibold text-dark">Company</h3>
+            <h3 className="text-sm font-semibold text-nav">Company</h3>
             <ul className="mt-4 space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray hover:text-primary transition-colors"
+                    className="text-sm text-nav transition-colors hover:text-nav-text-hover hover:underline"
                   >
                     {link.label}
                   </Link>
@@ -82,13 +82,13 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="text-sm font-semibold text-dark">Legal</h3>
+            <h3 className="text-sm font-semibold text-nav">Legal</h3>
             <ul className="mt-4 space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray hover:text-primary transition-colors"
+                    className="text-sm text-nav transition-colors hover:text-nav-text-hover hover:underline"
                   >
                     {link.label}
                   </Link>
@@ -99,8 +99,8 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 pt-8 border-t border-border">
-          <p className="text-sm text-gray text-center">
+        <div className="mt-12 border-t border-border pt-8">
+          <p className="text-center text-sm text-gray">
             &copy; {new Date().getFullYear()} JobTap. All rights reserved.
           </p>
         </div>

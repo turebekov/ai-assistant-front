@@ -53,7 +53,7 @@ export function AssistantUsageProgressBar({ className }: AssistantUsageProgressB
             {PAID_SUBSCRIPTIONS_ENABLED ? (
               <>
                 Limit reached.{' '}
-                <Link href="/profile/subscription" className="font-semibold underline">
+                <Link href="/profile/subscription" className="font-semibold text-link underline hover:text-link-hover">
                   Upgrade your plan
                 </Link>{' '}
                 for unlimited assistant time.

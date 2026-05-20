@@ -8,8 +8,8 @@ export function BlogCard({ post }: { post: BlogPost }) {
         <span className="rounded-full bg-accent px-2.5 py-0.5 text-primary">{post.week}</span>
         <span>{post.readingTimeMinutes} min read</span>
       </div>
-      <h2 className="mt-4 text-xl font-bold text-dark">
-        <Link href={`/blog/${post.slug}`} className="hover:text-primary">
+      <h2 className="mt-4 text-xl font-bold text-heading">
+        <Link href={`/blog/${post.slug}`} className="text-nav underline-offset-2 hover:text-nav-text-hover hover:underline dark:text-slate-100 dark:hover:text-white">
           {post.title}
         </Link>
       </h2>
@@ -19,7 +19,7 @@ export function BlogCard({ post }: { post: BlogPost }) {
       </p>
       <Link
         href={`/blog/${post.slug}`}
-        className="mt-4 text-sm font-semibold text-primary hover:underline"
+        className="mt-4 text-sm font-semibold text-link hover:underline"
       >
         Read article →
       </Link>

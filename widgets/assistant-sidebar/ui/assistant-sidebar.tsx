@@ -3,6 +3,14 @@
 import Link from 'next/link'
 import { CreditCard, ExternalLink, LogOut, Monitor, Waves } from 'lucide-react'
 import { JobTapLogo } from '@/components/brand/jobtap-logo'
+import { cn } from '@/lib/utils'
+
+const SIDEBAR_LINK_BASE =
+  'flex items-center gap-2 rounded-xl border px-3 py-2 transition-colors duration-150'
+const SIDEBAR_LINK_INACTIVE =
+  'border-transparent text-nav hover:border-slate-200/80 hover:bg-muted/70 hover:text-nav-text-hover dark:text-slate-300 dark:hover:border-white/10 dark:hover:bg-white/[0.06] dark:hover:text-white'
+const SIDEBAR_LINK_ACTIVE =
+  'border-primary/40 bg-primary-light/90 font-semibold text-heading shadow-sm shadow-primary/[0.12] hover:bg-primary-light dark:border-primary/45 dark:bg-primary/18 dark:text-amber-50 dark:shadow-none'
 
 interface AssistantSidebarProps {
   pathname: string
@@ -24,44 +32,41 @@ export function AssistantSidebar({
       <nav className="mt-2 space-y-2 text-sm">
         <Link
           href="/profile/interview"
-          className={`flex items-center gap-2 rounded-xl px-3 py-2 ${
-            pathname.startsWith('/profile/interview')
-              ? 'bg-primary font-medium text-primary-foreground'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-          }`}
+          className={cn(
+            SIDEBAR_LINK_BASE,
+            pathname.startsWith('/profile/interview') ? SIDEBAR_LINK_ACTIVE : SIDEBAR_LINK_INACTIVE,
+          )}
         >
-          <Waves className="h-4 w-4" />
+          <Waves className="h-4 w-4 shrink-0" />
           Interview Assistant
         </Link>
         <Link
           href="/profile/meetings"
-          className={`flex items-center gap-2 rounded-xl px-3 py-2 ${
-            pathname.startsWith('/profile/meetings')
-              ? 'bg-primary font-medium text-primary-foreground'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-          }`}
+          className={cn(
+            SIDEBAR_LINK_BASE,
+            pathname.startsWith('/profile/meetings') ? SIDEBAR_LINK_ACTIVE : SIDEBAR_LINK_INACTIVE,
+          )}
         >
-          <Monitor className="h-4 w-4" />
+          <Monitor className="h-4 w-4 shrink-0" />
           Meetings AI Assistant
         </Link>
         <Link
           href="/profile/subscription"
-          className={`flex items-center gap-2 rounded-xl px-3 py-2 ${
-            pathname.startsWith('/profile/subscription')
-              ? 'bg-primary font-medium text-primary-foreground'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-          }`}
+          className={cn(
+            SIDEBAR_LINK_BASE,
+            pathname.startsWith('/profile/subscription') ? SIDEBAR_LINK_ACTIVE : SIDEBAR_LINK_INACTIVE,
+          )}
         >
-          <CreditCard className="h-4 w-4" />
+          <CreditCard className="h-4 w-4 shrink-0" />
           Subscription Plans
         </Link>
         <a
           href="https://interviewquestionbank.com/"
           target="_blank"
           rel="noreferrer noopener"
-          className="flex items-center gap-2 rounded-xl px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className={cn(SIDEBAR_LINK_BASE, SIDEBAR_LINK_INACTIVE)}
         >
-          <ExternalLink className="h-4 w-4" />
+          <ExternalLink className="h-4 w-4 shrink-0" />
           Interview Question Bank
         </a>
       </nav>

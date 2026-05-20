@@ -22,7 +22,7 @@ export function SeoLandingHero({
         {badge ? (
           <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">{badge}</p>
         ) : null}
-        <h1 className="text-4xl font-bold tracking-tight text-dark sm:text-5xl text-balance">{title}</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-heading sm:text-5xl text-balance">{title}</h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-gray">{description}</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button asChild size="lg" className="rounded-full px-8">
