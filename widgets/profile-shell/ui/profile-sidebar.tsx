@@ -19,7 +19,7 @@ export function ProfileSidebar({ onSignOut }: ProfileSidebarProps) {
   return (
     <aside className="w-64 border-r border-border bg-card p-4">
       <div className="mb-6">
-        <JobTapLogo href="/profile" variant="light" iconSize={32} />
+        <JobTapLogo href="/" variant="light" iconSize={32} />
       </div>
 
       <nav className="space-y-1">

@@ -170,7 +170,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
           </button>
         )}
         <JobTapLogo
-          href={isAssistantSession ? assistantSessionBackHref : '/profile'}
+          href="/"
           variant="light"
           iconSize={28}
           className={cn('shrink-0', !isAssistantSession && 'md:hidden')}
