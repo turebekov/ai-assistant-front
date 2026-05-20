@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ContactLinks } from '@/components/contact-links'
 import { LegalDocumentLayout } from '@/components/legal/legal-document-layout'
 import { buildPageMetadata } from '@/lib/seo/metadata'
 import { SEO_PAGES } from '@/lib/seo/site'
@@ -143,12 +144,12 @@ export default function PrivacyPolicyPage() {
 
       <section>
         <h2>11. Contact Us</h2>
-        <p>
-          If you have any questions about this Privacy Policy, please contact us at{' '}
+        <ContactLinks intro="If you have any questions about this Privacy Policy, reach us at:" />
+        <p className="mt-2">
+          Privacy-specific inquiries:{' '}
           <Link href={`mailto:${CONTACT_EMAIL}`} className="text-link underline">
             {CONTACT_EMAIL}
           </Link>
-          .
         </p>
       </section>
     </LegalDocumentLayout>

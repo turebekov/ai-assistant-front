@@ -261,6 +261,24 @@ export const howItWorksSteps = [
   },
 ] as const
 
+export const CONTACT_EMAIL = 'support@jobtap.app'
+
+/** Official JobTap social profiles (footer, legal, contact). */
+export const SOCIAL_LINKS = [
+  {
+    id: 'x',
+    label: 'X',
+    handle: '@JobTapApp',
+    href: 'https://x.com/JobTapApp',
+  },
+  {
+    id: 'youtube',
+    label: 'YouTube',
+    handle: '@jobtapapp',
+    href: 'https://www.youtube.com/@jobtapapp',
+  },
+] as const
+
 // Footer links
 export const footerLinks = {
   product: [
@@ -272,15 +290,16 @@ export const footerLinks = {
     { label: 'FAQ', href: '/#faq' },
   ],
   company: [
-    { label: 'Contact', href: 'mailto:support@jobtap.app' },
+    { label: 'Email', href: `mailto:${CONTACT_EMAIL}` },
+    ...SOCIAL_LINKS.map((link) => ({
+      label: `${link.label} — ${link.handle}`,
+      href: link.href,
+      external: true as const,
+    })),
   ],
   legal: [
     { label: 'Privacy Policy', href: '/document/policy' },
     { label: 'Terms and Conditions', href: '/document/terms' },
   ],
-  social: [
-    { label: 'Twitter', href: 'https://twitter.com/assistantai' },
-    { label: 'LinkedIn', href: 'https://linkedin.com/company/assistantai' },
-    { label: 'GitHub', href: 'https://github.com/assistantai' },
-  ],
+  social: SOCIAL_LINKS,
 } as const

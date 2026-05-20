@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ContactLinks } from '@/components/contact-links'
 import { LegalDocumentLayout } from '@/components/legal/legal-document-layout'
 import { buildPageMetadata } from '@/lib/seo/metadata'
 import { SEO_PAGES } from '@/lib/seo/site'
 
 export const metadata: Metadata = buildPageMetadata(SEO_PAGES.terms)
-
-const CONTACT_EMAIL = 'support@jobtap.app'
 
 export default function TermsPage() {
   return (
@@ -163,13 +162,7 @@ export default function TermsPage() {
 
       <section>
         <h2>15. Contact Information</h2>
-        <p>
-          If you have any questions about these Terms, please contact us at{' '}
-          <Link href={`mailto:${CONTACT_EMAIL}`} className="text-link underline">
-            {CONTACT_EMAIL}
-          </Link>
-          .
-        </p>
+        <ContactLinks intro="If you have any questions about these Terms, reach us at:" />
       </section>
     </LegalDocumentLayout>
   )

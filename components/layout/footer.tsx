@@ -1,7 +1,48 @@
 import Link from 'next/link'
-import { Twitter, Linkedin, Github } from 'lucide-react'
+import { Youtube } from 'lucide-react'
+import { XLogo } from '@/components/icons/x-logo'
 import { JobTapLogo } from '@/components/brand/jobtap-logo'
 import { footerLinks } from '@/lib/constants'
+
+const socialIcons = {
+  x: XLogo,
+  youtube: Youtube,
+} as const
+
+function FooterLink({
+  href,
+  label,
+  external,
+}: {
+  href: string
+  label: string
+  external?: boolean
+}) {
+  const className =
+    'text-sm text-nav transition-colors hover:text-nav-text-hover hover:underline'
+
+  if (external || href.startsWith('http')) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+        {label}
+      </a>
+    )
+  }
+
+  if (href.startsWith('mailto:')) {
+    return (
+      <a href={href} className={className}>
+        {label}
+      </a>
+    )
+  }
+
+  return (
+    <Link href={href} className={className}>
+      {label}
+    </Link>
+  )
+}
 
 export function Footer() {
   return (
@@ -14,35 +55,22 @@ export function Footer() {
             <p className="mt-4 text-sm leading-relaxed text-gray">
               Real-time AI coaching for your interviews. Get instant suggestions invisible to screen sharing.
             </p>
-            {/* Social links */}
             <div className="mt-6 flex gap-4">
-              <a
-                href={footerLinks.social[0].href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-nav transition-colors hover:text-nav-text-hover"
-                aria-label="Twitter"
-              >
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a
-                href={footerLinks.social[1].href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-nav transition-colors hover:text-nav-text-hover"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a
-                href={footerLinks.social[2].href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-nav transition-colors hover:text-nav-text-hover"
-                aria-label="GitHub"
-              >
-                <Github className="h-5 w-5" />
-              </a>
+              {footerLinks.social.map((link) => {
+                const Icon = socialIcons[link.id]
+                return (
+                  <a
+                    key={link.id}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-nav transition-colors hover:text-nav-text-hover"
+                    aria-label={`${link.label} (${link.handle})`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </a>
+                )
+              })}
             </div>
           </div>
 
@@ -52,12 +80,7 @@ export function Footer() {
             <ul className="mt-4 space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-nav transition-colors hover:text-nav-text-hover hover:underline"
-                  >
-                    {link.label}
-                  </Link>
+                  <FooterLink href={link.href} label={link.label} />
                 </li>
               ))}
             </ul>
@@ -65,16 +88,15 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="text-sm font-semibold text-nav">Company</h3>
+            <h3 className="text-sm font-semibold text-nav">Contact</h3>
             <ul className="mt-4 space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
-                  <Link
+                  <FooterLink
                     href={link.href}
-                    className="text-sm text-nav transition-colors hover:text-nav-text-hover hover:underline"
-                  >
-                    {link.label}
-                  </Link>
+                    label={link.label}
+                    external={'external' in link ? link.external : undefined}
+                  />
                 </li>
               ))}
             </ul>
@@ -86,19 +108,13 @@ export function Footer() {
             <ul className="mt-4 space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-nav transition-colors hover:text-nav-text-hover hover:underline"
-                  >
-                    {link.label}
-                  </Link>
+                  <FooterLink href={link.href} label={link.label} />
                 </li>
               ))}
             </ul>
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="mt-12 border-t border-border pt-8">
           <p className="text-center text-sm text-gray">
             &copy; {new Date().getFullYear()} JobTap. All rights reserved.
