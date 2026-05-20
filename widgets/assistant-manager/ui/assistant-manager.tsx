@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { AssistantSettingsModal } from '@/features/assistant-settings/ui/assistant-settings-modal'
-import type { AssistantProfile, AssistantSettingsForm } from '@/entities/assistant/model/types'
+import type {
+  AssistantFormFieldErrors,
+  AssistantFormFieldErrorKey,
+  AssistantProfile,
+  AssistantSettingsForm,
+} from '@/entities/assistant/model/types'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
 
@@ -23,6 +28,7 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [resumeStatus, setResumeStatus] = useState(isMeetings ? 'No file selected' : 'No resume selected')
   const [saveError, setSaveError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<AssistantFormFieldErrors>({})
   const [form, setForm] = useState<AssistantSettingsForm>({
     interviewType: 'Job Interview',
     roleName: '',
@@ -65,6 +71,7 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
     setExistingResumeText('')
     setResumeStatus(isMeetings ? 'No file selected' : 'No resume selected')
     setSaveError('')
+    setFieldErrors({})
   }
 
   const loadAssistants = async () => {
@@ -94,18 +101,36 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
     void loadAssistants()
   }, [isMeetings])
 
+  const clearFieldError = (key: AssistantFormFieldErrorKey) => {
+    setFieldErrors((prev) => {
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+  }
+
+  const validateCreateFields = (): boolean => {
+    if (mode !== 'create') return true
+    const t = (s: string) => String(s || '').trim()
+    const required = 'This field is required.'
+    const next: AssistantFormFieldErrors = {}
+    if (!t(form.profileName)) next.profileName = required
+    if (!t(form.interviewType)) next.interviewType = required
+    if (!t(form.roleName)) next.roleName = required
+    setFieldErrors(next)
+    return Object.keys(next).length === 0
+  }
+
   const onSave = async () => {
-    setIsSaving(true)
     setSaveError('')
+    if (mode === 'create' && !validateCreateFields()) {
+      return
+    }
+    setIsSaving(true)
     const token = localStorage.getItem('auth_token') || ''
     const name = String(form.profileName || '').trim()
     if (!token) {
       setSaveError('Not authorized. Please sign in again.')
-      setIsSaving(false)
-      return
-    }
-    if (!name) {
-      setSaveError('Assistant name is required.')
       setIsSaving(false)
       return
     }
@@ -211,6 +236,7 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
           : 'No resume selected'
     )
     setSaveError('')
+    setFieldErrors({})
     setForm({
       interviewType: String(assistant.interviewType || 'Job Interview'),
       roleName: String(assistant.roleName || ''),
@@ -252,7 +278,7 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
     <section className="rounded-xl border border-border bg-card p-4">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-semibold">{title}</h2>
-        <Button size="sm" onClick={openCreate}>
+        <Button size="sm" variant="outline" onClick={openCreate}>
           Create assistant
         </Button>
       </div>
@@ -286,7 +312,7 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
                 </div>
                 <div className="mt-4 flex items-center justify-between">
                   <div className="flex gap-2">
-                    <Button size="sm" variant="neutral" onClick={() => openEdit(assistant)}>
+                    <Button size="sm" variant="outline" onClick={() => openEdit(assistant)}>
                       Settings
                     </Button>
                     <Button
@@ -299,7 +325,9 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
                     </Button>
                   </div>
                   <a href={link}>
-                    <Button size="sm">Activate</Button>
+                    <Button size="sm" variant="outline">
+                      Activate
+                    </Button>
                   </a>
                 </div>
               </article>
@@ -311,6 +339,8 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
         open={open}
         form={form}
         onChange={setForm}
+        fieldErrors={fieldErrors}
+        onClearFieldError={clearFieldError}
         resumeStatus={resumeStatus}
         isSaving={isSaving}
         mode={mode}

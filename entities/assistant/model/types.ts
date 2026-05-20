@@ -32,3 +32,12 @@ export type AssistantSettingsForm = {
   codingAssistant: boolean
 }
 
+/** Client-side validation for Create Assistant modal */
+export type AssistantFormFieldErrorKey =
+  | 'profileName'
+  | 'interviewType'
+  | 'roleName'
+  | 'companyName'
+  | 'details'
+
+export type AssistantFormFieldErrors = Partial<Record<AssistantFormFieldErrorKey, string>>
