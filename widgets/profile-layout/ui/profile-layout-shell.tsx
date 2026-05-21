@@ -260,11 +260,23 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
             onSignOut={signOut}
           />
         ) : null}
-        <div className="flex-1 md:ml-0">
+        <div
+          className={cn(
+            'flex flex-1 flex-col md:ml-0',
+            isAssistantSession && 'min-h-0'
+          )}
+        >
           {isAssistantArea ? (
             <AssistantUsageProvider>
               {profileHeader}
-              <main className={mainClassName}>{children}</main>
+              <main
+                className={cn(
+                  mainClassName,
+                  isAssistantSession && 'flex min-h-0 flex-1 flex-col overflow-hidden'
+                )}
+              >
+                {children}
+              </main>
             </AssistantUsageProvider>
           ) : (
             <>

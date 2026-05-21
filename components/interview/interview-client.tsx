@@ -776,37 +776,52 @@ export function InterviewClient({
     void run()
   }, [mode, router, searchParams, settingsId])
 
+  const captureStatusLabel = isRunning
+    ? 'Recording'
+    : isAssistantLoading
+      ? 'Loading assistant...'
+      : isHistoryLoading
+        ? 'Loading history...'
+        : isSuggesting
+          ? 'Requesting suggestion...'
+          : status || 'Ready'
+
   return (
     <>
       <main
         className={cn(
-          'mx-auto w-full max-w-none space-y-4 pr-14 transition-[padding] duration-200',
+          'mx-auto flex h-full min-h-0 w-full max-w-none flex-col gap-3 pr-14 transition-[padding] duration-200',
           sessionSidebarOpen && 'md:pr-[23.5rem]'
         )}
       >
-            {activeAssistant ? (
-              <div className="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900">
-                {mode === 'meetings' ? 'Meeting assistant' : 'Assistant'}:{' '}
-                <span className="font-semibold">{activeAssistant.name}</span>
-                {activeAssistant.interviewType
-                  ? ` • ${mode === 'meetings' ? 'Type' : 'Interview'}: ${activeAssistant.interviewType}`
-                  : ''}
-                {activeAssistant.roleName ? ` • Role: ${activeAssistant.roleName}` : ''}
+            <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-900">
+              <p className="min-w-0 flex-1 truncate leading-snug">
+                {activeAssistant ? (
+                  <>
+                    {mode === 'meetings' ? 'Meeting assistant' : 'Assistant'}:{' '}
+                    <span className="font-semibold">{activeAssistant.name}</span>
+                    {activeAssistant.interviewType
+                      ? ` • ${mode === 'meetings' ? 'Type' : 'Interview'}: ${activeAssistant.interviewType}`
+                      : ''}
+                    {activeAssistant.roleName ? ` • Role: ${activeAssistant.roleName}` : ''}
+                  </>
+                ) : (
+                  <span className="font-medium text-violet-900/80">
+                    {mode === 'meetings' ? 'Meeting session' : 'Interview session'}
+                  </span>
+                )}
+              </p>
+              <div className="flex shrink-0 items-center gap-2 text-xs text-violet-800/90">
+                <span className="whitespace-nowrap font-medium">{captureStatusLabel}</span>
+                <span className="text-violet-400/80" aria-hidden>
+                  ·
+                </span>
+                <span className="whitespace-nowrap">{resumeStatus}</span>
               </div>
-            ) : null}
-            {(status || isAssistantLoading || isHistoryLoading || isSuggesting) ? (
-              <div className="text-xs text-muted-foreground">
-                {isAssistantLoading ? 'Loading assistant settings... ' : ''}
-                {isHistoryLoading ? 'Loading history... ' : ''}
-                {isSuggesting ? 'Requesting suggestion... ' : ''}
-                {status}
-              </div>
-            ) : null}
-            <div className="text-xs text-muted-foreground">{resumeStatus}</div>
-            <div className="flex min-h-[60vh] items-stretch">
-              <div className="flex min-w-0 flex-1 flex-col gap-4 lg:flex-row lg:items-stretch">
-              <div className="flex min-h-[60vh] flex-col gap-4 lg:w-[30%] lg:shrink-0">
-                <section className="overflow-hidden rounded-xl border border-border bg-card">
+            </div>
+            <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)] lg:items-stretch">
+              <div className="flex min-h-0 min-w-0 flex-col gap-3 overflow-hidden">
+                <section className="shrink-0 overflow-hidden rounded-xl border border-border bg-card">
                   <header className="flex items-center justify-between border-b border-border bg-[#f8f9fa] px-3 py-2.5">
                     <span className="text-sm font-semibold text-heading">
                       {mode === 'meetings' ? 'Meeting conversation' : 'Interview conversation'}
@@ -879,14 +894,14 @@ export function InterviewClient({
                 </section>
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="h-9 w-full shrink-0 text-sm"
                   onClick={() => void saveSession()}
                   disabled={isSessionSaving || transcriptLines.length === 0}
                 >
-                  {isSessionSaving ? 'Saving session...' : 'Save session'}
+                  {isSessionSaving ? 'Saving...' : 'Save session'}
                 </Button>
-              <section className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card">
-                <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
+              <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
+                <header className="flex shrink-0 items-center justify-between border-b border-border p-3 font-semibold">
                   <span>Live transcript</span>
                   <Button
                     size="sm"
@@ -904,7 +919,7 @@ export function InterviewClient({
                 </header>
                 <div
                   ref={transcriptScrollRef}
-                  className="h-[380px] overflow-auto whitespace-pre-wrap p-3 text-sm"
+                  className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap p-3 text-sm"
                 >
                   {transcriptLines.map((line, idx) => (
                     <div
@@ -918,7 +933,7 @@ export function InterviewClient({
                 </div>
               </section>
               </div>
-              <div className="flex min-h-[60vh] min-w-0 flex-1 flex-col">
+              <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
               {!enableClaudeSuggestion ? (
               <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
@@ -988,7 +1003,6 @@ export function InterviewClient({
               </section>
               ) : null}
               </div>
-            </div>
             </div>
       </main>
       <div className="fixed right-0 top-16 z-20 flex h-[calc(100dvh-4rem)] border-l border-slate-200 bg-white">
