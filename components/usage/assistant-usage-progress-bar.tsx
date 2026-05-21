@@ -9,9 +9,14 @@ import { PAID_SUBSCRIPTIONS_ENABLED } from '@/lib/billing/config'
 
 type AssistantUsageProgressBarProps = {
   className?: string
+  /** Compact strip for profile header (assistant session pages). */
+  variant?: 'banner' | 'header'
 }
 
-export function AssistantUsageProgressBar({ className }: AssistantUsageProgressBarProps) {
+export function AssistantUsageProgressBar({
+  className,
+  variant = 'banner',
+}: AssistantUsageProgressBarProps) {
   const ctx = useAssistantUsageOptional()
   if (!ctx || ctx.loading || !ctx.usage || ctx.usage.unlimited) {
     return null
@@ -25,6 +30,46 @@ export function AssistantUsageProgressBar({ className }: AssistantUsageProgressB
   const remainingMinutes = formatUsageMinutes(remainingSeconds)
   const percent = usagePercentUsed(usage)
   const isDepleted = remainingSeconds <= 0
+
+  if (variant === 'header') {
+    return (
+      <div
+        className={cn(
+          'min-w-0 flex-1 flex-col gap-1',
+          isDepleted && 'rounded-md bg-amber-50/90 px-2 py-1',
+          className
+        )}
+      >
+        <div className="flex items-center justify-between gap-2 text-[11px] leading-tight">
+          <span className={cn('truncate font-medium text-slate-600', isDepleted && 'text-amber-900')}>
+            Assistant time
+          </span>
+          <span className={cn('shrink-0 text-muted-foreground', isDepleted && 'text-amber-800')}>
+            {usedMinutes}/{limitMinutes} min
+            {!isDepleted ? ` · ${remainingMinutes} left` : null}
+          </span>
+        </div>
+        <Progress
+          value={percent}
+          className={cn('h-1.5', isDepleted && '[&_[data-slot=progress-indicator]]:bg-amber-600')}
+        />
+        {isDepleted ? (
+          <p className="truncate text-[10px] text-amber-900">
+            {PAID_SUBSCRIPTIONS_ENABLED ? (
+              <>
+                Limit reached —{' '}
+                <Link href="/profile/subscription" className="font-semibold underline">
+                  Upgrade
+                </Link>
+              </>
+            ) : (
+              <>Limit reached</>
+            )}
+          </p>
+        ) : null}
+      </div>
+    )
+  }
 
   return (
     <div

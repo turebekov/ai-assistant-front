@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ChevronsRight, FileText } from 'lucide-react'
+import { ChevronsRight, CircleHelp, Download, FileText, MonitorUp } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { AssistantProfile } from '@/entities/assistant/model/types'
 import { useAssistantUsage } from '@/contexts/assistant-usage-context'
@@ -125,6 +126,21 @@ export function InterviewClient({
     () => `${transcriptLines.join('\n')}${partial ? `\n${partial}` : ''}`.trim(),
     [partial, transcriptLines]
   )
+
+  const downloadTranscript = useCallback(() => {
+    const text = transcriptText.trim()
+    if (!text) return
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${mode}-transcript-${stamp}.txt`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }, [mode, transcriptText])
 
   useEffect(() => {
     const el = transcriptScrollRef.current
@@ -778,40 +794,97 @@ export function InterviewClient({
                 {activeAssistant.roleName ? ` • Role: ${activeAssistant.roleName}` : ''}
               </div>
             ) : null}
-            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
-              <Button
-                variant="outline"
-                onClick={startCapture}
-                disabled={
-                  isRunning ||
-                  (usage !== null &&
-                    !usage.unlimited &&
-                    (usage.remainingSeconds ?? 0) <= 0)
-                }
-              >
-                Start capture
-              </Button>
-              <Button variant="outline" onClick={stopCapture} disabled={!isRunning}>
-                Stop
-              </Button>
-              <Button variant="outline" onClick={() => void saveSession()} disabled={isSessionSaving}>
-                {isSessionSaving ? 'Saving session...' : 'Save session'}
-              </Button>
-              <span className="rounded-full border border-border bg-muted px-3 py-1 text-sm">{status}</span>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {isAssistantLoading ? 'Loading assistant settings... ' : ''}
-              {isHistoryLoading ? 'Loading history... ' : ''}
-              {isSuggesting ? 'Requesting suggestion... ' : ''}
-            </div>
+            {(status || isAssistantLoading || isHistoryLoading || isSuggesting) ? (
+              <div className="text-xs text-muted-foreground">
+                {isAssistantLoading ? 'Loading assistant settings... ' : ''}
+                {isHistoryLoading ? 'Loading history... ' : ''}
+                {isSuggesting ? 'Requesting suggestion... ' : ''}
+                {status}
+              </div>
+            ) : null}
             <div className="text-xs text-muted-foreground">{resumeStatus}</div>
             <div className="flex min-h-[60vh] items-stretch">
               <div className="flex min-w-0 flex-1 flex-col gap-4 lg:flex-row lg:items-stretch">
               <div className="flex min-h-[60vh] flex-col gap-4 lg:w-[30%] lg:shrink-0">
-                <section className="rounded-xl border border-border bg-card p-3">
-                  <div className="mb-2 text-sm font-semibold">Tab preview</div>
-                  <video ref={previewRef} className="aspect-video w-full rounded-md border border-border bg-black object-contain" autoPlay muted playsInline />
+                <section className="overflow-hidden rounded-xl border border-border bg-card">
+                  <header className="flex items-center justify-between border-b border-border bg-[#f8f9fa] px-3 py-2.5">
+                    <span className="text-sm font-semibold text-heading">
+                      {mode === 'meetings' ? 'Meeting conversation' : 'Interview conversation'}
+                    </span>
+                    <button
+                      type="button"
+                      className="rounded p-1 text-heading hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={!transcriptText.trim()}
+                      aria-label="Download transcript"
+                      title={
+                        transcriptText.trim()
+                          ? 'Download transcript as .txt'
+                          : 'Transcript is empty'
+                      }
+                      onClick={downloadTranscript}
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                  </header>
+                  <div className="relative aspect-video w-full bg-[#343a40]">
+                    <video
+                      ref={previewRef}
+                      className={cn(
+                        'absolute inset-0 h-full w-full object-contain',
+                        !isRunning && 'pointer-events-none opacity-0'
+                      )}
+                      autoPlay
+                      muted
+                      playsInline
+                    />
+                    {!isRunning ? (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => void startCapture()}
+                          disabled={
+                            usage !== null &&
+                            !usage.unlimited &&
+                            (usage.remainingSeconds ?? 0) <= 0
+                          }
+                          className="inline-flex items-center gap-2.5 rounded-lg bg-[#7B5CFF] px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-colors hover:bg-[#6a4df0] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <MonitorUp className="h-5 w-5" strokeWidth={2.25} />
+                          {mode === 'meetings' ? 'Connect meeting' : 'Connect interview'}
+                        </button>
+                        <p className="mt-3 text-xs text-slate-400">
+                          Share your {mode === 'meetings' ? 'meeting' : 'interview'} or{' '}
+                          <Link
+                            href="/interview-assistant"
+                            className="text-slate-300 underline underline-offset-2 hover:text-white"
+                          >
+                            sample interview
+                          </Link>{' '}
+                          to connect
+                        </p>
+                        <CircleHelp
+                          className="mt-3 h-4 w-4 text-slate-500"
+                          aria-label="Pick the browser tab with your call, then allow screen share"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                  {isRunning ? (
+                    <div className="border-t border-border p-2">
+                      <Button variant="outline" className="w-full" onClick={stopCapture}>
+                        Stop
+                      </Button>
+                    </div>
+                  ) : null}
                 </section>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => void saveSession()}
+                  disabled={isSessionSaving || transcriptLines.length === 0}
+                >
+                  {isSessionSaving ? 'Saving session...' : 'Save session'}
+                </Button>
               <section className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card">
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
                   <span>Live transcript</span>

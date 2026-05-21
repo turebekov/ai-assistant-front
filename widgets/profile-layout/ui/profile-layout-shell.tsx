@@ -148,82 +148,96 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
     return <main className="p-6 text-sm text-muted-foreground">Loading profile...</main>
   }
 
+  const profileHeaderActions = (
+    <div className="flex shrink-0 items-center gap-2">
+      <Button
+        variant="neutral"
+        size="icon-sm"
+        onClick={() => setFeedbackOpen(true)}
+        aria-label="Feedback and Support"
+        title="Feedback & Support"
+      >
+        <MessageCircleQuestion className="h-4 w-4" />
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className="relative">
+            <Button variant="neutral" size="icon-sm" aria-label="Profile menu" title="Profile">
+              <CircleUserRound className="h-4 w-4" />
+            </Button>
+            <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shadow-sm shadow-primary/35">
+              {plan.toUpperCase()}
+            </span>
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>
+            <div className="text-xs text-muted-foreground">Signed in as</div>
+            <div className="truncate font-medium">{email || 'No email'}</div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="cursor-default">
+            <span className="text-muted-foreground">Plan:</span>
+            <span className="ml-1 font-semibold capitalize text-primary">{plan}</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/profile')}>
+            <User className="h-4 w-4" />
+            Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/profile/subscription')}>
+            <CreditCard className="h-4 w-4" />
+            Change plan
+          </DropdownMenuItem>
+          <DropdownMenuItem variant="destructive" onClick={signOut}>
+            <LogOut className="h-4 w-4" />
+            Log out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  )
+
   const profileHeader = (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4">
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
+      <div className="flex h-16 items-center gap-3 px-4">
+        <div className="flex min-w-0 shrink-0 items-center gap-3">
+          {isAssistantSession ? (
+            <Button
+              variant="neutral"
+              size="icon-sm"
+              aria-label="Back to assistants"
+              title="Back to assistants"
+              onClick={() => router.push(assistantSessionBackHref)}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          ) : (
+            <button
+              type="button"
+              className="rounded-full border border-gray-700/45 px-2 py-1 text-sm text-gray-800 hover:bg-gray-900/[0.06] md:hidden dark:border-gray-500 dark:text-gray-100 dark:hover:bg-white/10"
+              onClick={() => setSidebarOpen((v) => !v)}
+            >
+              ☰
+            </button>
+          )}
+          <JobTapLogo
+            href="/"
+            variant="light"
+            iconSize={28}
+            className={cn('shrink-0', !isAssistantSession && 'md:hidden')}
+          />
+          <h1 className="truncate text-lg font-semibold text-slate-900">{pageTitle}</h1>
+        </div>
         {isAssistantSession ? (
-          <Button
-            variant="neutral"
-            size="icon-sm"
-            aria-label="Back to assistants"
-            title="Back to assistants"
-            onClick={() => router.push(assistantSessionBackHref)}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        ) : (
-          <button
-            type="button"
-            className="rounded-full border border-gray-700/45 px-2 py-1 text-sm text-gray-800 hover:bg-gray-900/[0.06] md:hidden dark:border-gray-500 dark:text-gray-100 dark:hover:bg-white/10"
-            onClick={() => setSidebarOpen((v) => !v)}
-          >
-            ☰
-          </button>
-        )}
-        <JobTapLogo
-          href="/"
-          variant="light"
-          iconSize={28}
-          className={cn('shrink-0', !isAssistantSession && 'md:hidden')}
-        />
-        <h1 className="truncate text-lg font-semibold text-slate-900">{pageTitle}</h1>
+          <AssistantUsageProgressBar variant="header" className="hidden min-w-0 flex-1 md:flex" />
+        ) : null}
+        {profileHeaderActions}
       </div>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="neutral"
-          size="icon-sm"
-          onClick={() => setFeedbackOpen(true)}
-          aria-label="Feedback and Support"
-          title="Feedback & Support"
-        >
-          <MessageCircleQuestion className="h-4 w-4" />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="relative">
-              <Button variant="neutral" size="icon-sm" aria-label="Profile menu" title="Profile">
-                <CircleUserRound className="h-4 w-4" />
-              </Button>
-              <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shadow-sm shadow-primary/35">
-                {plan.toUpperCase()}
-              </span>
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>
-              <div className="text-xs text-muted-foreground">Signed in as</div>
-              <div className="truncate font-medium">{email || 'No email'}</div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-default">
-              <span className="text-muted-foreground">Plan:</span>
-              <span className="ml-1 font-semibold capitalize text-primary">{plan}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/profile')}>
-              <User className="h-4 w-4" />
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/profile/subscription')}>
-              <CreditCard className="h-4 w-4" />
-              Change plan
-            </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive" onClick={signOut}>
-              <LogOut className="h-4 w-4" />
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {isAssistantSession ? (
+        <div className="border-t border-slate-100 px-4 py-2 md:hidden">
+          <AssistantUsageProgressBar variant="header" className="flex w-full" />
+        </div>
+      ) : null}
     </header>
   )
 
@@ -250,7 +264,6 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
           {isAssistantArea ? (
             <AssistantUsageProvider>
               {profileHeader}
-              <AssistantUsageProgressBar />
               <main className={mainClassName}>{children}</main>
             </AssistantUsageProvider>
           ) : (
