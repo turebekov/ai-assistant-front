@@ -1,11 +1,3 @@
-/** Languages supported by the realtime ASR / translation model (audio + text). */
-export type SupportedLanguage = {
-  code: string
-  label: string
-  audio: boolean
-  text: boolean
-}
-
 export const SUPPORTED_LANGUAGES = [
   { code: 'zh', label: 'Chinese', audio: true, text: true },
   { code: 'ru', label: 'Russian', audio: true, text: true },
@@ -17,9 +9,17 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'ko', label: 'Korean', audio: true, text: true },
   { code: 'ja', label: 'Japanese', audio: true, text: true },
   { code: 'yue', label: 'Cantonese', audio: true, text: true },
-] as const satisfies readonly SupportedLanguage[]
+] as const
 
 export type SupportedLanguageCode = (typeof SUPPORTED_LANGUAGES)[number]['code']
+
+/** Languages supported by the realtime ASR / translation model (audio + text). */
+export type SupportedLanguage = {
+  code: SupportedLanguageCode
+  label: string
+  audio: boolean
+  text: boolean
+}
 
 export const DEFAULT_LANGUAGE_CODE: SupportedLanguageCode = 'ru'
 
@@ -47,7 +47,7 @@ export function getLanguageLabel(code: string): string {
 }
 
 /** Map stored assistant / session language values to a supported ISO code. */
-export function normalizeInterviewLanguage(language: string): string {
+export function normalizeInterviewLanguage(language: string): SupportedLanguageCode {
   const raw = String(language || '').trim()
   if (!raw) return DEFAULT_LANGUAGE_CODE
 
@@ -67,6 +67,6 @@ export function normalizeInterviewLanguage(language: string): string {
 }
 
 /** Normalize legacy DB label or code to a value valid for form selects. */
-export function toFormLanguageValue(language: string): string {
+export function toFormLanguageValue(language: string): SupportedLanguageCode {
   return normalizeInterviewLanguage(language)
 }

@@ -3,7 +3,7 @@ import { type ReactNode } from 'react'
 
 interface BadgeProps {
   children: ReactNode
-  variant?: 'default' | 'success' | 'warning' | 'accent' | 'outline'
+  variant?: 'default' | 'secondary' | 'success' | 'warning' | 'accent' | 'outline'
   size?: 'sm' | 'md'
   className?: string
 }
@@ -23,6 +23,7 @@ export function Badge({
         size === 'md' && 'px-3 py-1 text-sm',
         // Color variants
         variant === 'default' && 'bg-primary/10 text-primary',
+        variant === 'secondary' && 'bg-secondary text-secondary-foreground',
         variant === 'success' && 'bg-success/10 text-success',
         variant === 'warning' && 'bg-warning/10 text-warning',
         variant === 'accent' && 'bg-accent text-accent-foreground',

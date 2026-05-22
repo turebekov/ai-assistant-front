@@ -35,7 +35,7 @@ export function Pricing() {
                 {...plan}
                 index={index}
                 disabled={disabled}
-                badge={disabled ? 'Coming soon' : plan.badge}
+                badge={disabled ? 'Coming soon' : 'badge' in plan ? plan.badge : undefined}
                 cta={disabled ? 'Coming soon' : plan.cta}
                 href={isFree ? '/auth?mode=register' : undefined}
               />

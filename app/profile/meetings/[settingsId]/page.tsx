@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 }
 
 interface MeetingsBySettingsPageProps {
-  params: Promise<{ settingsId: string }> | { settingsId: string }
+  params: Promise<{ settingsId: string }>
 }
 
 export default async function MeetingsBySettingsPage({ params }: MeetingsBySettingsPageProps) {

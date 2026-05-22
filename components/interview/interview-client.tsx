@@ -14,6 +14,7 @@ import {
   DEFAULT_LANGUAGE_CODE,
   normalizeInterviewLanguage,
   toFormLanguageValue,
+  type SupportedLanguageCode,
 } from '@/lib/languages'
 import { cn } from '@/lib/utils'
 
@@ -89,8 +90,10 @@ export function InterviewClient({
   const [role, setRole] = useState('general')
   const [targetPosition, setTargetPosition] = useState('')
   const [transcriptLanguage, setTranscriptLanguage] = useState('auto')
-  const [translateTarget, setTranslateTarget] = useState(DEFAULT_LANGUAGE_CODE)
-  const [primaryInterviewLanguage, setPrimaryInterviewLanguage] = useState(DEFAULT_LANGUAGE_CODE)
+  const [translateTarget, setTranslateTarget] =
+    useState<SupportedLanguageCode>(DEFAULT_LANGUAGE_CODE)
+  const [primaryInterviewLanguage, setPrimaryInterviewLanguage] =
+    useState<SupportedLanguageCode>(DEFAULT_LANGUAGE_CODE)
   const [isRunning, setIsRunning] = useState(false)
   const [isSuggesting, setIsSuggesting] = useState(false)
   const [isAssistantLoading, setIsAssistantLoading] = useState(false)
