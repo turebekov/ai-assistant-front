@@ -97,11 +97,11 @@ export function FeedbackSupportModal({
           <span>Yes, I'd like to receive follow-up support via email.</span>
         </label>
         {feedbackError ? <p className="text-sm text-destructive">{feedbackError}</p> : null}
-        <DialogFooter className="sm:justify-between">
-          <Button variant="neutral" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="flex items-center justify-end gap-2 sm:justify-end">
+          <Button variant="neutral" size="sm" className="min-w-24" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={onSubmit} disabled={feedbackSubmitting}>
+          <Button size="sm" className="min-w-24" onClick={onSubmit} disabled={feedbackSubmitting}>
             {feedbackSubmitting ? 'Submitting...' : 'Submit'}
           </Button>
         </DialogFooter>

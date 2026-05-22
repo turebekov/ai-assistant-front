@@ -96,6 +96,11 @@
   --landing-mint: #e5f5f4;
   --landing-mint-soft: #f2faf9;
   --landing-hero-fade: #e5f5f4;
+
+  /* Warm green CTAs (assistant / interview workspace) */
+  --brand-green: #18a88f;
+  --brand-green-hover: #0f8f78;
+  --brand-green-active: #00756a;
 }
 
 .dark {
@@ -190,6 +195,9 @@
   --color-landing-mint: var(--landing-mint);
   --color-landing-mint-soft: var(--landing-mint-soft);
   --color-landing-hero-fade: var(--landing-hero-fade);
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-hover: var(--brand-green-hover);
+  --color-brand-green-active: var(--brand-green-active);
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);

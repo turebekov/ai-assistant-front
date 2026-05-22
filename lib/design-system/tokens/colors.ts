@@ -45,4 +45,8 @@ export const colors = {
   landingMint: '#E5F5F4',
   landingMintSoft: '#F2FAF9',
   landingHeroFade: '#E5F5F4',
+  /** Warm green — interview / assistant CTAs */
+  brandGreen: '#18A88F',
+  brandGreenHover: '#0F8F78',
+  brandGreenActive: '#00756A',
 } as const

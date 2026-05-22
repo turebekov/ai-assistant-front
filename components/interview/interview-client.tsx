@@ -794,7 +794,7 @@ export function InterviewClient({
           sessionSidebarOpen && 'md:pr-[23.5rem]'
         )}
       >
-            <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-900">
+            <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-landing-mint-soft px-3 py-2 text-sm text-heading">
               <p className="min-w-0 flex-1 truncate leading-snug">
                 {activeAssistant ? (
                   <>
@@ -806,14 +806,14 @@ export function InterviewClient({
                     {activeAssistant.roleName ? ` • Role: ${activeAssistant.roleName}` : ''}
                   </>
                 ) : (
-                  <span className="font-medium text-violet-900/80">
+                  <span className="font-medium text-gray">
                     {mode === 'meetings' ? 'Meeting session' : 'Interview session'}
                   </span>
                 )}
               </p>
-              <div className="flex shrink-0 items-center gap-2 text-xs text-violet-800/90">
-                <span className="whitespace-nowrap font-medium">{captureStatusLabel}</span>
-                <span className="text-violet-400/80" aria-hidden>
+              <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                <span className="whitespace-nowrap font-medium text-gray">{captureStatusLabel}</span>
+                <span className="text-gray-light" aria-hidden>
                   ·
                 </span>
                 <span className="whitespace-nowrap">{resumeStatus}</span>
@@ -822,7 +822,7 @@ export function InterviewClient({
             <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)] lg:items-stretch">
               <div className="flex min-h-0 min-w-0 flex-col gap-3 overflow-hidden">
                 <section className="shrink-0 overflow-hidden rounded-xl border border-border bg-card">
-                  <header className="flex items-center justify-between border-b border-border bg-[#f8f9fa] px-3 py-2.5">
+                  <header className="flex items-center justify-between border-b border-border bg-light-gray px-3 py-2.5">
                     <span className="text-sm font-semibold text-heading">
                       {mode === 'meetings' ? 'Meeting conversation' : 'Interview conversation'}
                     </span>
@@ -841,7 +841,7 @@ export function InterviewClient({
                       <Download className="h-4 w-4" />
                     </button>
                   </header>
-                  <div className="relative aspect-video w-full bg-[#343a40]">
+                  <div className="relative aspect-video w-full bg-dark-mid">
                     <video
                       ref={previewRef}
                       className={cn(
@@ -854,19 +854,19 @@ export function InterviewClient({
                     />
                     {!isRunning ? (
                       <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-                        <button
-                          type="button"
+                        <Button
+                          variant="teal"
                           onClick={() => void startCapture()}
                           disabled={
                             usage !== null &&
                             !usage.unlimited &&
                             (usage.remainingSeconds ?? 0) <= 0
                           }
-                          className="inline-flex items-center gap-2.5 rounded-lg bg-[#7B5CFF] px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-colors hover:bg-[#6a4df0] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="gap-2.5"
                         >
                           <MonitorUp className="h-5 w-5" strokeWidth={2.25} />
                           {mode === 'meetings' ? 'Connect meeting' : 'Connect interview'}
-                        </button>
+                        </Button>
                         <p className="mt-3 text-xs text-slate-400">
                           Share your {mode === 'meetings' ? 'meeting' : 'interview'} or{' '}
                           <Link
@@ -886,15 +886,15 @@ export function InterviewClient({
                   </div>
                   {isRunning ? (
                     <div className="border-t border-border p-2">
-                      <Button variant="outline" className="w-full" onClick={stopCapture}>
+                      <Button variant="soft" className="w-full" onClick={stopCapture}>
                         Stop
                       </Button>
                     </div>
                   ) : null}
                 </section>
                 <Button
-                  variant="outline"
-                  className="h-9 w-full shrink-0 text-sm"
+                  variant="soft"
+                  className="w-full shrink-0"
                   onClick={() => void saveSession()}
                   disabled={isSessionSaving || transcriptLines.length === 0}
                 >
@@ -904,8 +904,7 @@ export function InterviewClient({
                 <header className="flex shrink-0 items-center justify-between border-b border-border p-3 font-semibold">
                   <span>Live transcript</span>
                   <Button
-                    size="sm"
-                    variant="outline"
+                    variant="soft"
                     onClick={() => {
                       setTranscriptLines([])
                       setTranscriptLineTimestamps([])
@@ -939,12 +938,11 @@ export function InterviewClient({
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
                   <span>AI suggestion (Qwen)</span>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
-                      {isSuggesting ? 'Sending...' : 'Send'}
+                    <Button variant="soft" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
+                      {isSuggesting ? 'Thinking...' : 'Answer now'}
                     </Button>
                     <Button
-                      size="sm"
-                      variant="outline"
+                      variant="soft"
                       onClick={() => {
                         setSuggestionPrimaryHistory([])
                         setSentLineIndexes(new Set())
@@ -973,12 +971,11 @@ export function InterviewClient({
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
                   <span>AI suggestion (Claude)</span>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
-                      {isSuggesting ? 'Sending...' : 'Send'}
+                    <Button variant="soft" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
+                      {isSuggesting ? 'Thinking...' : 'Answer now'}
                     </Button>
                     <Button
-                      size="sm"
-                      variant="outline"
+                      variant="soft"
                       onClick={() => {
                         setSuggestionClaudeHistory([])
                         setSentLineIndexes(new Set())
@@ -1020,7 +1017,7 @@ export function InterviewClient({
                 </Button>
                 <h2 className="text-sm font-semibold text-slate-900">Session history</h2>
               </div>
-              <Button size="sm" variant="outline" onClick={() => void loadHistory()} disabled={isHistoryLoading}>
+              <Button variant="soft" onClick={() => void loadHistory()} disabled={isHistoryLoading}>
                 {isHistoryLoading ? 'Refreshing...' : 'Refresh'}
               </Button>
             </div>
@@ -1036,7 +1033,7 @@ export function InterviewClient({
                         : new Date(item.createdAt).toISOString().replace('T', ' ').slice(0, 19)}
                     </span>
                     <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">{item.role}</span>
-                    <Button size="sm" variant="outline" onClick={() => loadSession(item)}>
+                    <Button variant="soft" onClick={() => loadSession(item)}>
                       Load
                     </Button>
                     <a href={apiUrl(`/api/sessions/${item.id}/export`)} target="_blank" className="text-xs text-link underline hover:text-link-hover">
@@ -1057,8 +1054,8 @@ export function InterviewClient({
             className={cn(
               'flex h-11 w-11 items-center justify-center rounded-xl border transition-colors',
               sessionSidebarOpen
-                ? 'border-violet-200 bg-violet-100 text-violet-700'
-                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                ? 'border-primary/25 bg-primary-light text-primary'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-primary-light/60'
             )}
           >
             <FileText className="h-5 w-5" />

@@ -13,8 +13,17 @@ const buttonVariants = cva(
           'bg-primary text-primary-foreground text-base font-medium leading-none shadow-none hover:bg-primary-hover hover:-translate-y-px active:translate-y-0 active:bg-primary-active disabled:translate-y-0 disabled:bg-[#FFD0B0] disabled:text-primary-foreground/90 disabled:opacity-100',
         destructive:
           'bg-destructive text-white font-semibold shadow-sm hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+        /** Soft orange outline — 1px #FF8516, 36px, easy on the eyes (landing + app) */
         outline:
-          'border-2 border-primary bg-transparent text-primary shadow-none hover:bg-primary-light hover:text-primary dark:border-primary dark:hover:bg-primary-light/10',
+          'rounded-full border border-primary bg-transparent text-primary shadow-none hover:bg-primary-light hover:text-primary active:translate-y-0 disabled:translate-y-0 disabled:opacity-60 dark:border-primary dark:hover:bg-primary-light/10',
+        soft:
+          'rounded-full border border-primary bg-transparent text-primary shadow-none hover:bg-primary-light hover:text-primary active:translate-y-0 disabled:translate-y-0 disabled:opacity-60',
+        /** Warm green filled CTA (design system brand-green) */
+        teal:
+          'bg-brand-green text-white font-medium shadow-none hover:bg-brand-green-hover hover:text-white hover:-translate-y-px active:translate-y-0 active:bg-brand-green-active disabled:translate-y-0 disabled:bg-brand-green/45 disabled:text-white/90',
+        /** Warm green secondary — mint surface + green border */
+        'teal-soft':
+          'border-2 border-brand-green bg-landing-mint-soft text-brand-green-active shadow-none hover:bg-landing-mint hover:text-brand-green-hover hover:-translate-y-px active:translate-y-0 disabled:translate-y-0 disabled:opacity-60',
         /** Secondary actions (e.g. profile chrome) — slate / gray-900, not orange */
         neutral:
           'border border-gray-900 bg-transparent text-gray-900 shadow-none hover:bg-gray-900/[0.07] focus-visible:border-gray-900 focus-visible:ring-gray-900/20 dark:border-gray-500 dark:text-gray-100 dark:hover:bg-white/10 dark:focus-visible:border-gray-400 dark:focus-visible:ring-white/15',
@@ -33,6 +42,18 @@ const buttonVariants = cva(
         'icon-lg': 'size-12',
       },
     },
+    compoundVariants: [
+      {
+        variant: ['soft', 'outline', 'neutral'],
+        size: 'default',
+        className: '!h-9 min-h-9 px-5 py-2 text-sm font-medium leading-5',
+      },
+      {
+        variant: ['soft', 'outline', 'neutral'],
+        size: 'sm',
+        className: '!h-8 min-h-8 px-4 text-sm font-medium leading-5',
+      },
+    ],
     defaultVariants: {
       variant: 'default',
       size: 'default',
