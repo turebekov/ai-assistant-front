@@ -1,4 +1,5 @@
 export const SUPPORTED_LANGUAGES = [
+  { code: 'en', label: 'English', audio: true, text: true },
   { code: 'zh', label: 'Chinese', audio: true, text: true },
   { code: 'ru', label: 'Russian', audio: true, text: true },
   { code: 'fr', label: 'French', audio: true, text: true },
@@ -60,7 +61,7 @@ export function normalizeInterviewLanguage(language: string): SupportedLanguageC
   }
 
   // Legacy values from older assistants
-  if (lower.includes('english')) return 'ru'
+  if (lower.includes('english') || lower === 'en' || lower.startsWith('en-')) return 'en'
   if (lower.includes('kazakh') || lower === 'kk') return 'ru'
 
   return DEFAULT_LANGUAGE_CODE

@@ -1,4 +1,4 @@
-import { SUPPORTED_LANGUAGES } from '@/lib/languages'
+import { SUPPORTED_LANGUAGES, toFormLanguageValue } from '@/lib/languages'
 import { cn } from '@/lib/utils'
 
 type LanguageSelectProps = {
@@ -16,11 +16,13 @@ export function LanguageSelect({
   className,
   id,
 }: LanguageSelectProps) {
+  const selected = toFormLanguageValue(value)
+
   return (
     <select
       id={id}
       className={cn('h-10 w-full rounded-md border border-slate-200 px-3', className)}
-      value={value}
+      value={selected}
       onChange={(e) => onChange(e.target.value)}
     >
       {SUPPORTED_LANGUAGES.map((lang) => (
