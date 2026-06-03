@@ -18,6 +18,7 @@ import { apiUrl } from '@/lib/api-url'
 import { JobTapLogo } from '@/components/brand/jobtap-logo'
 import { AssistantUsageProvider } from '@/contexts/assistant-usage-context'
 import { AssistantUsageProgressBar } from '@/components/usage/assistant-usage-progress-bar'
+import { formatPlanLabel } from '@/lib/billing/config'
 import { cn } from '@/lib/utils'
 
 interface ProfileLayoutShellProps {
@@ -166,7 +167,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
               <CircleUserRound className="h-4 w-4" />
             </Button>
             <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shadow-sm shadow-primary/35">
-              {plan.toUpperCase()}
+              {formatPlanLabel(plan)}
             </span>
           </div>
         </DropdownMenuTrigger>
@@ -178,7 +179,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-default">
             <span className="text-muted-foreground">Plan:</span>
-            <span className="ml-1 font-semibold capitalize text-primary">{plan}</span>
+            <span className="ml-1 font-semibold text-primary">{formatPlanLabel(plan)}</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push('/profile')}>
             <User className="h-4 w-4" />

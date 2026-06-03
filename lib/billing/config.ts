@@ -10,3 +10,19 @@ export function isPlanAvailableForSignup(backendPlan: string) {
   if (backendPlan === 'free') return true
   return PAID_SUBSCRIPTIONS_ENABLED
 }
+
+/** User-facing plan label (no internal model or vendor names). */
+export function formatPlanLabel(plan: string): string {
+  const key = String(plan || 'free').toLowerCase()
+  switch (key) {
+    case 'pro':
+      return 'Pro'
+    case 'pro_claude':
+      return 'Premium'
+    case 'team':
+      return 'Team'
+    case 'free':
+    default:
+      return 'Free'
+  }
+}

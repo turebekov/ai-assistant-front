@@ -339,7 +339,7 @@ export function InterviewClient({
         })
         const payload = (await response.json().catch(() => ({}))) as { suggestion?: string; error?: string; details?: string }
         if (!response.ok) {
-          throw new Error(payload.details || payload.error || 'Claude suggestion request failed')
+          throw new Error(payload.details || payload.error || 'Suggestion request failed')
         }
         setSuggestionClaudeHistory((prev) => pushSuggestion(prev, String(payload.suggestion || '').trim()))
         return
@@ -939,7 +939,7 @@ export function InterviewClient({
               {!enableClaudeSuggestion ? (
               <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
-                  <span>AI suggestion (Qwen)</span>
+                  <span>AI suggestions</span>
                   <div className="flex items-center gap-2">
                     <Button variant="soft" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
                       {isSuggesting ? 'Thinking...' : 'Answer now'}
@@ -972,7 +972,7 @@ export function InterviewClient({
               {enableClaudeSuggestion ? (
               <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
-                  <span>AI suggestion (Claude)</span>
+                  <span>AI suggestions</span>
                   <div className="flex items-center gap-2">
                     <Button variant="soft" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
                       {isSuggesting ? 'Thinking...' : 'Answer now'}

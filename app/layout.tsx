@@ -74,7 +74,7 @@ const jsonLd = {
       '@type': 'Offer',
       price: '25',
       priceCurrency: 'USD',
-      name: 'Monthly Plan + Claude',
+      name: 'Premium Plan',
       billingDuration: 'P1M',
     },
   ],
