@@ -53,7 +53,7 @@ export function ArticleBody({ blocks }: { blocks: BlogBlock[] }) {
                     <li key={item.href}>
                       <a
                         href={item.href}
-                        className="font-medium text-nav hover:text-nav-text-hover hover:underline dark:text-slate-300 dark:hover:text-white"
+                        className="font-medium text-link hover:text-link-hover hover:underline"
                       >
                         {item.label}
                       </a>
