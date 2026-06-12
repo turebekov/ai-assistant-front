@@ -245,8 +245,13 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
   const mainClassName = isAssistantSession ? 'p-2 md:p-3' : 'p-4 md:p-6'
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex min-h-screen">
+    <div
+      className={cn(
+        'bg-background',
+        isAssistantSession ? 'h-dvh overflow-hidden' : 'min-h-screen'
+      )}
+    >
+      <div className={cn('flex', isAssistantSession ? 'h-full min-h-0' : 'min-h-screen')}>
         {!isAssistantSession && sidebarOpen ? (
           <button
             aria-label="Close sidebar overlay"
@@ -264,7 +269,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
         <div
           className={cn(
             'flex flex-1 flex-col md:ml-0',
-            isAssistantSession && 'min-h-0'
+            isAssistantSession && 'min-h-0 overflow-hidden'
           )}
         >
           {isAssistantArea ? (

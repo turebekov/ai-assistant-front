@@ -823,7 +823,7 @@ export function InterviewClient({
               </div>
             </div>
             <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)] lg:items-stretch">
-              <div className="flex min-h-0 min-w-0 flex-col gap-3 overflow-hidden">
+              <div className="flex min-h-0 min-w-0 flex-col gap-3 overflow-hidden lg:h-full">
                 <section className="shrink-0 overflow-hidden rounded-xl border border-border bg-card">
                   <header className="flex items-center justify-between border-b border-border bg-light-gray px-3 py-2.5">
                     <span className="text-sm font-semibold text-heading">
@@ -887,23 +887,23 @@ export function InterviewClient({
                       </div>
                     ) : null}
                   </div>
-                  {isRunning ? (
-                    <div className="border-t border-border p-2">
-                      <Button variant="soft" className="w-full" onClick={stopCapture}>
-                        Stop
-                      </Button>
-                    </div>
-                  ) : null}
                 </section>
-                <Button
-                  variant="soft"
-                  className="w-full shrink-0"
-                  onClick={() => void saveSession()}
-                  disabled={isSessionSaving || transcriptLines.length === 0}
-                >
-                  {isSessionSaving ? 'Saving...' : 'Save session'}
-                </Button>
-              <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
+                <div className="flex shrink-0 flex-row gap-2">
+                  {isRunning ? (
+                    <Button variant="soft" className="min-w-0 flex-1" onClick={stopCapture}>
+                      Stop
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="soft"
+                    className="min-w-0 flex-1"
+                    onClick={() => void saveSession()}
+                    disabled={isSessionSaving || transcriptLines.length === 0}
+                  >
+                    {isSessionSaving ? 'Saving...' : 'Save session'}
+                  </Button>
+                </div>
+              <section className="flex min-h-[min(50dvh,28rem)] min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card lg:min-h-0">
                 <header className="flex shrink-0 items-center justify-between border-b border-border p-3 font-semibold">
                   <span>Live transcript</span>
                   <Button
@@ -921,7 +921,7 @@ export function InterviewClient({
                 </header>
                 <div
                   ref={transcriptScrollRef}
-                  className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap p-3 text-sm"
+                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain whitespace-pre-wrap p-3 text-sm"
                 >
                   {transcriptLines.map((line, idx) => (
                     <div
@@ -935,7 +935,7 @@ export function InterviewClient({
                 </div>
               </section>
               </div>
-              <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
+              <div className="flex min-h-0 min-w-0 flex-col overflow-hidden lg:h-full">
               {!enableClaudeSuggestion ? (
               <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
                 <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
