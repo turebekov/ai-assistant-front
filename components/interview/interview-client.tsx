@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { AssistantProfile } from '@/entities/assistant/model/types'
 import { useAssistantUsage } from '@/contexts/assistant-usage-context'
-import { apiUrl } from '@/lib/api-url'
+import { apiUrl, wsUrl } from '@/lib/api-url'
 import { PAID_SUBSCRIPTIONS_ENABLED } from '@/lib/billing/config'
 import type { AssistantUsageQuota } from '@/lib/assistant-usage'
 import {
@@ -26,15 +26,6 @@ type SessionSummary = {
   language: string
   transcript: string
   suggestion: string
-}
-
-function backendWsBase() {
-  const raw =
-    process.env.NEXT_PUBLIC_EXPRESS_BACKEND_URL?.trim() ||
-    'http://localhost:4000'
-  const asUrl = new URL(raw)
-  asUrl.protocol = asUrl.protocol === 'https:' ? 'wss:' : 'ws:'
-  return asUrl.origin
 }
 
 function tailText(lines: string[], maxChars = 1000) {
@@ -431,9 +422,8 @@ export function InterviewClient({
   }
 
   const startRealtime = async (audioStream: MediaStream) => {
-    const wsBase = backendWsBase()
     const ws = new WebSocket(
-      `${wsBase}/ws/realtime-asr?mode=${
+      `${wsUrl('/ws/realtime-asr')}?mode=${
         pipeline === 'realtime_translate' ? 'translate' : 'asr'
       }&source=${encodeURIComponent(transcriptLanguage || 'auto')}&target=${encodeURIComponent(
         translateTarget || DEFAULT_LANGUAGE_CODE
