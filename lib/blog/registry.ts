@@ -7,6 +7,7 @@ import { starMethodInterviewAnswersAiExamples } from './posts/star-method-interv
 import { googleInterviewQuestions2025AiTips } from './posts/google-interview-questions-2025-ai-tips'
 import { englishJobInterviewAiTranslator } from './posts/english-job-interview-ai-translator'
 import { amazonLeadershipPrinciplesInterviewAi } from './posts/amazon-leadership-principles-interview-ai'
+import { whatIsYourGreatestWeaknessInterviewAnswer } from './posts/what-is-your-greatest-weakness-interview-answer'
 
 export const BLOG_POSTS: BlogPost[] = [
   howToUseAiDuringJobInterview,
@@ -17,6 +18,7 @@ export const BLOG_POSTS: BlogPost[] = [
   googleInterviewQuestions2025AiTips,
   englishJobInterviewAiTranslator,
   amazonLeadershipPrinciplesInterviewAi,
+  whatIsYourGreatestWeaknessInterviewAnswer,
 ]
 
 export function getBlogPost(slug: string): BlogPost | undefined {

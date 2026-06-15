@@ -22,7 +22,7 @@ export type SupportedLanguage = {
   text: boolean
 }
 
-export const DEFAULT_LANGUAGE_CODE: SupportedLanguageCode = 'ru'
+export const DEFAULT_LANGUAGE_CODE: SupportedLanguageCode = 'en'
 
 const LANGUAGE_BY_CODE = new Map(
   SUPPORTED_LANGUAGES.map((lang) => [lang.code, lang] as const),
