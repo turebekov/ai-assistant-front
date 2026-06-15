@@ -22,6 +22,9 @@ export const metadata: Metadata = {
     default: homeSeo.title,
     template: '%s | JobTap',
   },
+  verification: {
+    google: 'SbWOqEhGWzInpRTLiUNpbMxQ3AQXzH_V1fK5vFIyb_A',
+  },
   authors: [{ name: 'JobTap' }],
   creator: 'JobTap',
   publisher: 'JobTap',
