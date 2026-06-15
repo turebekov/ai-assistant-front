@@ -46,10 +46,13 @@ export function Hero() {
               <Button
                 size="lg"
                 variant="outline"
+                asChild
                 className="rounded-full px-8 gap-2"
               >
-                <Play className="h-4 w-4" />
-                Watch Demo
+                <Link href="/tutorial">
+                  <Play className="h-4 w-4" />
+                  Watch Demo
+                </Link>
               </Button>
             </div>
 

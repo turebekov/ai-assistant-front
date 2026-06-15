@@ -79,9 +79,14 @@ export const typography = {
 export const navLinks = [
   { href: '/interview-assistant', label: 'Interview Assistant' },
   { href: '/meeting-translator', label: 'Meeting Translator' },
+  { href: '/tutorial', label: 'Tutorial' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/blog', label: 'Blog' },
 ] as const
+
+/** Official JobTap product tutorial on YouTube. */
+export const TUTORIAL_YOUTUBE_VIDEO_ID = 'kb21ejtbr-U'
+export const TUTORIAL_YOUTUBE_URL = `https://youtu.be/${TUTORIAL_YOUTUBE_VIDEO_ID}`
 
 // Company logos for social proof
 export const companyLogos = [
@@ -282,6 +287,7 @@ export const footerLinks = {
   product: [
     { label: 'Interview Assistant', href: '/interview-assistant' },
     { label: 'Meeting Translator', href: '/meeting-translator' },
+    { label: 'Tutorial', href: '/tutorial' },
     { label: 'Pricing', href: '/pricing' },
     { label: 'Blog', href: '/blog' },
     { label: 'How it works', href: '/#how-it-works' },

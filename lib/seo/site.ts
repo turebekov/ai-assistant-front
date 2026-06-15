@@ -115,12 +115,28 @@ export const SEO_PAGES = {
     sitemapPriority: 0.9,
     changeFrequency: 'weekly',
   },
+  tutorial: {
+    path: '/tutorial',
+    title: 'Tutorial — How to Use JobTap | JobTap',
+    description:
+      'Watch a short walkthrough: create your AI interview assistant, start a session, and get real-time answer suggestions during your call.',
+    keywords: [
+      'JobTap tutorial',
+      'how to use JobTap',
+      'AI interview assistant demo',
+      'JobTap walkthrough',
+    ],
+    openGraphTitle: 'JobTap Tutorial — Create Your Assistant in Minutes',
+    sitemapPriority: 0.85,
+    changeFrequency: 'monthly',
+  },
 } as const satisfies Record<string, PageSeoConfig>
 
 export const SITEMAP_PAGES: PageSeoConfig[] = [
   SEO_PAGES.home,
   SEO_PAGES.interviewAssistant,
   SEO_PAGES.meetingTranslator,
+  SEO_PAGES.tutorial,
   SEO_PAGES.pricing,
   SEO_PAGES.blog,
   SEO_PAGES.auth,
