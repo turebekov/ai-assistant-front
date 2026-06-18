@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
+import { cn } from '@/lib/utils'
 
 type BackendPlan = 'free' | 'pro' | 'pro_claude' | 'team'
 
@@ -21,14 +22,24 @@ type UiPlan = {
   available?: boolean
 }
 
+function defaultSelectedPlanId(plans: UiPlan[], paidEnabled: boolean): string | null {
+  const available = (plan: UiPlan) =>
+    plan.available ?? (plan.backendPlan === 'free' || paidEnabled)
+  const pick =
+    plans.find((p) => p.highlighted && available(p)) ??
+    plans.find((p) => p.backendPlan !== 'free' && available(p)) ??
+    plans.find((p) => available(p))
+  return pick?.id ?? null
+}
+
 export default function ProfileSubscriptionPage() {
   const router = useRouter()
   const [status, setStatus] = useState('')
-  const [info, setInfo] = useState('')
   const [plans, setPlans] = useState<UiPlan[]>([])
   const [plansLoading, setPlansLoading] = useState(true)
   const [paidEnabled, setPaidEnabled] = useState(false)
-  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null)
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     const run = async () => {
@@ -46,8 +57,11 @@ export default function ProfileSubscriptionPage() {
           setPaidEnabled(false)
           return
         }
-        setPaidEnabled(payload.paidSubscriptionsEnabled === true)
-        setPlans(Array.isArray(payload.plans) ? payload.plans : [])
+        const paid = payload.paidSubscriptionsEnabled === true
+        const nextPlans = Array.isArray(payload.plans) ? payload.plans : []
+        setPaidEnabled(paid)
+        setPlans(nextPlans)
+        setSelectedPlanId(defaultSelectedPlanId(nextPlans, paid))
       } catch {
         setStatus('Network error while loading plans.')
         setPlans([])
@@ -58,50 +72,13 @@ export default function ProfileSubscriptionPage() {
     void run()
   }, [])
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('checkout') !== 'success') return
+  const selectedPlan = useMemo(
+    () => plans.find((plan) => plan.id === selectedPlanId) ?? null,
+    [plans, selectedPlanId]
+  )
 
-    const token = localStorage.getItem('auth_token') || ''
-    if (!token) return
-
-    let cancelled = false
-    void (async () => {
-      let authToken = token
-      for (let attempt = 0; attempt < 6; attempt++) {
-        const response = await fetch(apiUrl('/api/auth/me'), {
-          headers: { Authorization: `Bearer ${authToken}` },
-        })
-        const payload = (await response.json().catch(() => ({}))) as {
-          token?: string
-          access?: { plan?: string; hasSubscription?: boolean }
-        }
-        if (response.ok && payload.token) {
-          localStorage.setItem('auth_token', payload.token)
-          authToken = payload.token
-          const plan = payload.access?.plan || ''
-          if (payload.access?.hasSubscription) {
-            localStorage.setItem('auth_plan', plan)
-            if (!cancelled) {
-              setInfo('Subscription is active. You can use paid features.')
-              router.replace('/profile/subscription')
-            }
-            return
-          }
-        }
-        await new Promise((r) => setTimeout(r, 1500))
-      }
-      if (!cancelled) {
-        setInfo('If your plan is not updated yet, wait a minute and refresh the page (webhook may be delayed).')
-        router.replace('/profile/subscription')
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [router])
+  const isPlanAvailable = (plan: UiPlan) =>
+    plan.available ?? (plan.backendPlan === 'free' || paidEnabled)
 
   const startLemonCheckout = async (planId: string) => {
     const token = localStorage.getItem('auth_token') || ''
@@ -110,7 +87,7 @@ export default function ProfileSubscriptionPage() {
       return
     }
     setStatus('')
-    setLoadingPlanId(planId)
+    setSubmitting(true)
     try {
       const response = await fetch(apiUrl('/api/billing/checkout'), {
         method: 'POST',
@@ -118,10 +95,7 @@ export default function ProfileSubscriptionPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          planCode: planId,
-          returnUrl: `${window.location.origin}/profile/subscription?checkout=success`,
-        }),
+        body: JSON.stringify({ planCode: planId }),
       })
       const payload = (await response.json().catch(() => ({}))) as {
         checkoutUrl?: string
@@ -135,18 +109,18 @@ export default function ProfileSubscriptionPage() {
     } catch {
       setStatus('Network error. Please try again.')
     } finally {
-      setLoadingPlanId(null)
+      setSubmitting(false)
     }
   }
 
-  const choosePlan = async (plan: BackendPlan, planId: string) => {
+  const choosePlan = async (plan: BackendPlan) => {
     const token = localStorage.getItem('auth_token') || ''
     if (!token) {
       router.push('/auth')
       return
     }
     setStatus('')
-    setLoadingPlanId(planId)
+    setSubmitting(true)
     try {
       const response = await fetch(apiUrl('/api/auth/plan'), {
         method: 'POST',
@@ -173,26 +147,33 @@ export default function ProfileSubscriptionPage() {
     } catch {
       setStatus('Network error. Please try again.')
     } finally {
-      setLoadingPlanId(null)
+      setSubmitting(false)
     }
   }
 
-  const onPlanCta = (plan: UiPlan) => {
-    const available = plan.available ?? (plan.backendPlan === 'free' || paidEnabled)
-    if (!available) {
+  const confirmSelection = () => {
+    if (!selectedPlan) return
+    if (!isPlanAvailable(selectedPlan)) {
       setStatus('Paid plans are coming soon. Please use the free plan for now.')
       return
     }
-    if (plan.backendPlan === 'free') {
-      void choosePlan('free', plan.id)
+    if (selectedPlan.backendPlan === 'free') {
+      void choosePlan('free')
       return
     }
-    if (plan.id === 'month' || plan.id === 'month-claude') {
-      void startLemonCheckout(plan.id)
+    if (selectedPlan.id === 'month' || selectedPlan.id === 'month-claude') {
+      void startLemonCheckout(selectedPlan.id)
       return
     }
-    void choosePlan(plan.backendPlan, plan.id)
+    void choosePlan(selectedPlan.backendPlan)
   }
+
+  const continueLabel = selectedPlan ? selectedPlan.cta : 'Choose a plan'
+
+  const maxFeatureCount = useMemo(
+    () => plans.reduce((max, plan) => Math.max(max, plan.features.length), 0),
+    [plans]
+  )
 
   return (
     <main className="min-h-screen bg-background px-4 py-10">
@@ -200,73 +181,121 @@ export default function ProfileSubscriptionPage() {
         <h1 className="text-center text-4xl font-bold tracking-tight text-foreground">Choose your plan.</h1>
         <p className="mt-2 text-center text-sm text-muted-foreground">
           {paidEnabled
-            ? 'Choose the monthly plan that fits your interview workflow.'
+            ? 'Select a plan, then continue to checkout or start free.'
             : 'Only the free plan is available right now. Paid subscriptions are coming soon.'}
         </p>
-        {info && <p className="mt-3 text-sm text-emerald-600 dark:text-emerald-500">{info}</p>}
-        {status && <p className="mt-3 text-sm text-destructive">{status}</p>}
+        {status && <p className="mt-3 text-center text-sm text-destructive">{status}</p>}
 
         {plansLoading ? (
           <p className="mt-8 text-center text-sm text-muted-foreground">Loading plans...</p>
         ) : (
-          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {plans.map((plan) => {
-            const available =
-              plan.available ?? (plan.backendPlan === 'free' || paidEnabled)
-            return (
-            <article
-              key={plan.id}
-              className={`relative flex h-full flex-col rounded-2xl p-5 ${
-                !available ? 'opacity-75 ' : ''
-              }${
-                plan.highlighted && available
-                  ? 'border-2 border-primary bg-card shadow-md shadow-primary/10'
-                  : 'border border-border bg-background'
-              }`}
+          <>
+            <div
+              className="mt-8 grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3"
+              role="radiogroup"
+              aria-label="Subscription plans"
             >
-              {plan.badge ? (
-                <span
-                  className={`absolute -top-3 right-4 rounded-full px-3 py-1 text-xs font-semibold ${
-                    available
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {plan.badge}
-                </span>
-              ) : null}
-              <div
-                className={`rounded-xl border px-3 py-2.5 ${
-                  plan.highlighted
-                    ? 'border-primary/35 bg-gradient-to-br from-primary-light/80 via-background to-background text-heading'
-                    : 'border-transparent bg-muted'
-                }`}
-              >
-                <div className="text-sm font-semibold text-heading">{plan.title}</div>
-                <div className={`text-3xl font-bold ${plan.highlighted ? 'text-primary' : 'text-foreground'}`}>
-                  {plan.priceLabel}
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">{plan.billingNote}</p>
-              </div>
-              <ul className="mt-4 min-h-28 flex-1 space-y-2 text-sm text-muted-foreground">
-                {plan.features.map((feature) => (
-                  <li key={feature}>• {feature}</li>
-                ))}
-              </ul>
+              {plans.map((plan) => {
+                const available = isPlanAvailable(plan)
+                const selected = selectedPlanId === plan.id
+                return (
+                  <button
+                    key={plan.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    disabled={!available}
+                    onClick={() => {
+                      if (available) setSelectedPlanId(plan.id)
+                    }}
+                    className={cn(
+                      'relative flex h-full min-h-[26rem] flex-col rounded-2xl border-2 p-5 text-left transition-colors',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+                      !available && 'cursor-not-allowed opacity-75',
+                      available && 'cursor-pointer hover:border-primary/40',
+                      selected
+                        ? 'border-primary bg-card shadow-md shadow-primary/10'
+                        : plan.highlighted && available
+                          ? 'border-primary/30 bg-background'
+                          : 'border-border bg-background'
+                    )}
+                  >
+                    {plan.badge ? (
+                      <span
+                        className={cn(
+                          'absolute -top-3 right-4 rounded-full px-3 py-1 text-xs font-semibold',
+                          available
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground'
+                        )}
+                      >
+                        {plan.badge}
+                      </span>
+                    ) : null}
+
+                    <span
+                      className={cn(
+                        'absolute left-4 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2',
+                        selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/40'
+                      )}
+                      aria-hidden
+                    >
+                      {selected ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
+                    </span>
+
+                    <div
+                      className={cn(
+                        'mt-6 rounded-xl border px-3 py-2.5',
+                        selected || plan.highlighted
+                          ? 'border-primary/35 bg-gradient-to-br from-primary-light/80 via-background to-background text-heading'
+                          : 'border-transparent bg-muted'
+                      )}
+                    >
+                      <div className="text-sm font-semibold text-heading">{plan.title}</div>
+                      <div
+                        className={cn(
+                          'text-3xl font-bold',
+                          selected || plan.highlighted ? 'text-primary' : 'text-foreground'
+                        )}
+                      >
+                        {plan.priceLabel}
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">{plan.billingNote}</p>
+                    </div>
+
+                    <ul
+                      className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground"
+                      style={{ minHeight: `${Math.max(maxFeatureCount, 5) * 1.625}rem` }}
+                    >
+                      {plan.features.map((feature) => (
+                        <li key={feature}>• {feature}</li>
+                      ))}
+                    </ul>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="mt-8 flex h-24 flex-col items-center justify-start gap-2">
               <Button
-                className="mt-6 w-full"
-                variant={available ? 'default' : 'neutral'}
-                onClick={() => onPlanCta(plan)}
-                disabled={!available || loadingPlanId !== null}
+                className="h-11 w-64 shrink-0 px-8"
+                size="lg"
+                onClick={confirmSelection}
+                disabled={!selectedPlan || !isPlanAvailable(selectedPlan) || submitting}
               >
-                {loadingPlanId === plan.id ? 'Saving...' : plan.cta}
+                <span className="block w-full truncate text-center">
+                  {submitting ? 'Please wait...' : continueLabel}
+                </span>
               </Button>
-            </article>
-          )})}
-          </div>
+              <p className="h-5 w-64 truncate text-center text-xs text-muted-foreground">
+                {selectedPlan && isPlanAvailable(selectedPlan)
+                  ? `Selected: ${selectedPlan.title}`
+                  : '\u00A0'}
+              </p>
+            </div>
+          </>
         )}
       </section>
     </main>
   )
 }
-
