@@ -8,6 +8,7 @@ import { googleInterviewQuestions2025AiTips } from './posts/google-interview-que
 import { englishJobInterviewAiTranslator } from './posts/english-job-interview-ai-translator'
 import { amazonLeadershipPrinciplesInterviewAi } from './posts/amazon-leadership-principles-interview-ai'
 import { whatIsYourGreatestWeaknessInterviewAnswer } from './posts/what-is-your-greatest-weakness-interview-answer'
+import { whyDoYouWantToWorkHereInterviewAnswer } from './posts/why-do-you-want-to-work-here-interview-answer'
 
 export const BLOG_POSTS: BlogPost[] = [
   howToUseAiDuringJobInterview,
@@ -19,6 +20,7 @@ export const BLOG_POSTS: BlogPost[] = [
   englishJobInterviewAiTranslator,
   amazonLeadershipPrinciplesInterviewAi,
   whatIsYourGreatestWeaknessInterviewAnswer,
+  whyDoYouWantToWorkHereInterviewAnswer,
 ]
 
 export function getBlogPost(slug: string): BlogPost | undefined {
