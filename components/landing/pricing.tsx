@@ -3,9 +3,11 @@
 import { motion } from 'framer-motion'
 import { PricingCard } from '@/components/design-system/pricing-card'
 import { pricingPlans } from '@/lib/constants'
-import { PAID_SUBSCRIPTIONS_ENABLED } from '@/lib/billing/config'
+import { usePaidSubscriptionsEnabled } from '@/lib/billing/use-paid-subscriptions-enabled'
 
 export function Pricing() {
+  const paidEnabled = usePaidSubscriptionsEnabled()
+
   return (
     <section id="pricing" className="py-16 lg:py-24 bg-white">
       <motion.div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -19,7 +21,7 @@ export function Pricing() {
             Simple, transparent pricing
           </h2>
           <p className="text-lg text-gray max-w-2xl mx-auto">
-            {PAID_SUBSCRIPTIONS_ENABLED
+            {paidEnabled
               ? 'Choose the monthly plan that fits your interview workflow'
               : 'Start free today — paid plans are coming soon'}
           </p>
@@ -28,7 +30,7 @@ export function Pricing() {
         <motion.div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {pricingPlans.map((plan, index) => {
             const isFree = plan.price === 0
-            const disabled = !isFree && !PAID_SUBSCRIPTIONS_ENABLED
+            const disabled = !isFree && !paidEnabled
             return (
               <PricingCard
                 key={plan.name}

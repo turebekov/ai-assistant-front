@@ -294,7 +294,7 @@ export const footerLinks = {
     { label: 'FAQ', href: '/#faq' },
   ],
   company: [
-    { label: 'Email', href: `mailto:${CONTACT_EMAIL}` },
+    { label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
     ...SOCIAL_LINKS.map((link) => ({
       label: `${link.label} — ${link.handle}`,
       href: link.href,

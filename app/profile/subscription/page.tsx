@@ -5,7 +5,6 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
-import { PAID_SUBSCRIPTIONS_ENABLED } from '@/lib/billing/config'
 
 type BackendPlan = 'free' | 'pro' | 'pro_claude' | 'team'
 
@@ -28,6 +27,7 @@ export default function ProfileSubscriptionPage() {
   const [info, setInfo] = useState('')
   const [plans, setPlans] = useState<UiPlan[]>([])
   const [plansLoading, setPlansLoading] = useState(true)
+  const [paidEnabled, setPaidEnabled] = useState(false)
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -35,12 +35,18 @@ export default function ProfileSubscriptionPage() {
       setPlansLoading(true)
       try {
         const response = await fetch(apiUrl('/api/subscription-plans'))
-        const payload = (await response.json().catch(() => ({}))) as { plans?: UiPlan[]; error?: string }
+        const payload = (await response.json().catch(() => ({}))) as {
+          plans?: UiPlan[]
+          paidSubscriptionsEnabled?: boolean
+          error?: string
+        }
         if (!response.ok) {
           setStatus(payload.error || 'Cannot load subscription plans.')
           setPlans([])
+          setPaidEnabled(false)
           return
         }
+        setPaidEnabled(payload.paidSubscriptionsEnabled === true)
         setPlans(Array.isArray(payload.plans) ? payload.plans : [])
       } catch {
         setStatus('Network error while loading plans.')
@@ -112,7 +118,10 @@ export default function ProfileSubscriptionPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ planCode: planId }),
+        body: JSON.stringify({
+          planCode: planId,
+          returnUrl: `${window.location.origin}/profile/subscription?checkout=success`,
+        }),
       })
       const payload = (await response.json().catch(() => ({}))) as {
         checkoutUrl?: string
@@ -169,7 +178,7 @@ export default function ProfileSubscriptionPage() {
   }
 
   const onPlanCta = (plan: UiPlan) => {
-    const available = plan.available ?? (plan.backendPlan === 'free' || PAID_SUBSCRIPTIONS_ENABLED)
+    const available = plan.available ?? (plan.backendPlan === 'free' || paidEnabled)
     if (!available) {
       setStatus('Paid plans are coming soon. Please use the free plan for now.')
       return
@@ -190,7 +199,7 @@ export default function ProfileSubscriptionPage() {
       <section className="mx-auto max-w-6xl rounded-2xl border border-border bg-card p-6 shadow-sm">
         <h1 className="text-center text-4xl font-bold tracking-tight text-foreground">Choose your plan.</h1>
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          {PAID_SUBSCRIPTIONS_ENABLED
+          {paidEnabled
             ? 'Choose the monthly plan that fits your interview workflow.'
             : 'Only the free plan is available right now. Paid subscriptions are coming soon.'}
         </p>
@@ -203,7 +212,7 @@ export default function ProfileSubscriptionPage() {
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => {
             const available =
-              plan.available ?? (plan.backendPlan === 'free' || PAID_SUBSCRIPTIONS_ENABLED)
+              plan.available ?? (plan.backendPlan === 'free' || paidEnabled)
             return (
             <article
               key={plan.id}

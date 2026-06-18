@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Youtube } from 'lucide-react'
 import { XLogo } from '@/components/icons/x-logo'
 import { JobTapLogo } from '@/components/brand/jobtap-logo'
-import { footerLinks } from '@/lib/constants'
+import { footerLinks, CONTACT_EMAIL } from '@/lib/constants'
 
 const socialIcons = {
   x: XLogo,
@@ -55,6 +55,12 @@ export function Footer() {
             <p className="mt-4 text-sm leading-relaxed text-gray">
               Real-time AI coaching for your interviews. Get instant suggestions invisible to screen sharing.
             </p>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="mt-3 inline-block text-sm font-medium text-nav transition-colors hover:text-nav-text-hover hover:underline"
+            >
+              {CONTACT_EMAIL}
+            </a>
             <div className="mt-6 flex gap-4">
               {footerLinks.social.map((link) => {
                 const Icon = socialIcons[link.id]

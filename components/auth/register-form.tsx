@@ -104,11 +104,26 @@ export function RegisterForm() {
       })
       const payload = (await response.json().catch(() => ({}))) as {
         token?: string
+        needsEmailVerification?: boolean
+        email?: string
+        emailSendFailed?: boolean
+        emailError?: string
         access?: { hasSubscription?: boolean; plan?: string }
         error?: string
+        message?: string
+      }
+      if (response.status === 201 && payload.needsEmailVerification) {
+        const email = payload.email || formData.email.trim()
+        if (payload.emailSendFailed && payload.emailError) {
+          sessionStorage.setItem('emailVerifySendError', payload.emailError)
+        }
+        const query = new URLSearchParams({ email })
+        if (payload.emailSendFailed) query.set('sendFailed', '1')
+        router.push(`/auth/verify-email?${query.toString()}`)
+        return
       }
       if (!response.ok || !payload.token) {
-        setServerError(payload.error || 'Registration failed.')
+        setServerError(payload.error || payload.message || 'Registration failed.')
         return
       }
       localStorage.setItem('auth_token', payload.token)

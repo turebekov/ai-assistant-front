@@ -55,8 +55,15 @@ export function LoginForm() {
       })
       const payload = (await response.json().catch(() => ({}))) as {
         token?: string
+        code?: string
+        email?: string
         access?: { hasSubscription?: boolean; plan?: string }
         error?: string
+      }
+      if (response.status === 403 && payload.code === 'EMAIL_NOT_VERIFIED') {
+        const verifyEmail = payload.email || email.trim()
+        router.push(`/auth/verify-email?email=${encodeURIComponent(verifyEmail)}`)
+        return
       }
       if (!response.ok || !payload.token) {
         setServerError(payload.error || 'Sign in failed.')
