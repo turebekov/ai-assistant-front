@@ -111,6 +111,19 @@ export function RegisterForm() {
         access?: { hasSubscription?: boolean; plan?: string }
         error?: string
         message?: string
+        code?: string
+      }
+      if (response.status === 409) {
+        const email = formData.email.trim()
+        if (payload.code === 'EMAIL_EXISTS_UNVERIFIED' && email) {
+          setServerError(
+            payload.error ||
+              'This email is already registered but not verified. Resend the confirmation email or sign in.'
+          )
+          return
+        }
+        setServerError(payload.error || 'An account with this email already exists.')
+        return
       }
       if (response.status === 201 && payload.needsEmailVerification) {
         const email = payload.email || formData.email.trim()
