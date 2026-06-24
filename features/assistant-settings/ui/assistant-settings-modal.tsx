@@ -1,12 +1,20 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import type {
   AssistantFormFieldErrors,
   AssistantFormFieldErrorKey,
   AssistantSettingsForm,
 } from '@/entities/assistant/model/types'
 import { LanguageSelect } from '@/components/language-select'
+import { PROMPT_STYLES, SUGGESTION_TONES } from '@/lib/suggestion-preferences'
 import { cn } from '@/lib/utils'
 
 interface AssistantSettingsModalProps {
@@ -189,6 +197,44 @@ export function AssistantSettingsModal({
                 }}
               />
               <Err field="profileName" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                {fieldLabel('Suggestions Tone', false)}
+                <Select
+                  value={form.suggestionTone}
+                  onValueChange={(suggestionTone) => onChange({ ...form, suggestionTone })}
+                >
+                  <SelectTrigger className="h-10 w-full">
+                    <SelectValue placeholder="Suggestions Tone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUGGESTION_TONES.map((tone) => (
+                      <SelectItem key={tone} value={tone}>
+                        {tone}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                {fieldLabel('Prompt Style', false)}
+                <Select
+                  value={form.promptStyle}
+                  onValueChange={(promptStyle) => onChange({ ...form, promptStyle })}
+                >
+                  <SelectTrigger className="h-10 w-full">
+                    <SelectValue placeholder="Prompt Style" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PROMPT_STYLES.map((style) => (
+                      <SelectItem key={style} value={style}>
+                        {style}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="rounded-md border border-dashed border-slate-300 p-4 text-sm text-slate-600">
               <p className="mb-2">

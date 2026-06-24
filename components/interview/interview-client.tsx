@@ -16,6 +16,12 @@ import {
   toFormLanguageValue,
   type SupportedLanguageCode,
 } from '@/lib/languages'
+import {
+  DEFAULT_PROMPT_STYLE,
+  DEFAULT_SUGGESTION_TONE,
+  normalizePromptStyle,
+  normalizeSuggestionTone,
+} from '@/lib/suggestion-preferences'
 import { cn } from '@/lib/utils'
 
 type Pipeline = 'realtime_asr' | 'realtime_translate' | 'http'
@@ -85,6 +91,8 @@ export function InterviewClient({
     useState<SupportedLanguageCode>(DEFAULT_LANGUAGE_CODE)
   const [primaryInterviewLanguage, setPrimaryInterviewLanguage] =
     useState<SupportedLanguageCode>(DEFAULT_LANGUAGE_CODE)
+  const [suggestionTone, setSuggestionTone] = useState(DEFAULT_SUGGESTION_TONE)
+  const [promptStyle, setPromptStyle] = useState(DEFAULT_PROMPT_STYLE)
   const [isRunning, setIsRunning] = useState(false)
   const [isSuggesting, setIsSuggesting] = useState(false)
   const [isAssistantLoading, setIsAssistantLoading] = useState(false)
@@ -314,6 +322,8 @@ export function InterviewClient({
     target_position: string
     role: string
     language: string
+    tone: string
+    promptStyle: string
   }) => {
     const provider = enableClaudeSuggestion ? 'claude' : 'qwen'
     const timerLabel = `suggestion:${provider}:${Date.now()}`
@@ -370,6 +380,8 @@ export function InterviewClient({
       target_position: targetPosition,
       role,
       language: primaryInterviewLanguage,
+      tone: suggestionTone,
+      promptStyle,
     }
     const key = block ? block.key : `${body.transcript}::manual::${body.language}`
     if (source === 'quiet' && lastSuggestedKeyRef.current === key) {
@@ -397,7 +409,7 @@ export function InterviewClient({
       suggestionInFlightRef.current = false
       setIsSuggesting(false)
     }
-  }, [extractLatestQuestionBlock, mode, primaryInterviewLanguage, resumeText, role, runSuggestionForPayload, targetPosition, transcriptText])
+  }, [extractLatestQuestionBlock, mode, primaryInterviewLanguage, promptStyle, resumeText, role, runSuggestionForPayload, suggestionTone, targetPosition, transcriptText])
 
   const startHttp = async (audioStream: MediaStream) => {
     const mr = new MediaRecorder(audioStream, { mimeType: 'audio/webm' })
@@ -761,6 +773,8 @@ export function InterviewClient({
           const interviewLanguage = normalizeInterviewLanguage(String(selected.language || ''))
           setPrimaryInterviewLanguage(interviewLanguage)
           setTranscriptLanguage(interviewLanguage)
+          setSuggestionTone(normalizeSuggestionTone(selected.tone))
+          setPromptStyle(normalizePromptStyle(selected.promptStyle))
         }
       } finally {
         setIsAssistantLoading(false)
@@ -911,7 +925,7 @@ export function InterviewClient({
                 </header>
                 <div
                   ref={transcriptScrollRef}
-                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain whitespace-pre-wrap p-3 text-sm"
+                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain whitespace-pre-wrap p-3 text-base leading-relaxed"
                 >
                   {transcriptLines.map((line, idx) => (
                     <div
@@ -946,7 +960,7 @@ export function InterviewClient({
                     </Button>
                   </div>
                 </header>
-                <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3 text-sm">
+                <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3 text-base leading-relaxed">
                   {suggestionPrimaryHistory.length === 0 ? (
                     <span className="text-muted-foreground">No suggestion yet.</span>
                   ) : (
@@ -979,7 +993,7 @@ export function InterviewClient({
                     </Button>
                   </div>
                 </header>
-                <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3 text-sm">
+                <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3 text-base leading-relaxed">
                   {suggestionClaudeHistory.length === 0 ? (
                     <span className="text-muted-foreground">No suggestion yet.</span>
                   ) : (
