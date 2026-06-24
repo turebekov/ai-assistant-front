@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ChevronsRight, CircleHelp, Download, FileText, MonitorUp } from 'lucide-react'
+import { ChevronsRight, CircleHelp, Download, FileText, MonitorUp, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { AssistantProfile } from '@/entities/assistant/model/types'
@@ -12,17 +12,23 @@ import { PAID_SUBSCRIPTIONS_ENABLED } from '@/lib/billing/config'
 import type { AssistantUsageQuota } from '@/lib/assistant-usage'
 import {
   DEFAULT_LANGUAGE_CODE,
-  normalizeInterviewLanguage,
-  toFormLanguageValue,
   type SupportedLanguageCode,
 } from '@/lib/languages'
 import {
+  DEFAULT_FONT_SIZE,
+  fontSizePanelClass,
+  type FontSizePx,
+} from '@/lib/font-size'
+import {
   DEFAULT_PROMPT_STYLE,
   DEFAULT_SUGGESTION_TONE,
-  normalizePromptStyle,
-  normalizeSuggestionTone,
+  type PromptStyle,
+  type SuggestionTone,
 } from '@/lib/suggestion-preferences'
 import { cn } from '@/lib/utils'
+import { AssistantSettingsModal } from '@/features/assistant-settings/ui/assistant-settings-modal'
+import { getAssistantSessionPatch } from '@/features/assistant-settings/lib/assistant-session-patch'
+import { useAssistantSettingsModal } from '@/features/assistant-settings/model/use-assistant-settings-modal'
 
 type Pipeline = 'realtime_asr' | 'realtime_translate' | 'http'
 type SessionSummary = {
@@ -49,12 +55,42 @@ function escapeHtml(value: string) {
 }
 
 function formatSuggestion(text: string) {
-  const escaped = escapeHtml(text)
+  let escaped = escapeHtml(text)
+
+  const questionBlock = (label: string, body: string) =>
+    `<div class="mb-1.5 rounded-md border border-primary-border bg-primary-light px-2.5 py-1.5"><div class="text-[0.65rem] font-semibold uppercase tracking-wide text-primary">${label}</div><p class="mt-0.5 font-semibold text-heading">${body.trim()}</p></div>`
+
+  escaped = escaped.replace(
+    /^\*\*Question(?:\s*\d+)?(?:\s*\/\s*topic)?:\*\*\s*(.+)$/gim,
+    (_, question) => questionBlock('Question', question),
+  )
+  escaped = escaped.replace(
+    /^Question:\s*(.+)$/gim,
+    (_, question) => questionBlock('Question', question),
+  )
+
   const withStrong = escaped
     .replace(/^#{2,3}\s+(.+)$/gm, '<strong>$1</strong>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/^- (.+)$/gm, '• $1')
-  return withStrong.replace(/\n/g, '<br />')
+
+  return withStrong
+    .replace(/\n/g, '<br />')
+    .replace(/(<\/div>)(<br\s*\/?>){2,}/gi, '$1<br />')
+}
+
+function transcriptLineClass(
+  idx: number,
+  questionIdx: number | null,
+  sentLineIndexes: Set<number>,
+) {
+  if (questionIdx === idx) {
+    return 'mb-1 border-l-2 border-primary bg-primary-light pl-2 font-semibold text-heading'
+  }
+  if (sentLineIndexes.has(idx)) {
+    return 'mb-1 border-l-2 border-primary-border bg-primary-light/70 pl-2'
+  }
+  return 'mb-1'
 }
 
 function looksLikeQuestion(line: string) {
@@ -93,6 +129,7 @@ export function InterviewClient({
     useState<SupportedLanguageCode>(DEFAULT_LANGUAGE_CODE)
   const [suggestionTone, setSuggestionTone] = useState(DEFAULT_SUGGESTION_TONE)
   const [promptStyle, setPromptStyle] = useState(DEFAULT_PROMPT_STYLE)
+  const [panelFontSize, setPanelFontSize] = useState<FontSizePx>(DEFAULT_FONT_SIZE)
   const [isRunning, setIsRunning] = useState(false)
   const [isSuggesting, setIsSuggesting] = useState(false)
   const [isAssistantLoading, setIsAssistantLoading] = useState(false)
@@ -102,7 +139,48 @@ export function InterviewClient({
     SessionSummary[]
   >([])
   const [sentLineIndexes, setSentLineIndexes] = useState<Set<number>>(new Set())
+  const [highlightedQuestionIdx, setHighlightedQuestionIdx] = useState<number | null>(null)
   const [activeAssistant, setActiveAssistant] = useState<AssistantProfile | null>(null)
+
+  const applyAssistantProfile = useCallback(
+    (selected: AssistantProfile) => {
+      const patch = getAssistantSessionPatch(selected, mode)
+      setRole(patch.role)
+      setTargetPosition(patch.targetPosition)
+      setPipeline(patch.pipeline)
+      setTranslateTarget(patch.translateTarget)
+      setResumeText(patch.resumeText)
+      setResumeStatus(patch.resumeStatus)
+      setPrimaryInterviewLanguage(patch.primaryInterviewLanguage)
+      setTranscriptLanguage(patch.transcriptLanguage)
+      setSuggestionTone(patch.suggestionTone)
+      setPromptStyle(patch.promptStyle)
+      setPanelFontSize(patch.panelFontSize)
+    },
+    [mode],
+  )
+
+  const {
+    open: settingsOpen,
+    mode: settingsMode,
+    form: settingsForm,
+    setForm: setSettingsForm,
+    fieldErrors: settingsFieldErrors,
+    clearFieldError: clearSettingsFieldError,
+    resumeStatus: settingsResumeStatus,
+    isSaving: isSettingsSaving,
+    saveError: settingsSaveError,
+    openEdit: openAssistantSettings,
+    close: closeAssistantSettings,
+    onSave: saveAssistantSettings,
+    onResumeFileChange: onSettingsResumeFileChange,
+  } = useAssistantSettingsModal({
+    assistantKind: mode === 'meetings' ? 'meeting' : 'interview',
+    onSaved: (assistant) => {
+      setActiveAssistant(assistant)
+      applyAssistantProfile(assistant)
+    },
+  })
 
   const streamRef = useRef<MediaStream | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -128,6 +206,8 @@ export function InterviewClient({
     () => `${transcriptLines.join('\n')}${partial ? `\n${partial}` : ''}`.trim(),
     [partial, transcriptLines]
   )
+
+  const panelTextClass = useMemo(() => fontSizePanelClass(panelFontSize), [panelFontSize])
 
   const downloadTranscript = useCallback(() => {
     const text = transcriptText.trim()
@@ -310,6 +390,7 @@ export function InterviewClient({
       payloadText,
       questionText,
       lineIndexes,
+      questionIdx,
       key: questionText.toLowerCase(),
     }
   }, [getRecentSegmentBounds, transcriptLines])
@@ -363,7 +444,8 @@ export function InterviewClient({
 
   const requestSuggestion = useCallback(async (source: 'manual' | 'quiet' = 'manual') => {
     if (suggestionInFlightRef.current) return
-    const block = source === 'quiet' ? extractLatestQuestionBlock() : null
+    const autoBlock = extractLatestQuestionBlock()
+    const block = source === 'quiet' ? autoBlock : null
     if (source === 'quiet' && !block) {
       return
     }
@@ -371,6 +453,8 @@ export function InterviewClient({
       ? block.payloadText
       : tailText(transcriptText ? transcriptText.split('\n') : [])
     if (!transcriptForPayload) return
+
+    const highlightBlock = block ?? autoBlock
 
     const body = {
       transcript: transcriptForPayload,
@@ -396,11 +480,15 @@ export function InterviewClient({
       })
     }
 
+    if (highlightBlock) {
+      setHighlightedQuestionIdx(highlightBlock.questionIdx)
+    }
+
     suggestionInFlightRef.current = true
     setIsSuggesting(true)
     setStatus('Requesting suggestion...')
     try {
-      await runSuggestionForPayload(block?.questionText || 'Current transcript', body)
+      await runSuggestionForPayload(highlightBlock?.questionText || 'Current transcript', body)
       setStatus('Suggestion received')
       lastSuggestedKeyRef.current = key
     } catch (e) {
@@ -639,6 +727,7 @@ export function InterviewClient({
       setSuggestionClaudeHistory([])
     }
     setSentLineIndexes(new Set())
+    setHighlightedQuestionIdx(null)
     lastSuggestedKeyRef.current = ''
     setStatus('Session loaded')
   }
@@ -742,46 +831,14 @@ export function InterviewClient({
         const selected = payload.assistant
         setActiveAssistant(selected)
         if (selected) {
-          const nextRole = String(selected.roleName || 'general').trim().toLowerCase()
-          setRole(nextRole || 'general')
-          setTargetPosition(String(selected.company || '').trim())
-          setPipeline(selected.translateEnabled ? 'realtime_translate' : 'realtime_asr')
-          if (selected.translateEnabled) {
-            setTranslateTarget(
-              toFormLanguageValue(String(selected.translateLanguage || DEFAULT_LANGUAGE_CODE)),
-            )
-          }
-          const nextResumeText = (() => {
-            if (mode === 'meetings') {
-              const ctx = String(
-                selected.contextText ?? selected.context_text ?? ''
-              ).trim()
-              if (ctx) return ctx
-            }
-            return String(selected.resumeText ?? selected.resume_text ?? '').trim()
-          })()
-          setResumeText(nextResumeText)
-          setResumeStatus(
-            mode === 'meetings'
-              ? nextResumeText
-                ? 'Meeting context loaded from assistant'
-                : 'No meeting context'
-              : nextResumeText
-                ? 'Resume loaded from assistant settings'
-                : 'No resume'
-          )
-          const interviewLanguage = normalizeInterviewLanguage(String(selected.language || ''))
-          setPrimaryInterviewLanguage(interviewLanguage)
-          setTranscriptLanguage(interviewLanguage)
-          setSuggestionTone(normalizeSuggestionTone(selected.tone))
-          setPromptStyle(normalizePromptStyle(selected.promptStyle))
+          applyAssistantProfile(selected)
         }
       } finally {
         setIsAssistantLoading(false)
       }
     }
     void run()
-  }, [mode, router, searchParams, settingsId])
+  }, [applyAssistantProfile, mode, router, searchParams, settingsId])
 
   const captureStatusLabel = isRunning
     ? 'Recording'
@@ -819,6 +876,22 @@ export function InterviewClient({
                 )}
               </p>
               <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                {activeAssistant ? (
+                  <button
+                    type="button"
+                    className="rounded p-1 text-heading hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
+                    disabled={isRunning}
+                    aria-label="Edit assistant settings"
+                    title={
+                      isRunning
+                        ? 'Stop recording to edit assistant settings'
+                        : 'Edit assistant settings'
+                    }
+                    onClick={() => openAssistantSettings(activeAssistant)}
+                  >
+                    <Settings className="h-4 w-4" />
+                  </button>
+                ) : null}
                 <span className="whitespace-nowrap font-medium text-gray">{captureStatusLabel}</span>
                 <span className="text-gray-light" aria-hidden>
                   ·
@@ -826,6 +899,9 @@ export function InterviewClient({
                 <span className="whitespace-nowrap">{resumeStatus}</span>
               </div>
             </div>
+            {settingsSaveError ? (
+              <p className="shrink-0 text-sm text-red-600">{settingsSaveError}</p>
+            ) : null}
             <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)] lg:items-stretch">
               <div className="flex min-h-0 min-w-0 flex-col gap-3 overflow-hidden lg:h-full">
                 <section className="shrink-0 overflow-hidden rounded-xl border border-border bg-card">
@@ -917,6 +993,7 @@ export function InterviewClient({
                       setTranscriptLineTimestamps([])
                       setPartial('')
                       setSentLineIndexes(new Set())
+                      setHighlightedQuestionIdx(null)
                       lastSuggestedKeyRef.current = ''
                     }}
                   >
@@ -925,12 +1002,15 @@ export function InterviewClient({
                 </header>
                 <div
                   ref={transcriptScrollRef}
-                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain whitespace-pre-wrap p-3 text-base leading-relaxed"
+                  className={cn(
+                    'min-h-0 flex-1 overflow-y-auto overscroll-contain whitespace-pre-wrap p-3',
+                    panelTextClass,
+                  )}
                 >
                   {transcriptLines.map((line, idx) => (
                     <div
                       key={`${idx}-${line.slice(0, 12)}`}
-                      className={sentLineIndexes.has(idx) ? 'border-l-2 border-orange-500 bg-orange-50 pl-2' : ''}
+                      className={transcriptLineClass(idx, highlightedQuestionIdx, sentLineIndexes)}
                     >
                       {line}
                     </div>
@@ -953,6 +1033,7 @@ export function InterviewClient({
                       onClick={() => {
                         setSuggestionPrimaryHistory([])
                         setSentLineIndexes(new Set())
+                        setHighlightedQuestionIdx(null)
                         lastSuggestedKeyRef.current = ''
                       }}
                     >
@@ -960,7 +1041,7 @@ export function InterviewClient({
                     </Button>
                   </div>
                 </header>
-                <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3 text-base leading-relaxed">
+                <div className={cn('min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3', panelTextClass)}>
                   {suggestionPrimaryHistory.length === 0 ? (
                     <span className="text-muted-foreground">No suggestion yet.</span>
                   ) : (
@@ -986,6 +1067,7 @@ export function InterviewClient({
                       onClick={() => {
                         setSuggestionClaudeHistory([])
                         setSentLineIndexes(new Set())
+                        setHighlightedQuestionIdx(null)
                         lastSuggestedKeyRef.current = ''
                       }}
                     >
@@ -993,7 +1075,7 @@ export function InterviewClient({
                     </Button>
                   </div>
                 </header>
-                <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3 text-base leading-relaxed">
+                <div className={cn('min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3', panelTextClass)}>
                   {suggestionClaudeHistory.length === 0 ? (
                     <span className="text-muted-foreground">No suggestion yet.</span>
                   ) : (
@@ -1069,6 +1151,20 @@ export function InterviewClient({
           </button>
         </div>
       </div>
+      <AssistantSettingsModal
+        open={settingsOpen}
+        form={settingsForm}
+        onChange={setSettingsForm}
+        fieldErrors={settingsFieldErrors}
+        onClearFieldError={clearSettingsFieldError}
+        resumeStatus={settingsResumeStatus}
+        isSaving={isSettingsSaving}
+        mode={settingsMode}
+        assistantKind={mode === 'meetings' ? 'meeting' : 'interview'}
+        onResumeFileChange={onSettingsResumeFileChange}
+        onClose={closeAssistantSettings}
+        onSave={() => void saveAssistantSettings()}
+      />
     </>
   )
 }

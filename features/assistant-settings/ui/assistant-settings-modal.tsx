@@ -15,6 +15,7 @@ import type {
 } from '@/entities/assistant/model/types'
 import { LanguageSelect } from '@/components/language-select'
 import { PROMPT_STYLES, SUGGESTION_TONES } from '@/lib/suggestion-preferences'
+import { FontSizePicker } from '@/features/assistant-settings/ui/font-size-picker'
 import { cn } from '@/lib/utils'
 
 interface AssistantSettingsModalProps {
@@ -236,6 +237,10 @@ export function AssistantSettingsModal({
                 </Select>
               </div>
             </div>
+            <FontSizePicker
+              value={form.fontSize}
+              onChange={(fontSize) => onChange({ ...form, fontSize })}
+            />
             <div className="rounded-md border border-dashed border-slate-300 p-4 text-sm text-slate-600">
               <p className="mb-2">
                 {assistantKind === 'meeting'

@@ -1,3 +1,5 @@
+import type { FontSizePx } from '@/lib/font-size'
+
 export type AssistantProfile = {
   id: string
   name: string
@@ -14,6 +16,8 @@ export type AssistantProfile = {
   context_text?: string
   tone: string
   promptStyle: string
+  fontSize?: number
+  font_size?: number
   codingAssistant: boolean
   createdAt?: string
 }
@@ -29,6 +33,7 @@ export type AssistantSettingsForm = {
   profileName: string
   suggestionTone: string
   promptStyle: string
+  fontSize: FontSizePx
   codingAssistant: boolean
 }
 
