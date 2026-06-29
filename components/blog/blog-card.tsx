@@ -5,7 +5,15 @@ export function BlogCard({ post }: { post: BlogPost }) {
   return (
     <article className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-card transition-shadow hover:shadow-elevated">
       <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
-        <span className="rounded-full bg-accent px-2.5 py-0.5 text-primary">{post.week}</span>
+        <span className="rounded-full bg-accent px-2.5 py-0.5 text-primary">
+          <time dateTime={post.publishedAt}>
+            {new Date(post.publishedAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </time>
+        </span>
         <span>{post.readingTimeMinutes} min read</span>
       </div>
       <h2 className="mt-4 text-xl font-bold text-heading">

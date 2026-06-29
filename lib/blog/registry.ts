@@ -13,6 +13,7 @@ import { metaFacebookInterviewQuestions2026 } from './posts/meta-facebook-interv
 import { aiMeetingTranslatorCompleteGuide2026 } from './posts/ai-meeting-translator-complete-guide-2026'
 import { meetingTranslationSaveYourJob2026 } from './posts/meeting-translation-save-your-job-2026'
 import { isUsingAiInInterviewsCheating } from './posts/is-using-ai-in-interviews-cheating'
+import { top50CommonInterviewQuestions2026 } from './posts/top-50-common-interview-questions-2026'
 
 export const BLOG_POSTS: BlogPost[] = [
   howToUseAiDuringJobInterview,
@@ -29,6 +30,7 @@ export const BLOG_POSTS: BlogPost[] = [
   aiMeetingTranslatorCompleteGuide2026,
   meetingTranslationSaveYourJob2026,
   isUsingAiInInterviewsCheating,
+  top50CommonInterviewQuestions2026,
 ]
 
 export function getBlogPost(slug: string): BlogPost | undefined {

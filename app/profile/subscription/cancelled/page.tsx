@@ -9,7 +9,7 @@ import { resolveCheckoutCancelledMessage } from '@/lib/billing/checkout-cancelle
 
 function SubscriptionCancelledContent() {
   const searchParams = useSearchParams()
-  const reason = searchParams.get('reason') ?? searchParams.get('error')
+  const reason = searchParams?.get('reason') ?? searchParams?.get('error') ?? null
   const { title, description } = resolveCheckoutCancelledMessage(reason)
 
   return (
