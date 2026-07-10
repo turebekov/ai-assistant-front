@@ -17,6 +17,7 @@ import { top50CommonInterviewQuestions2026 } from './posts/top-50-common-intervi
 import { howToPrepareTechnicalInterview24Hours2026 } from './posts/how-to-prepare-technical-interview-24-hours-2026'
 import { howToNegotiateSalaryAfterJobOffer2026 } from './posts/how-to-negotiate-salary-after-job-offer-2026'
 import { howToWriteAResumeThatGetsInterviewsIn2026 } from './posts/how-to-write-a-resume-that-gets-interviews-in-2026'
+import { howToAnswerWhereDoYouSeeYourselfIn5Years2026 } from './posts/how-to-answer-where-do-you-see-yourself-in-5-years-2026'
 
 export const BLOG_POSTS: BlogPost[] = [
   howToUseAiDuringJobInterview,
@@ -37,6 +38,7 @@ export const BLOG_POSTS: BlogPost[] = [
   howToPrepareTechnicalInterview24Hours2026,
   howToNegotiateSalaryAfterJobOffer2026,
   howToWriteAResumeThatGetsInterviewsIn2026,
+  howToAnswerWhereDoYouSeeYourselfIn5Years2026,
 ]
 
 export function getBlogPost(slug: string): BlogPost | undefined {
