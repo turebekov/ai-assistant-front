@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ChevronsRight, CircleHelp, Download, FileText, MonitorUp, Settings } from 'lucide-react'
+import { ChevronsRight, CircleHelp, Download, FileText, MonitorUp, Save, Settings, StopCircle } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { AssistantProfile } from '@/entities/assistant/model/types'
@@ -905,24 +905,48 @@ export function InterviewClient({
             <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)] lg:items-stretch">
               <div className="flex min-h-0 min-w-0 flex-col gap-3 overflow-hidden lg:h-full">
                 <section className="shrink-0 overflow-hidden rounded-xl border border-border bg-card">
-                  <header className="flex items-center justify-between border-b border-border bg-light-gray px-3 py-2.5">
+                  <header className="flex items-center justify-between border-b border-border bg-light-gray px-3 py-1">
                     <span className="text-sm font-semibold text-heading">
                       {mode === 'meetings' ? 'Meeting conversation' : 'Interview conversation'}
                     </span>
-                    <button
-                      type="button"
-                      className="rounded p-1 text-heading hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
-                      disabled={!transcriptText.trim()}
-                      aria-label="Download transcript"
-                      title={
-                        transcriptText.trim()
-                          ? 'Download transcript as .txt'
-                          : 'Transcript is empty'
-                      }
-                      onClick={downloadTranscript}
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-0.5">
+                      {isRunning ? (
+                        <Button
+                          variant="soft"
+                          size="icon-sm"
+                          className="h-7 w-7"
+                          onClick={stopCapture}
+                          aria-label="Stop session"
+                        >
+                          <StopCircle className="h-4 w-4" />
+                        </Button>
+                      ) : null}
+                      <Button
+                        variant="soft"
+                        size="icon-sm"
+                        className="h-7 w-7"
+                        onClick={() => void saveSession()}
+                        disabled={isSessionSaving || transcriptLines.length === 0}
+                        aria-label="Save session"
+                      >
+                        <Save className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="soft"
+                        size="icon-sm"
+                        className="h-7 w-7"
+                        onClick={downloadTranscript}
+                        disabled={!transcriptText.trim()}
+                        aria-label="Download transcript"
+                        title={
+                          transcriptText.trim()
+                            ? 'Download transcript as .txt'
+                            : 'Transcript is empty'
+                        }
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </header>
                   <div className="relative aspect-video w-full bg-dark-mid">
                     <video
@@ -968,26 +992,13 @@ export function InterviewClient({
                     ) : null}
                   </div>
                 </section>
-                <div className="flex shrink-0 flex-row gap-2">
-                  {isRunning ? (
-                    <Button variant="soft" className="min-w-0 flex-1" onClick={stopCapture}>
-                      Stop
-                    </Button>
-                  ) : null}
-                  <Button
-                    variant="soft"
-                    className="min-w-0 flex-1"
-                    onClick={() => void saveSession()}
-                    disabled={isSessionSaving || transcriptLines.length === 0}
-                  >
-                    {isSessionSaving ? 'Saving...' : 'Save session'}
-                  </Button>
-                </div>
               <section className="flex min-h-[min(50dvh,28rem)] min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card lg:min-h-0">
-                <header className="flex shrink-0 items-center justify-between border-b border-border p-3 font-semibold">
+                <header className="flex shrink-0 items-center justify-between border-b border-border px-3 py-1 font-semibold">
                   <span>Live transcript</span>
                   <Button
                     variant="soft"
+                    size="sm"
+                    className="h-7 px-2"
                     onClick={() => {
                       setTranscriptLines([])
                       setTranscriptLineTimestamps([])
@@ -1022,14 +1033,16 @@ export function InterviewClient({
               <div className="flex min-h-0 min-w-0 flex-col overflow-hidden lg:h-full">
               {!enableClaudeSuggestion ? (
               <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
-                <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
+                <header className="flex items-center justify-between border-b border-border px-3 py-1 font-semibold">
                   <span>AI suggestions</span>
-                  <div className="flex items-center gap-2">
-                    <Button variant="soft" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
+                  <div className="flex items-center gap-1">
+                    <Button variant="soft" size="sm" className="h-7 px-2" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
                       {isSuggesting ? 'Thinking...' : 'Answer now'}
                     </Button>
                     <Button
                       variant="soft"
+                      size="sm"
+                      className="h-7 px-2"
                       onClick={() => {
                         setSuggestionPrimaryHistory([])
                         setSentLineIndexes(new Set())
@@ -1056,14 +1069,16 @@ export function InterviewClient({
               ) : null}
               {enableClaudeSuggestion ? (
               <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
-                <header className="flex items-center justify-between border-b border-border p-3 font-semibold">
+                <header className="flex items-center justify-between border-b border-border px-3 py-1 font-semibold">
                   <span>AI suggestions</span>
-                  <div className="flex items-center gap-2">
-                    <Button variant="soft" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
+                  <div className="flex items-center gap-0.5">
+                    <Button variant="soft" size="sm" className="h-7 px-2 text-xs" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
                       {isSuggesting ? 'Thinking...' : 'Answer now'}
                     </Button>
                     <Button
                       variant="soft"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
                       onClick={() => {
                         setSuggestionClaudeHistory([])
                         setSentLineIndexes(new Set())

@@ -202,8 +202,8 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
 
   const profileHeader = (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
-      <div className="flex h-16 items-center gap-3 px-4">
-        <div className="flex min-w-0 shrink-0 items-center gap-3">
+      <div className="flex h-14 items-center gap-2 px-3">
+        <div className="flex min-w-0 shrink-0 items-center gap-2">
           {isAssistantSession ? (
             <Button
               variant="neutral"
@@ -237,7 +237,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
         {profileHeaderActions}
       </div>
       {isAssistantSession ? (
-        <div className="border-t border-slate-100 px-4 py-2 md:hidden">
+        <div className="border-t border-slate-100 px-3 py-1.5 md:hidden">
           <AssistantUsageProgressBar variant="header" className="flex w-full" />
         </div>
       ) : null}

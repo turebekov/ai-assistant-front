@@ -6,7 +6,7 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ email }: ProfileHeaderProps) {
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-background px-6">
+    <header className="flex h-12 items-center justify-between border-b border-border bg-background px-4">
       <div>
         <h1 className="text-lg font-semibold">Profile</h1>
         <p className="text-xs text-muted-foreground">Main dashboard page</p>

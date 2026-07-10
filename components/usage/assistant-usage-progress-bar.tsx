@@ -40,7 +40,7 @@ export function AssistantUsageProgressBar({
           className
         )}
       >
-        <div className="flex items-center justify-between gap-2 text-[11px] leading-tight">
+        <div className="flex items-center justify-between gap-2 text-[10px] leading-tight">
           <span className={cn('truncate font-medium text-slate-600', isDepleted && 'text-amber-900')}>
             Assistant time
           </span>
@@ -51,7 +51,7 @@ export function AssistantUsageProgressBar({
         </div>
         <Progress
           value={percent}
-          className={cn('h-1.5', isDepleted && '[&_[data-slot=progress-indicator]]:bg-amber-600')}
+          className={cn('h-1', isDepleted && '[&_[data-slot=progress-indicator]]:bg-amber-600')}
         />
         {isDepleted ? (
           <p className="truncate text-[10px] text-amber-900">
