@@ -19,6 +19,8 @@ import { howToNegotiateSalaryAfterJobOffer2026 } from './posts/how-to-negotiate-
 import { howToWriteAResumeThatGetsInterviewsIn2026 } from './posts/how-to-write-a-resume-that-gets-interviews-in-2026'
 import { howToAnswerWhereDoYouSeeYourselfIn5Years2026 } from './posts/how-to-answer-where-do-you-see-yourself-in-5-years-2026'
 import { aiToolsForJobSeekersComplete2026Guide } from './posts/ai-tools-for-job-seekers-complete-2026-guide'
+import { howToGetAJobAtAppleInterviewProcessTips2026 } from './posts/how-to-get-a-job-at-apple-interview-process-tips-2026'
+import { howToGetAJobAtNetflixInterviewProcessTips2026 } from './posts/how-to-get-a-job-at-netflix-interview-process-tips-2026'
 
 export const BLOG_POSTS: BlogPost[] = [
   howToUseAiDuringJobInterview,
@@ -41,6 +43,8 @@ export const BLOG_POSTS: BlogPost[] = [
   howToWriteAResumeThatGetsInterviewsIn2026,
   howToAnswerWhereDoYouSeeYourselfIn5Years2026,
   aiToolsForJobSeekersComplete2026Guide,
+  howToGetAJobAtAppleInterviewProcessTips2026,
+  howToGetAJobAtNetflixInterviewProcessTips2026,
 ]
 
 export function getBlogPost(slug: string): BlogPost | undefined {
