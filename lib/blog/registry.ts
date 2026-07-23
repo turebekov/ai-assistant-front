@@ -21,6 +21,7 @@ import { howToAnswerWhereDoYouSeeYourselfIn5Years2026 } from './posts/how-to-ans
 import { aiToolsForJobSeekersComplete2026Guide } from './posts/ai-tools-for-job-seekers-complete-2026-guide'
 import { howToGetAJobAtAppleInterviewProcessTips2026 } from './posts/how-to-get-a-job-at-apple-interview-process-tips-2026'
 import { howToGetAJobAtNetflixInterviewProcessTips2026 } from './posts/how-to-get-a-job-at-netflix-interview-process-tips-2026'
+import { howToFollowUpAfterAnInterviewEmailTemplates2026 } from './posts/how-to-follow-up-after-an-interview-email-templates-2026'
 
 export const BLOG_POSTS: BlogPost[] = [
   howToUseAiDuringJobInterview,
@@ -45,6 +46,7 @@ export const BLOG_POSTS: BlogPost[] = [
   aiToolsForJobSeekersComplete2026Guide,
   howToGetAJobAtAppleInterviewProcessTips2026,
   howToGetAJobAtNetflixInterviewProcessTips2026,
+  howToFollowUpAfterAnInterviewEmailTemplates2026,
 ]
 
 export function getBlogPost(slug: string): BlogPost | undefined {
