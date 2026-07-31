@@ -23,6 +23,7 @@ import { howToGetAJobAtAppleInterviewProcessTips2026 } from './posts/how-to-get-
 import { howToGetAJobAtNetflixInterviewProcessTips2026 } from './posts/how-to-get-a-job-at-netflix-interview-process-tips-2026'
 import { howToFollowUpAfterAnInterviewEmailTemplates2026 } from './posts/how-to-follow-up-after-an-interview-email-templates-2026'
 import { remoteJobInterviewTipsHowToImpressOnVideo2026 } from './posts/remote-job-interview-tips-how-to-impress-on-video-2026'
+import { howToAnswerWhatAreYourSalaryExpectations2026 } from './posts/how-to-answer-what-are-your-salary-expectations-2026'
 
 export const BLOG_POSTS: BlogPost[] = [
   howToUseAiDuringJobInterview,
@@ -49,6 +50,7 @@ export const BLOG_POSTS: BlogPost[] = [
   howToGetAJobAtNetflixInterviewProcessTips2026,
   howToFollowUpAfterAnInterviewEmailTemplates2026,
   remoteJobInterviewTipsHowToImpressOnVideo2026,
+  howToAnswerWhatAreYourSalaryExpectations2026,
 ]
 
 export function getBlogPost(slug: string): BlogPost | undefined {
