@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { BlogPost } from '@/lib/blog/types'
 import { SITE_URL, type PageSeoConfig } from './site'
 
 const defaultOgImage = {
@@ -31,6 +32,44 @@ export function buildPageMetadata(page: PageSeoConfig): Metadata {
       card: 'summary_large_image',
       title: page.openGraphTitle,
       description: page.description,
+      images: ['/og-image.png'],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  }
+}
+
+export function buildBlogPostMetadata(post: BlogPost): Metadata {
+  const canonical = `${SITE_URL}/blog/${post.slug}`
+  const modifiedTime = post.updatedAt ?? post.publishedAt
+
+  return {
+    title: post.title,
+    description: post.description,
+    keywords: [...post.keywords],
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      type: 'article',
+      locale: 'en_US',
+      url: canonical,
+      siteName: 'JobTap',
+      title: post.title,
+      description: post.description,
+      publishedTime: post.publishedAt,
+      modifiedTime,
+      authors: ['JobTap'],
+      section: 'Blog',
+      tags: [...post.keywords],
+      images: [defaultOgImage],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.description,
       images: ['/og-image.png'],
     },
     robots: {

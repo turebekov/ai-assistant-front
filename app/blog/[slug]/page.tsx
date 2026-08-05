@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { MarketingPageShell } from '@/components/marketing/marketing-page-shell'
 import { ArticleBody } from '@/components/blog/article-body'
 import { BLOG_POSTS, getAllBlogSlugs, getBlogPost } from '@/lib/blog/registry'
-import { buildPageMetadata } from '@/lib/seo/metadata'
+import { buildBlogPostMetadata } from '@/lib/seo/metadata'
 import { SITE_URL } from '@/lib/seo/site'
 
 type PageProps = {
@@ -20,15 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const post = getBlogPost(slug)
   if (!post) return {}
 
-  return buildPageMetadata({
-    path: `/blog/${post.slug}`,
-    title: post.title,
-    description: post.description,
-    keywords: post.keywords,
-    openGraphTitle: post.title,
-    sitemapPriority: 0.7,
-    changeFrequency: 'monthly',
-  })
+  return buildBlogPostMetadata(post)
 }
 
 function buildArticleJsonLd(post: NonNullable<ReturnType<typeof getBlogPost>>) {
@@ -40,6 +32,8 @@ function buildArticleJsonLd(post: NonNullable<ReturnType<typeof getBlogPost>>) {
     datePublished: post.publishedAt,
     dateModified: post.updatedAt ?? post.publishedAt,
     inLanguage: 'en',
+    keywords: post.keywords.join(', '),
+    articleSection: 'Blog',
     author: {
       '@type': 'Organization',
       name: 'JobTap',
