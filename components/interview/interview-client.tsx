@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ChevronsRight, CircleHelp, Download, FileText, MonitorUp, Save, Settings, StopCircle } from 'lucide-react'
+import { Camera, ChevronsRight, CircleHelp, Download, FileText, MonitorUp, Save, Settings, StopCircle } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { AssistantProfile } from '@/entities/assistant/model/types'
@@ -100,6 +100,26 @@ function looksLikeQuestion(line: string) {
   return /^(why|what|how|when|where|who|which|can|could|would|do|did|are|is|tell me|explain|почему|как|что|когда|зачем|где|можете|можешь|расскажите|расскажи|объясните|объясни|неге|қалай|қандай|не|қайда)\b/.test(text)
 }
 
+function capturePreviewScreenshot(video: HTMLVideoElement | null): string | null {
+  if (!video) return null
+  const width = video.videoWidth
+  const height = video.videoHeight
+  if (!width || !height) return null
+
+  const maxWidth = 1280
+  const scale = width > maxWidth ? maxWidth / width : 1
+  const targetWidth = Math.max(1, Math.round(width * scale))
+  const targetHeight = Math.max(1, Math.round(height * scale))
+
+  const canvas = document.createElement('canvas')
+  canvas.width = targetWidth
+  canvas.height = targetHeight
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+  ctx.drawImage(video, 0, 0, targetWidth, targetHeight)
+  return canvas.toDataURL('image/jpeg', 0.86)
+}
+
 export function InterviewClient({
   settingsId,
   mode = 'interview',
@@ -135,6 +155,7 @@ export function InterviewClient({
   const [isAssistantLoading, setIsAssistantLoading] = useState(false)
   const [isHistoryLoading, setIsHistoryLoading] = useState(false)
   const [isSessionSaving, setIsSessionSaving] = useState(false)
+  const [isScreenshotSolving, setIsScreenshotSolving] = useState(false)
   const [history, setHistory] = useState<
     SessionSummary[]
   >([])
@@ -498,6 +519,83 @@ export function InterviewClient({
       setIsSuggesting(false)
     }
   }, [extractLatestQuestionBlock, mode, primaryInterviewLanguage, promptStyle, resumeText, role, runSuggestionForPayload, suggestionTone, targetPosition, transcriptText])
+
+  const solveCodingScreenshot = useCallback(async () => {
+    if (mode !== 'meetings') {
+      setStatus('Coding screenshot assistant is available in meetings mode.')
+      return
+    }
+    if (!isRunning) {
+      setStatus('Start meeting capture first, then run coding assistant.')
+      return
+    }
+
+    const token = localStorage.getItem('auth_token') || ''
+    if (!token) {
+      setStatus('Sign in required to use coding assistant.')
+      router.push('/auth')
+      return
+    }
+
+    const screenshotDataUrl = capturePreviewScreenshot(previewRef.current)
+    if (!screenshotDataUrl) {
+      setStatus('Cannot capture screenshot yet. Wait for video preview and try again.')
+      return
+    }
+
+    const transcriptForPayload = tailText(
+      [...transcriptLines, partial].map((line) => String(line || '').trim()).filter(Boolean),
+      2400,
+    )
+
+    setIsScreenshotSolving(true)
+    setStatus('Analyzing screenshot...')
+    try {
+      const response = await fetch(apiUrl('/api/suggest-coding-screenshot'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          screenshot_data_url: screenshotDataUrl,
+          transcript: transcriptForPayload,
+          resume_text: resumeText,
+          role,
+          target_position: targetPosition,
+          language: primaryInterviewLanguage,
+        }),
+      })
+
+      const payload = (await response.json().catch(() => ({}))) as {
+        suggestion?: string
+        provider?: string
+        error?: string
+        details?: string
+      }
+      if (!response.ok) {
+        throw new Error(payload.details || payload.error || 'Coding screenshot request failed')
+      }
+
+      const suggestion = String(payload.suggestion || '').trim()
+      if (!suggestion) {
+        setStatus('AI returned an empty coding suggestion.')
+        return
+      }
+
+      const provider = String(payload.provider || '').toLowerCase()
+      if (provider.includes('claude')) {
+        setSuggestionClaudeHistory((prev) => pushSuggestion(prev, suggestion))
+      } else {
+        setSuggestionPrimaryHistory((prev) => pushSuggestion(prev, suggestion))
+      }
+      setStatus('Coding suggestion received')
+    } catch (e) {
+      setStatus(`Coding assistant error: ${e instanceof Error ? e.message : String(e)}`)
+    } finally {
+      setIsScreenshotSolving(false)
+    }
+  }, [isRunning, mode, partial, primaryInterviewLanguage, pushSuggestion, resumeText, role, router, targetPosition, transcriptLines])
 
   const startHttp = async (audioStream: MediaStream) => {
     const mr = new MediaRecorder(audioStream, { mimeType: 'audio/webm' })
@@ -1039,6 +1137,19 @@ export function InterviewClient({
                     <Button variant="soft" size="sm" className="h-7 px-2" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
                       {isSuggesting ? 'Thinking...' : 'Answer now'}
                     </Button>
+                    {mode === 'meetings' ? (
+                      <Button
+                        variant="soft"
+                        size="sm"
+                        className="h-7 gap-1.5 px-2"
+                        onClick={() => void solveCodingScreenshot()}
+                        disabled={isSuggesting || isScreenshotSolving || !isRunning}
+                        title={isRunning ? 'Capture current frame and solve coding task' : 'Start capture first'}
+                      >
+                        <Camera className="h-3.5 w-3.5" />
+                        {isScreenshotSolving ? 'Analyzing...' : 'Solve screenshot'}
+                      </Button>
+                    ) : null}
                     <Button
                       variant="soft"
                       size="sm"
@@ -1075,6 +1186,19 @@ export function InterviewClient({
                     <Button variant="soft" size="sm" className="h-7 px-2 text-xs" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
                       {isSuggesting ? 'Thinking...' : 'Answer now'}
                     </Button>
+                    {mode === 'meetings' ? (
+                      <Button
+                        variant="soft"
+                        size="sm"
+                        className="h-7 gap-1 px-2 text-xs"
+                        onClick={() => void solveCodingScreenshot()}
+                        disabled={isSuggesting || isScreenshotSolving || !isRunning}
+                        title={isRunning ? 'Capture current frame and solve coding task' : 'Start capture first'}
+                      >
+                        <Camera className="h-3.5 w-3.5" />
+                        {isScreenshotSolving ? 'Analyzing...' : 'Solve screenshot'}
+                      </Button>
+                    ) : null}
                     <Button
                       variant="soft"
                       size="sm"

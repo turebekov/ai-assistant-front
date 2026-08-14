@@ -27,6 +27,7 @@ import { howToAnswerWhatAreYourSalaryExpectations2026 } from './posts/how-to-ans
 import { aiTranslatorForMicrosoftTeamsRealTimeTranslationCompleteGuide2026 } from './posts/ai-translator-for-microsoft-teams-real-time-translation-complete-guide-2026'
 import { howNonNativeSpeakersCanCompeteEquallyInEnglishInterviews2026 } from './posts/how-non-native-speakers-can-compete-equally-in-english-interviews-2026'
 import { howToPrepareCaseInterviewConsulting2026 } from './posts/how-to-prepare-case-interview-consulting-2026'
+import { howToGetAJobAtAirbnbInterviewProcessTips2026 } from './posts/how-to-get-a-job-at-airbnb-interview-process-tips-2026'
 
 export const BLOG_POSTS: BlogPost[] = [
   howToUseAiDuringJobInterview,
@@ -57,6 +58,7 @@ export const BLOG_POSTS: BlogPost[] = [
   aiTranslatorForMicrosoftTeamsRealTimeTranslationCompleteGuide2026,
   howNonNativeSpeakersCanCompeteEquallyInEnglishInterviews2026,
   howToPrepareCaseInterviewConsulting2026,
+  howToGetAJobAtAirbnbInterviewProcessTips2026,
 ]
 
 export function getBlogPost(slug: string): BlogPost | undefined {
