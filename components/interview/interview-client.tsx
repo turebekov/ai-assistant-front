@@ -521,10 +521,6 @@ export function InterviewClient({
   }, [extractLatestQuestionBlock, mode, primaryInterviewLanguage, promptStyle, resumeText, role, runSuggestionForPayload, suggestionTone, targetPosition, transcriptText])
 
   const solveCodingScreenshot = useCallback(async () => {
-    if (mode !== 'meetings') {
-      setStatus('Coding screenshot assistant is available in meetings mode.')
-      return
-    }
     if (!isRunning) {
       setStatus('Start meeting capture first, then run coding assistant.')
       return
@@ -990,13 +986,8 @@ export function InterviewClient({
                     <Settings className="h-4 w-4" />
                   </button>
                 ) : null}
-                <span className="whitespace-nowrap font-medium text-gray">{captureStatusLabel}</span>
-                <span className="text-gray-light" aria-hidden>
-                  ·
-                </span>
-                <span className="whitespace-nowrap">{resumeStatus}</span>
-              </div>
             </div>
+              </div>
             {settingsSaveError ? (
               <p className="shrink-0 text-sm text-red-600">{settingsSaveError}</p>
             ) : null}
@@ -1010,17 +1001,18 @@ export function InterviewClient({
                     <div className="flex items-center gap-0.5">
                       {isRunning ? (
                         <Button
-                          variant="soft"
-                          size="icon-sm"
-                          className="h-7 w-7"
+                          variant="neutral"
+                          size="sm"
+                          className="!h-7 !min-h-7 gap-1.5 px-2 text-xs"
                           onClick={stopCapture}
                           aria-label="Stop session"
+                          title="Stop meeting capture"
                         >
                           <StopCircle className="h-4 w-4" />
                         </Button>
                       ) : null}
                       <Button
-                        variant="soft"
+                        variant="neutral"
                         size="icon-sm"
                         className="h-7 w-7"
                         onClick={() => void saveSession()}
@@ -1030,7 +1022,7 @@ export function InterviewClient({
                         <Save className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="soft"
+                        variant="neutral"
                         size="icon-sm"
                         className="h-7 w-7"
                         onClick={downloadTranscript}
@@ -1094,9 +1086,9 @@ export function InterviewClient({
                 <header className="flex shrink-0 items-center justify-between border-b border-border px-3 py-1 font-semibold">
                   <span>Live transcript</span>
                   <Button
-                    variant="soft"
+                    variant="neutral"
                     size="sm"
-                    className="h-7 px-2"
+                    className="!h-7 !min-h-7 px-2"
                     onClick={() => {
                       setTranscriptLines([])
                       setTranscriptLineTimestamps([])
@@ -1134,12 +1126,12 @@ export function InterviewClient({
                 <header className="flex items-center justify-between border-b border-border px-3 py-1 font-semibold">
                   <span>AI suggestions</span>
                   <div className="flex items-center gap-1">
-                    <Button variant="soft" size="sm" className="h-7 px-2" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
+                    <Button variant="neutral" size="sm" className="h-7 px-2" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
                       {isSuggesting ? 'Thinking...' : 'Answer now'}
                     </Button>
-                    {mode === 'meetings' ? (
+                    {isRunning ? (
                       <Button
-                        variant="soft"
+                        variant="neutral"
                         size="sm"
                         className="h-7 gap-1.5 px-2"
                         onClick={() => void solveCodingScreenshot()}
@@ -1151,7 +1143,7 @@ export function InterviewClient({
                       </Button>
                     ) : null}
                     <Button
-                      variant="soft"
+                      variant="neutral"
                       size="sm"
                       className="h-7 px-2"
                       onClick={() => {
@@ -1183,12 +1175,12 @@ export function InterviewClient({
                 <header className="flex items-center justify-between border-b border-border px-3 py-1 font-semibold">
                   <span>AI suggestions</span>
                   <div className="flex items-center gap-0.5">
-                    <Button variant="soft" size="sm" className="h-7 px-2 text-xs" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
+                    <Button variant="neutral" size="sm" className="h-7 px-2 text-xs" onClick={() => void requestSuggestion('manual')} disabled={isSuggesting || !transcriptText}>
                       {isSuggesting ? 'Thinking...' : 'Answer now'}
                     </Button>
-                    {mode === 'meetings' ? (
+                    {isRunning ? (
                       <Button
-                        variant="soft"
+                        variant="neutral"
                         size="sm"
                         className="h-7 gap-1 px-2 text-xs"
                         onClick={() => void solveCodingScreenshot()}
@@ -1200,7 +1192,7 @@ export function InterviewClient({
                       </Button>
                     ) : null}
                     <Button
-                      variant="soft"
+                      variant="neutral"
                       size="sm"
                       className="h-7 px-2 text-xs"
                       onClick={() => {
