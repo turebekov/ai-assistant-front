@@ -171,10 +171,34 @@ export default function ProfileSubscriptionPage() {
   const continueLabel = selectedPlan ? selectedPlan.cta : 'Choose a plan'
   const [copied, setCopied] = useState(false)
 
-  const maxFeatureCount = useMemo(
-    () => plans.reduce((max, plan) => Math.max(max, plan.features.length), 0),
-    [plans]
-  )
+  const getOptionLabel = () => 'Code Assistant'
+
+  const getHeaderBackground = (index: number) => {
+    if (index === 1) {
+      return {
+        backgroundColor: '#0d3b8c',
+        backgroundImage:
+          "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 28%), repeating-linear-gradient(135deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 12px, rgba(255,255,255,0) 12px, rgba(255,255,255,0) 28px), linear-gradient(180deg, #0d3b8c 0%, #0b2d7d 100%)",
+        color: '#fff',
+      }
+    }
+
+    if (index === 2) {
+      return {
+        backgroundColor: '#071e5d',
+        backgroundImage:
+          "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 28%), repeating-linear-gradient(135deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 12px, rgba(255,255,255,0) 12px, rgba(255,255,255,0) 28px), linear-gradient(180deg, #0a1d4a 0%, #071e5d 100%)",
+        color: '#fff',
+      }
+    }
+
+    return {
+      backgroundColor: '#edf3ff',
+      backgroundImage:
+        "linear-gradient(135deg, rgba(13,59,140,0.06) 0%, rgba(13,59,140,0) 32%), repeating-linear-gradient(135deg, rgba(13,59,140,0.08) 0px, rgba(13,59,140,0.08) 12px, rgba(13,59,140,0) 12px, rgba(13,59,140,0) 28px), linear-gradient(180deg, #edf3ff 0%, #dfe8fb 100%)",
+      color: '#0f172a',
+    }
+  }
 
   const discountCode = 'K0NJA4NW'
 
@@ -189,8 +213,8 @@ export default function ProfileSubscriptionPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-10">
-      <section className="mx-auto max-w-6xl rounded-2xl border border-border bg-card p-6 shadow-sm">
+    <main className="min-h-screen bg-background px-2 py-1">
+      <section className="mx-auto max-w-[980px] rounded-2xl border border-border bg-card p-6 shadow-sm">
         <h1 className="text-center text-4xl font-bold tracking-tight text-foreground">Choose your plan.</h1>
         <p className="mt-2 text-center text-sm text-muted-foreground">
           {paidEnabled
@@ -213,13 +237,19 @@ export default function ProfileSubscriptionPage() {
         ) : (
           <>
             <div
-              className="mt-8 grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3"
+              className="mt-8 grid grid-cols-1 items-stretch justify-center gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3"
               role="radiogroup"
               aria-label="Subscription plans"
             >
-              {plans.map((plan) => {
+              {plans.map((plan, index) => {
                 const available = isPlanAvailable(plan)
                 const selected = selectedPlanId === plan.id
+                const headerStyles = getHeaderBackground(index)
+                const featureItems = [
+                  ...plan.features,
+                  ...(plan.backendPlan === 'free' ? [getOptionLabel()] : []),
+                ]
+
                 return (
                   <button
                     key={plan.id}
@@ -231,68 +261,53 @@ export default function ProfileSubscriptionPage() {
                       if (available) setSelectedPlanId(plan.id)
                     }}
                     className={cn(
-                      'relative flex h-full min-h-[26rem] flex-col rounded-2xl border-2 p-5 text-left transition-colors',
+                      'relative mx-auto flex h-full min-h-[22rem] w-full max-w-[330px] flex-col overflow-visible rounded-[10px] border border-[#dfe7f5] bg-white p-1 text-left transition-all duration-200 sm:max-w-[250px] md:max-w-[270px] lg:max-w-[290px] xl:max-w-[300px]',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
                       !available && 'cursor-not-allowed opacity-75',
-                      available && 'cursor-pointer hover:border-primary/40',
-                      selected
-                        ? 'border-primary bg-card shadow-md shadow-primary/10'
-                        : plan.highlighted && available
-                          ? 'border-primary/30 bg-background'
-                          : 'border-border bg-background'
+                      available && 'cursor-pointer hover:shadow-md',
+                      selected && 'border-[#244DB8] shadow-[0_0_0_2px_rgba(36,77,184,0.15)]'
                     )}
                   >
-                    {plan.badge ? (
+                    {plan.badge || index === 1 ? (
                       <span
                         className={cn(
-                          'absolute -top-3 right-4 rounded-full px-3 py-1 text-xs font-semibold',
-                          available
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
+                          'absolute left-[-82px] top-[-11px] z-10 rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] md:left-auto md:right-[5%]',
+                          index === 1 ? 'bg-[#f6a623] text-[#0b163d]' : 'bg-[#f3f4f6] text-[#0b163d]',
+                          !available && 'opacity-70'
                         )}
                       >
-                        {plan.badge}
+                        {plan.badge || 'Popular plan'}
                       </span>
                     ) : null}
 
-                    <span
-                      className={cn(
-                        'absolute left-4 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2',
-                        selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/40'
-                      )}
-                      aria-hidden
-                    >
-                      {selected ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
-                    </span>
-
                     <div
-                      className={cn(
-                        'mt-6 rounded-xl border px-3 py-2.5',
-                        selected || plan.highlighted
-                          ? 'border-primary/35 bg-gradient-to-br from-primary-light/80 via-background to-background text-heading'
-                          : 'border-transparent bg-muted'
-                      )}
+                      className="rounded-[6px] px-3 py-3"
+                      style={{ ...headerStyles, borderRadius: '6px' }}
                     >
-                      <div className="text-sm font-semibold text-heading">{plan.title}</div>
-                      <div
-                        className={cn(
-                          'text-3xl font-bold',
-                          selected || plan.highlighted ? 'text-primary' : 'text-foreground'
-                        )}
-                      >
-                        {plan.priceLabel}
+                      <div className="min-w-0">
+                        <p className="m-0 text-[0.95rem] font-semibold leading-6 text-current">{plan.title}</p>
+                        <p className="mt-1 text-[10px] text-current/80">{plan.billingNote}</p>
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">{plan.billingNote}</p>
                     </div>
 
-                    <ul
-                      className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground"
-                      style={{ minHeight: `${Math.max(maxFeatureCount, 5) * 1.625}rem` }}
-                    >
-                      {plan.features.map((feature) => (
-                        <li key={feature}>• {feature}</li>
-                      ))}
-                    </ul>
+                    <div className="flex flex-1 flex-col px-2.5 pb-3 pt-3">
+                      <ul className="space-y-3 text-sm text-[#1f2a3a]">
+                        {featureItems.map((feature) => (
+                          <li key={feature} className="flex items-start gap-2 leading-5">
+                            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center text-[#1d5ce6]">
+                              <Check className="h-4 w-4" strokeWidth={2.8} />
+                            </span>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <div className="mt-auto pt-3">
+                        <div className="flex items-center justify-center rounded-[6px] bg-[#f3f6fb] px-3 py-3 text-base font-semibold text-[#0f172a]">
+                          {plan.priceLabel}
+                        </div>
+                      </div>
+                    </div>
                   </button>
                 )
               })}
