@@ -1,10 +1,153 @@
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { apiUrl } from '@/lib/api-url'
+
+type BackendPlan = 'free' | 'pro' | 'pro_claude' | 'team'
+
 export function ProfileHomePage() {
+  const router = useRouter()
+  const [status, setStatus] = useState('')
+  const [currentPlan, setCurrentPlan] = useState<BackendPlan>('free')
+  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null)
+  const [canceling, setCanceling] = useState(false)
+  const [openingPortal, setOpeningPortal] = useState(false)
+
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token') || ''
+    if (!token) return
+    const run = async () => {
+      const meResponse = await fetch(apiUrl('/api/auth/me'), {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!meResponse.ok) return
+      const mePayload = (await meResponse.json().catch(() => ({}))) as {
+        user?: { plan?: string }
+        access?: { plan?: string; currentPeriodEnd?: string | null }
+      }
+      const nextPlan = String(
+        mePayload.user?.plan || mePayload.access?.plan || localStorage.getItem('auth_plan') || 'free'
+      ).toLowerCase() as BackendPlan
+      setCurrentPlan(nextPlan)
+      setCurrentPeriodEnd(mePayload.access?.currentPeriodEnd ?? null)
+    }
+    void run()
+  }, [])
+
+  const formattedPeriodEnd = useMemo(() => {
+    if (!currentPeriodEnd) return null
+    const date = new Date(currentPeriodEnd)
+    if (Number.isNaN(date.getTime())) return null
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+  }, [currentPeriodEnd])
+
+  const manageSubscription = async () => {
+    const token = localStorage.getItem('auth_token') || ''
+    if (!token) {
+      router.push('/auth')
+      return
+    }
+    setStatus('')
+    setOpeningPortal(true)
+    try {
+      const response = await fetch(apiUrl('/api/billing/lemonsqueezy/portal'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const payload = (await response.json().catch(() => ({}))) as {
+        portalUrl?: string
+        error?: string
+      }
+      if (!response.ok || !payload.portalUrl) {
+        setStatus(payload.error || 'Cannot open the subscription portal.')
+        return
+      }
+      window.open(payload.portalUrl, '_blank', 'noopener,noreferrer')
+    } catch {
+      setStatus('Network error. Please try again.')
+    } finally {
+      setOpeningPortal(false)
+    }
+  }
+
+  const cancelSubscription = async () => {
+    const token = localStorage.getItem('auth_token') || ''
+    if (!token) {
+      router.push('/auth')
+      return
+    }
+    setStatus('')
+    setCanceling(true)
+    try {
+      const response = await fetch(apiUrl('/api/billing/lemonsqueezy/cancel'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const payload = (await response.json().catch(() => ({}))) as {
+        ok?: boolean
+        error?: string
+        portalUrl?: string
+        message?: string
+        currentPeriodEnd?: string | null
+      }
+      if (!response.ok) {
+        setStatus(payload.error || 'Cannot cancel subscription.')
+        return
+      }
+
+      if (payload.currentPeriodEnd !== undefined) {
+        setCurrentPeriodEnd(payload.currentPeriodEnd)
+      }
+      if (payload.portalUrl) {
+        window.open(payload.portalUrl, '_blank', 'noopener,noreferrer')
+      }
+      setStatus(payload.message || 'Your subscription will stay active until the end of the current billing period.')
+    } catch {
+      setStatus('Network error. Please try again.')
+    } finally {
+      setCanceling(false)
+    }
+  }
+
   return (
     <section className="rounded-xl border border-border bg-card p-6">
       <h2 className="text-xl font-semibold">Welcome to your profile</h2>
       <p className="mt-2 text-sm text-muted-foreground">
         Use the shared sidebar to open Interview or Meetings assistant.
       </p>
+
+      {status && <p className="mt-3 text-sm text-destructive">{status}</p>}
+
+      {currentPlan !== 'free' && (
+        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="font-semibold">Active subscription</div>
+              <p className="mt-1 text-amber-800">
+                {formattedPeriodEnd
+                  ? `You keep access until ${formattedPeriodEnd}, even after cancelling.`
+                  : 'You keep access until the end of the current billing period, even after cancelling.'}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" variant="outline" onClick={manageSubscription} disabled={openingPortal}>
+                {openingPortal ? 'Opening...' : 'Manage subscription'}
+              </Button>
+              <Button type="button" variant="outline" onClick={cancelSubscription} disabled={canceling}>
+                {canceling ? 'Processing...' : 'Cancel at period end'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

@@ -103,6 +103,7 @@ export const companyLogos = [
 // Pricing plans
 export const pricingPlans = [
   {
+    planId: 'free',
     name: 'Free Plan',
     price: 0,
     period: 'month',
@@ -118,6 +119,7 @@ export const pricingPlans = [
     highlighted: false,
   },
   {
+    planId: 'month',
     name: 'Monthly Plan',
     price: 17,
     period: 'month',
@@ -134,6 +136,7 @@ export const pricingPlans = [
     highlighted: false,
   },
   {
+    planId: 'month-claude',
     name: 'Premium Plan',
     price: 25,
     period: 'month',

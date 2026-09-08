@@ -83,7 +83,7 @@ export default function SubscriptionSuccessPage() {
               <Button asChild>
                 <Link href="/profile/interview">Start interview assistant</Link>
               </Button>
-              <Button asChild variant="outline">
+              <Button asChild variant="outline" className="!h-11">
                 <Link href="/profile/subscription">View plans</Link>
               </Button>
             </div>
@@ -100,7 +100,7 @@ export default function SubscriptionSuccessPage() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button onClick={() => window.location.reload()}>Check again</Button>
-              <Button asChild variant="outline">
+              <Button asChild variant="outline" className="!h-11">
                 <Link href="/profile/subscription">Back to plans</Link>
               </Button>
             </div>
