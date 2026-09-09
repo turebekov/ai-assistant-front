@@ -12,7 +12,6 @@ export function ProfileHomePage() {
   const [status, setStatus] = useState('')
   const [currentPlan, setCurrentPlan] = useState<BackendPlan>('free')
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null)
-  const [canceling, setCanceling] = useState(false)
   const [openingPortal, setOpeningPortal] = useState(false)
 
   useEffect(() => {
@@ -75,48 +74,6 @@ export function ProfileHomePage() {
     }
   }
 
-  const cancelSubscription = async () => {
-    const token = localStorage.getItem('auth_token') || ''
-    if (!token) {
-      router.push('/auth')
-      return
-    }
-    setStatus('')
-    setCanceling(true)
-    try {
-      const response = await fetch(apiUrl('/api/billing/lemonsqueezy/cancel'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const payload = (await response.json().catch(() => ({}))) as {
-        ok?: boolean
-        error?: string
-        portalUrl?: string
-        message?: string
-        currentPeriodEnd?: string | null
-      }
-      if (!response.ok) {
-        setStatus(payload.error || 'Cannot cancel subscription.')
-        return
-      }
-
-      if (payload.currentPeriodEnd !== undefined) {
-        setCurrentPeriodEnd(payload.currentPeriodEnd)
-      }
-      if (payload.portalUrl) {
-        window.open(payload.portalUrl, '_blank', 'noopener,noreferrer')
-      }
-      setStatus(payload.message || 'Your subscription will stay active until the end of the current billing period.')
-    } catch {
-      setStatus('Network error. Please try again.')
-    } finally {
-      setCanceling(false)
-    }
-  }
-
   return (
     <section className="rounded-xl border border-border bg-card p-6">
       <h2 className="text-xl font-semibold">Welcome to your profile</h2>
@@ -140,9 +97,6 @@ export function ProfileHomePage() {
             <div className="flex flex-wrap items-center gap-2">
               <Button type="button" variant="outline" onClick={manageSubscription} disabled={openingPortal}>
                 {openingPortal ? 'Opening...' : 'Manage subscription'}
-              </Button>
-              <Button type="button" variant="outline" onClick={cancelSubscription} disabled={canceling}>
-                {canceling ? 'Processing...' : 'Cancel at period end'}
               </Button>
             </div>
           </div>

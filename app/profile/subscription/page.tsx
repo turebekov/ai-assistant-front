@@ -1,12 +1,11 @@
 'use client'
 
-import { Suspense, useState, useEffect, useMemo } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Check, ClipboardCopy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
 import { cn } from '@/lib/utils'
-import { useIsTestPaidUser } from '@/lib/billing/use-is-test-paid-user'
 
 type BackendPlan = 'free' | 'pro' | 'pro_claude' | 'team'
 
@@ -33,19 +32,14 @@ function defaultSelectedPlanId(plans: UiPlan[], paidEnabled: boolean): string | 
   return pick?.id ?? null
 }
 
-function ProfileSubscriptionContent() {
+export default function ProfileSubscriptionPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const requestedPlanId = searchParams?.get('plan') ?? null
   const [status, setStatus] = useState('')
   const [plans, setPlans] = useState<UiPlan[]>([])
   const [plansLoading, setPlansLoading] = useState(true)
-  const [backendPaidEnabled, setBackendPaidEnabled] = useState(false)
+  const [paidEnabled, setPaidEnabled] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const isTestPaidUser = useIsTestPaidUser()
-  // Prod testing gate: only show live paid plans to the test account for now.
-  const paidEnabled = backendPaidEnabled && isTestPaidUser
 
   useEffect(() => {
     const run = async () => {
@@ -60,12 +54,12 @@ function ProfileSubscriptionContent() {
         if (!response.ok) {
           setStatus(payload.error || 'Cannot load subscription plans.')
           setPlans([])
-          setBackendPaidEnabled(false)
+          setPaidEnabled(false)
           return
         }
         const paid = payload.paidSubscriptionsEnabled === true
         const nextPlans = Array.isArray(payload.plans) ? payload.plans : []
-        setBackendPaidEnabled(paid)
+        setPaidEnabled(paid)
         setPlans(nextPlans)
       } catch {
         setStatus('Network error while loading plans.')
@@ -79,10 +73,8 @@ function ProfileSubscriptionContent() {
 
   useEffect(() => {
     if (plansLoading) return
-    const requested = requestedPlanId ? plans.find((p) => p.id === requestedPlanId) : null
-    const isRequestedAvailable = requested && (requested.available ?? (requested.backendPlan === 'free' || paidEnabled))
-    setSelectedPlanId(isRequestedAvailable ? requested.id : defaultSelectedPlanId(plans, paidEnabled))
-  }, [plans, paidEnabled, plansLoading, requestedPlanId])
+    setSelectedPlanId(defaultSelectedPlanId(plans, paidEnabled))
+  }, [plans, paidEnabled, plansLoading])
 
   const selectedPlan = useMemo(
     () => plans.find((plan) => plan.id === selectedPlanId) ?? null,
@@ -346,21 +338,5 @@ function ProfileSubscriptionContent() {
         )}
       </section>
     </main>
-  )
-}
-
-export default function ProfileSubscriptionPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="min-h-screen bg-background px-2 py-1">
-          <section className="mx-auto max-w-[980px] rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <p className="text-center text-sm text-muted-foreground">Loading…</p>
-          </section>
-        </main>
-      }
-    >
-      <ProfileSubscriptionContent />
-    </Suspense>
   )
 }

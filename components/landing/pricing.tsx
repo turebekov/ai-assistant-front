@@ -4,13 +4,9 @@ import { motion } from 'framer-motion'
 import { PricingCard } from '@/components/design-system/pricing-card'
 import { pricingPlans } from '@/lib/constants'
 import { usePaidSubscriptionsEnabled } from '@/lib/billing/use-paid-subscriptions-enabled'
-import { useIsTestPaidUser } from '@/lib/billing/use-is-test-paid-user'
 
 export function Pricing() {
-  const paidSubscriptionsEnabled = usePaidSubscriptionsEnabled()
-  const isTestPaidUser = useIsTestPaidUser()
-  // Prod testing gate: only show live paid plans to the test account for now.
-  const paidEnabled = paidSubscriptionsEnabled && isTestPaidUser
+  const paidEnabled = usePaidSubscriptionsEnabled()
 
   return (
     <section id="pricing" className="py-16 lg:py-24 bg-white">
@@ -29,17 +25,15 @@ export function Pricing() {
               ? 'Choose the monthly plan that fits your interview workflow'
               : 'Start free today — paid plans are coming soon'}
           </p>
+          <div className="mt-4 inline-flex items-center justify-center rounded-full border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 shadow-sm">
+            Use code <span className="ml-1 mr-1 text-red-900">K0NJA4NW</span> for a 50% discount on paid plans.
+          </div>
         </motion.div>
 
         <motion.div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {pricingPlans.map((plan, index) => {
             const isFree = plan.price === 0
             const disabled = !isFree && !paidEnabled
-            const href = isFree
-              ? '/auth?mode=register'
-              : paidEnabled
-                ? `/profile/subscription?plan=${plan.planId}`
-                : undefined
             return (
               <PricingCard
                 key={plan.name}
@@ -48,7 +42,7 @@ export function Pricing() {
                 disabled={disabled}
                 badge={disabled ? 'Coming soon' : 'badge' in plan ? plan.badge : undefined}
                 cta={disabled ? 'Coming soon' : plan.cta}
-                href={href}
+                href={isFree ? '/auth?mode=register' : undefined}
               />
             )
           })}
