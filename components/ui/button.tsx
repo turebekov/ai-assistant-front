@@ -51,7 +51,7 @@ const buttonVariants = cva(
       {
         variant: ['soft', 'outline', 'neutral'],
         size: 'sm',
-        className: '!h-8 min-h-8 px-4 text-sm font-medium leading-5',
+        className: '!h-7 min-h-7 px-4 text-sm font-medium leading-5',
       },
     ],
     defaultVariants: {

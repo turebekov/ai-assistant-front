@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, ClipboardCopy } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
 import { cn } from '@/lib/utils'
@@ -26,6 +26,7 @@ function defaultSelectedPlanId(plans: UiPlan[], paidEnabled: boolean): string | 
   const available = (plan: UiPlan) =>
     plan.available ?? (plan.backendPlan === 'free' || paidEnabled)
   const pick =
+    plans.find((p) => p.id === 'month' && available(p)) ??
     plans.find((p) => p.highlighted && available(p)) ??
     plans.find((p) => p.backendPlan !== 'free' && available(p)) ??
     plans.find((p) => available(p))
@@ -173,52 +174,40 @@ export default function ProfileSubscriptionPage() {
   }
 
   const continueLabel = selectedPlan ? selectedPlan.cta : 'Choose a plan'
-  const [copied, setCopied] = useState(false)
-
   const getOptionLabel = () => 'Code Assistant'
 
   const getHeaderBackground = (index: number) => {
     if (index === 1) {
       return {
-        backgroundColor: '#0d3b8c',
-        backgroundImage:
-          "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 28%), repeating-linear-gradient(135deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 12px, rgba(255,255,255,0) 12px, rgba(255,255,255,0) 28px), linear-gradient(180deg, #0d3b8c 0%, #0b2d7d 100%)",
-        color: '#fff',
+        backgroundColor: '#2045a7',
+        backgroundSize: 'cover',
+         color: '#fff',
+        ...{ ['backgroundImage' as string]: "url('/subscription-grid-pro.svg')" },
       }
     }
 
     if (index === 2) {
       return {
-        backgroundColor: '#071e5d',
-        backgroundImage:
-          "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 28%), repeating-linear-gradient(135deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 12px, rgba(255,255,255,0) 12px, rgba(255,255,255,0) 28px), linear-gradient(180deg, #0a1d4a 0%, #071e5d 100%)",
+        backgroundColor: '#01247f',
+        backgroundSize: 'cover',
         color: '#fff',
+        ...{ ['backgroundImage' as string]: "url('/subscription-grid-claude.svg')" },
       }
     }
 
     return {
-      backgroundColor: '#edf3ff',
+      backgroundColor: '#f3f8ff',
+      backgroundSize: 'cover',
       backgroundImage:
         "linear-gradient(135deg, rgba(13,59,140,0.06) 0%, rgba(13,59,140,0) 32%), repeating-linear-gradient(135deg, rgba(13,59,140,0.08) 0px, rgba(13,59,140,0.08) 12px, rgba(13,59,140,0) 12px, rgba(13,59,140,0) 28px), linear-gradient(180deg, #edf3ff 0%, #dfe8fb 100%)",
       color: '#0f172a',
-    }
-  }
-
-  const discountCode = 'K0NJA4NW'
-
-  const copyDiscountCode = async () => {
-    try {
-      await navigator.clipboard.writeText(discountCode)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 2000)
-    } catch {
-      setStatus('Unable to copy code automatically. Please copy it manually.')
+      ...{ ['backgroundImage' as string]: "url('/subscription-grid-free.svg')" },
     }
   }
 
   return (
     <main className="min-h-screen bg-background px-2 py-1">
-      <section className="mx-auto max-w-[980px] rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <section className="mx-auto max-w-[1240px] rounded-2xl border border-border bg-card p-6 shadow-sm">
         <h1 className="text-center text-4xl font-bold tracking-tight text-foreground">Choose your plan.</h1>
         <p className="mt-2 text-center text-sm text-muted-foreground">
           {paidEnabled
@@ -226,22 +215,12 @@ export default function ProfileSubscriptionPage() {
             : 'Only the free plan is available right now. Paid subscriptions are coming soon.'}
         </p>
         {status && <p className="mt-3 text-center text-sm text-destructive">{status}</p>}
-        <div className="mt-4 flex flex-col items-center justify-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 sm:flex-row sm:justify-between">
-          <p className="font-medium">
-            Use discount code <span className="font-semibold">{discountCode}</span> for 50% off paid plans.
-          </p>
-          <Button size="sm" variant="secondary" onClick={copyDiscountCode} type="button">
-            <ClipboardCopy className="mr-2 h-4 w-4" />
-            {copied ? 'Copied' : 'Copy'}
-          </Button>
-        </div>
-
         {plansLoading ? (
           <p className="mt-8 text-center text-sm text-muted-foreground">Loading plans...</p>
         ) : (
-          <>
+          <div className="mt-8">
             <div
-              className="mt-8 grid grid-cols-1 items-stretch justify-center gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3"
+              className="grid grid-cols-1 items-stretch justify-center gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3"
               role="radiogroup"
               aria-label="Subscription plans"
             >
@@ -334,7 +313,7 @@ export default function ProfileSubscriptionPage() {
                   : '\u00A0'}
               </p>
             </div>
-          </>
+          </div>
         )}
       </section>
     </main>

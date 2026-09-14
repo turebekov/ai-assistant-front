@@ -265,7 +265,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
           <AssistantSidebar
             pathname={pathname || ''}
             sidebarOpen={sidebarOpen}
-            onSignOut={signOut}
+            discountTime={Number(process.env.NEXT_DISCOUNT_TIME_SECONDS || 0)}
           />
         ) : null}
         <div

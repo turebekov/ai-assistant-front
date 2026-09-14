@@ -104,7 +104,7 @@ export const companyLogos = [
 export const pricingPlans = [
   {
     planId: 'free',
-    name: 'Free Plan',
+    name: 'Free',
     price: 0,
     period: 'month',
     description: 'Start free with limited usage',
@@ -120,7 +120,7 @@ export const pricingPlans = [
   },
   {
     planId: 'month',
-    name: 'Monthly Plan',
+    name: 'Standard',
     price: 17,
     period: 'month',
     description: 'Billed monthly',
@@ -132,17 +132,17 @@ export const pricingPlans = [
       'Real-time AI answer suggestions',
       'Additional files (up to 5MB each)',
     ],
-    cta: 'Choose Monthly',
+    cta: 'Choose Standard',
     highlighted: false,
   },
   {
     planId: 'month-claude',
-    name: 'Premium Plan',
+    name: 'Premium',
     price: 25,
     period: 'month',
     description: 'Billed monthly',
     features: [
-      'Everything in Monthly Plan',
+      'Everything in Standard',
       'Advanced coaching for complex interview questions',
       'Sharper STAR-style answer framing',
       'Stronger reasoning on technical follow-ups',

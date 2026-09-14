@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { CreditCard, ExternalLink, LogOut, Monitor, Waves } from 'lucide-react'
+import { CreditCard, ExternalLink, Monitor, Waves } from 'lucide-react'
 import { JobTapLogo } from '@/components/brand/jobtap-logo'
+import { DiscountOffer } from '@/widgets/discount-offer/ui/discount-offer'
 import { cn } from '@/lib/utils'
 
 const SIDEBAR_LINK_BASE =
@@ -15,16 +16,16 @@ const SIDEBAR_LINK_ACTIVE =
 interface AssistantSidebarProps {
   pathname: string
   sidebarOpen: boolean
-  onSignOut: () => void
+  discountTime?: number
 }
 
 export function AssistantSidebar({
   pathname,
   sidebarOpen,
-  onSignOut,
+  discountTime,
 }: AssistantSidebarProps) {
   return (
-    <aside className={`fixed left-0 top-0 z-30 h-screen w-72 border-r border-border bg-card p-3 transition-transform md:static md:translate-x-0 md:p-4 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside className={`fixed left-0 top-0 z-30 flex h-screen w-72 flex-col border-r border-border bg-card p-3 transition-transform md:static md:translate-x-0 md:p-4 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="mb-4 px-1">
         <JobTapLogo href="/" variant="light" iconSize={32} />
       </div>
@@ -69,15 +70,9 @@ export function AssistantSidebar({
           <ExternalLink className="h-4 w-4 shrink-0" />
           Interview Question Bank
         </a>
+              <DiscountOffer time={discountTime} />
+
       </nav>
-      <button
-        type="button"
-        onClick={onSignOut}
-        className="mt-4 flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive hover:bg-destructive/10 md:mt-6"
-      >
-        <LogOut className="h-4 w-4" />
-        Sign out
-      </button>
     </aside>
   )
 }
