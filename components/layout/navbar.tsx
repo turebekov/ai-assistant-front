@@ -92,7 +92,7 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
+          <div className="bg-background md:hidden border-t border-border py-4">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link
