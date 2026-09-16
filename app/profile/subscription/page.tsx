@@ -254,7 +254,7 @@ export default function ProfileSubscriptionPage() {
                     {plan.badge || index === 1 ? (
                       <span
                         className={cn(
-                          'absolute left-[-82px] top-[-11px] z-10 rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] md:left-auto md:right-[5%]',
+                          'absolute left-1 top-[-11px] z-10 rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] md:left-auto md:right-[5%]',
                           index === 1 ? 'bg-[#f6a623] text-[#0b163d]' : 'bg-[#f3f4f6] text-[#0b163d]',
                           !available && 'opacity-70'
                         )}
