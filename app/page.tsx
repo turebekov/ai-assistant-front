@@ -7,6 +7,7 @@ import { Features } from '@/components/landing/features'
 import { Testimonials } from '@/components/landing/testimonials'
 import { Pricing } from '@/components/landing/pricing'
 import { FAQ } from '@/components/landing/faq'
+import { LatestBlog } from '@/components/landing/latest-blog'
 import { CTABanner } from '@/components/landing/cta-banner'
 
 export default function LandingPage() {
@@ -21,6 +22,7 @@ export default function LandingPage() {
         <Testimonials />
         <Pricing />
         <FAQ />
+        <LatestBlog />
         <CTABanner />
       </main>
       <Footer />
