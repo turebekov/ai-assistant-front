@@ -15,6 +15,7 @@ export default function SubscriptionSuccessPage() {
   const [state, setState] = useState<ActivationState>('loading')
   const [planLabel, setPlanLabel] = useState('')
   const [paidAmount, setPaidAmount] = useState<string | null>(null)
+  const [transactionId, setTransactionId] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token') || ''
@@ -32,17 +33,19 @@ export default function SubscriptionSuccessPage() {
         })
         const payload = (await response.json().catch(() => ({}))) as {
           token?: string
-          access?: { plan?: string; hasSubscription?: boolean }
+          access?: { plan?: string; hasSubscription?: boolean; transactionId?: string | null }
         }
         if (response.ok && payload.token) {
           localStorage.setItem('auth_token', payload.token)
           authToken = payload.token
           const plan = payload.access?.plan || ''
-          if (payload.access?.hasSubscription) {
+          const paymentTransactionId = payload.access?.transactionId || ''
+          if (payload.access?.hasSubscription && paymentTransactionId) {
             localStorage.setItem('auth_plan', plan)
             if (!cancelled) {
               setPlanLabel(formatPlanLabel(plan))
               setPaidAmount(formatPaidAmountUsd(plan))
+              setTransactionId(paymentTransactionId)
               setState('active')
             }
             return
@@ -84,6 +87,7 @@ export default function SubscriptionSuccessPage() {
             {paidAmount && (
               <p className="mt-3 text-sm font-medium text-foreground">You paid: {paidAmount}</p>
             )}
+            <p className="mt-2 text-sm text-muted-foreground">Transaction ID: {transactionId}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild>
                 <Link href="/profile/interview">Start interview assistant</Link>
