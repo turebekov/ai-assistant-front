@@ -157,6 +157,18 @@ export const pricingPlans = [
 // FAQ items
 export const faqItems = [
   {
+    question: 'What can JobTap help me with?',
+    answer: 'JobTap helps you prepare for interviews with real-time AI answer suggestions, personalized coaching, and support for behavioral, technical, and role-specific questions. It also includes tools for translating meetings and transcribing spoken questions.',
+  },
+  {
+    question: 'Can I use JobTap with my resume and target role?',
+    answer: 'Yes. You can provide your resume and the role you are applying for so suggestions can reflect your experience and the requirements of the position instead of relying on generic scripts.',
+  },
+  {
+    question: 'Can JobTap translate a meeting in real time?',
+    answer: 'Yes. The meeting translator provides real-time transcription and translation to help you follow conversations across supported languages.',
+  },
+  {
     question: 'Is it really invisible during screen sharing?',
     answer: 'Yes! JobTap uses advanced overlay technology that is specifically designed to be invisible to screen sharing software like Zoom, Google Meet, and Microsoft Teams. The suggestions appear only on your screen and are not captured by any screen recording or sharing software.',
   },
