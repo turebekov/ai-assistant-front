@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
-import { formatPlanLabel } from '@/lib/billing/config'
+import { formatPaidAmountUsd, formatPlanLabel } from '@/lib/billing/config'
 
 type ActivationState = 'loading' | 'active' | 'pending'
 
@@ -14,6 +14,7 @@ export default function SubscriptionSuccessPage() {
   const router = useRouter()
   const [state, setState] = useState<ActivationState>('loading')
   const [planLabel, setPlanLabel] = useState('')
+  const [paidAmount, setPaidAmount] = useState<string | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token') || ''
@@ -41,6 +42,7 @@ export default function SubscriptionSuccessPage() {
             localStorage.setItem('auth_plan', plan)
             if (!cancelled) {
               setPlanLabel(formatPlanLabel(plan))
+              setPaidAmount(formatPaidAmountUsd(plan))
               setState('active')
             }
             return
@@ -79,6 +81,9 @@ export default function SubscriptionSuccessPage() {
               Your <span className="font-medium text-foreground">{planLabel}</span> subscription is
               active. Paid features are unlocked.
             </p>
+            {paidAmount && (
+              <p className="mt-3 text-sm font-medium text-foreground">You paid: {paidAmount}</p>
+            )}
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild>
                 <Link href="/profile/interview">Start interview assistant</Link>

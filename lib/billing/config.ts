@@ -26,3 +26,14 @@ export function formatPlanLabel(plan: string): string {
       return 'Free'
   }
 }
+
+export function formatPaidAmountUsd(plan: string): string | null {
+  switch (String(plan || '').toLowerCase()) {
+    case 'pro':
+      return '$17.00 USD'
+    case 'pro_claude':
+      return '$25.00 USD'
+    default:
+      return null
+  }
+}
