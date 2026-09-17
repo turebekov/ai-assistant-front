@@ -19,7 +19,7 @@ export default function LandingPage() {
         <LogosStrip />
         <HowItWorks />
         <Features />
-        <Testimonials />
+        {/* <Testimonials /> */}
         <Pricing />
         <FAQ />
         <LatestBlog />
