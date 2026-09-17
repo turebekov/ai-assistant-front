@@ -112,7 +112,7 @@ export const pricingPlans = [
       'Interview assistant: 60 minutes total',
       'Meetings assistant supported',
       'Live meeting translation',
-      '1 AI assistant',
+      '4 AI assistant',
       'Basic context uploads',
     ],
     cta: 'Choose Free',

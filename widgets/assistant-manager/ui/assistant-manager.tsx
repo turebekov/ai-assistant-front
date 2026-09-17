@@ -6,6 +6,7 @@ import { useAssistantSettingsModal } from '@/features/assistant-settings/model/u
 import type { AssistantProfile } from '@/entities/assistant/model/types'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface AssistantManagerProps {
   routeBase: '/profile/interview' | '/profile/meetings'
@@ -14,6 +15,8 @@ interface AssistantManagerProps {
 export function AssistantManager({ routeBase }: AssistantManagerProps) {
   const isMeetings = routeBase === '/profile/meetings'
   const [assistants, setAssistants] = useState<AssistantProfile[]>([])
+  const [totalAssistantCount, setTotalAssistantCount] = useState(0)
+  const [plan, setPlan] = useState('free')
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
@@ -37,15 +40,39 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
     }
     setLoading(true)
     try {
-      const response = await fetch(apiUrl(isMeetings ? '/api/meeting-assistants' : '/api/assistants'), {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = (await response.json().catch(() => ({}))) as { assistants?: AssistantProfile[] }
-      if (!response.ok) {
+      const headers = { Authorization: `Bearer ${token}` }
+      const [currentResponse, otherResponse, meResponse] = await Promise.all([
+        fetch(apiUrl(isMeetings ? '/api/meeting-assistants' : '/api/assistants'), { headers }),
+        fetch(apiUrl(isMeetings ? '/api/assistants' : '/api/meeting-assistants'), { headers }),
+        fetch(apiUrl('/api/auth/me'), { headers }),
+      ])
+      const currentPayload = (await currentResponse.json().catch(() => ({}))) as {
+        assistants?: AssistantProfile[]
+      }
+      const otherPayload = (await otherResponse.json().catch(() => ({}))) as {
+        assistants?: AssistantProfile[]
+      }
+      const mePayload = (await meResponse.json().catch(() => ({}))) as {
+        user?: { plan?: string }
+        access?: { plan?: string }
+      }
+      if (!currentResponse.ok) {
         setAssistants([])
       } else {
-        setAssistants(Array.isArray(payload.assistants) ? payload.assistants : [])
+        setAssistants(Array.isArray(currentPayload.assistants) ? currentPayload.assistants : [])
       }
+      setTotalAssistantCount(
+        (Array.isArray(currentPayload.assistants) ? currentPayload.assistants.length : 0) +
+          (Array.isArray(otherPayload.assistants) ? otherPayload.assistants.length : 0),
+      )
+      setPlan(
+        String(
+          mePayload.user?.plan ||
+            mePayload.access?.plan ||
+            localStorage.getItem('auth_plan') ||
+            'free',
+        ).toLowerCase(),
+      )
     } finally {
       setLoading(false)
     }
@@ -78,6 +105,8 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
     void loadAssistants()
   }, [isMeetings])
 
+  const createDisabled = plan === 'free' && totalAssistantCount >= 4
+
   const onDelete = async (assistantId: string) => {
     const token = localStorage.getItem('auth_token') || ''
     if (!token) return
@@ -103,9 +132,22 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
     <section className="rounded-xl border border-border bg-card p-4">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-semibold">{title}</h2>
-        <Button size="sm" variant="outline" onClick={openCreate}>
-          Create assistant
-        </Button>
+        {createDisabled ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0}>
+                <Button size="sm" variant="outline" disabled>
+                  Create assistant
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>Free plan limit reached: maximum 4 assistants.</TooltipContent>
+          </Tooltip>
+        ) : (
+          <Button size="sm" variant="outline" onClick={openCreate}>
+            Create assistant
+          </Button>
+        )}
       </div>
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading assistants...</p>
