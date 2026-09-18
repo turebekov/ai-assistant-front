@@ -13,6 +13,7 @@ export function ProfileHomePage() {
   const [currentPlan, setCurrentPlan] = useState<BackendPlan>('free')
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null)
   const [openingPortal, setOpeningPortal] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token') || ''
@@ -74,6 +75,37 @@ export function ProfileHomePage() {
     }
   }
 
+  const deleteAccount = async () => {
+    if (!window.confirm('Delete your account and all associated data? This action cannot be undone.')) {
+      return
+    }
+    const token = localStorage.getItem('auth_token') || ''
+    if (!token) {
+      router.push('/auth')
+      return
+    }
+    setStatus('')
+    setDeletingAccount(true)
+    try {
+      const response = await fetch(apiUrl('/api/auth/me'), {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const payload = (await response.json().catch(() => ({}))) as { error?: string }
+      if (!response.ok) {
+        setStatus(payload.error || 'Could not delete your account.')
+        return
+      }
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_plan')
+      router.replace('/auth')
+    } catch {
+      setStatus('Network error. Please try again.')
+    } finally {
+      setDeletingAccount(false)
+    }
+  }
+
   return (
     <section className="rounded-xl border border-border bg-card p-6">
       <h2 className="text-xl font-semibold">Welcome to your profile</h2>
@@ -102,6 +134,22 @@ export function ProfileHomePage() {
           </div>
         </div>
       )}
+
+      <div className="mt-8 border-t border-border pt-6">
+        <h3 className="text-sm font-semibold">Delete account</h3>
+        <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+          Permanently delete your account and associated data. This action cannot be undone.
+        </p>
+        <Button
+          type="button"
+          variant="destructive"
+          className="mt-4"
+          onClick={deleteAccount}
+          disabled={deletingAccount}
+        >
+          {deletingAccount ? 'Deleting...' : 'Delete my account'}
+        </Button>
+      </div>
     </section>
   )
 }
