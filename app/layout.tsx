@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { GoogleAnalytics } from '@/components/analytics/google-analytics'
 import { YandexMetrika } from '@/components/analytics/yandex-metrika'
+import { BingAds } from '@/components/analytics/bing-ads'
 import { buildPageMetadata } from '@/lib/seo/metadata'
 import { SEO_PAGES, SITE_URL } from '@/lib/seo/site'
 import './globals.css'
@@ -129,6 +130,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         {children}
         <GoogleAnalytics />
         <YandexMetrika />
+        <BingAds />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
