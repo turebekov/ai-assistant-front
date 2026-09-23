@@ -26,10 +26,12 @@ interface AssistantSettingsModalProps {
   /** Clear server/client error for one field after user edits it */
   onClearFieldError?: (key: AssistantFormFieldErrorKey) => void
   resumeStatus: string
+  resumeFileName: string
   isSaving: boolean
   mode: 'create' | 'edit'
   assistantKind: 'interview' | 'meeting'
   onResumeFileChange: (file: File | null) => void
+  onDownloadResume: () => void
   onClose: () => void
   onSave: () => void
 }
@@ -50,10 +52,12 @@ export function AssistantSettingsModal({
   fieldErrors = {},
   onClearFieldError,
   resumeStatus,
+  resumeFileName,
   isSaving,
   mode,
   assistantKind,
   onResumeFileChange,
+  onDownloadResume,
   onClose,
   onSave,
 }: AssistantSettingsModalProps) {
@@ -244,8 +248,8 @@ export function AssistantSettingsModal({
             <div className="rounded-md border border-dashed border-slate-300 p-4 text-sm text-slate-600">
               <p className="mb-2">
                 {assistantKind === 'meeting'
-                  ? 'Upload context file for meeting assistant'
-                  : 'Upload resume to create a new profile'}
+                  ? 'Meeting context file'
+                  : 'Resume file'}
               </p>
               <input
                 type="file"
@@ -255,7 +259,17 @@ export function AssistantSettingsModal({
                   onResumeFileChange(e.target.files?.[0] || null)
                 }
               />
-              <p className="mt-2 text-xs text-slate-500">{resumeStatus}</p>
+              {mode === 'edit' && resumeFileName ? (
+                <button
+                  type="button"
+                  className="mt-2 block text-xs font-medium text-primary underline underline-offset-2 hover:text-primary-hover"
+                  onClick={onDownloadResume}
+                >
+                  {resumeFileName}
+                </button>
+              ) : (
+                <p className="mt-2 text-xs text-slate-500">{resumeStatus}</p>
+              )}
             </div>
           </div>
         </div>

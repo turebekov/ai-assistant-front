@@ -48,6 +48,8 @@ export function useAssistantSettingsModal({
   const [mode, setMode] = useState<'create' | 'edit'>('create')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [existingResumeText, setExistingResumeText] = useState('')
+  const [existingStorageKey, setExistingStorageKey] = useState('')
+  const [existingFileName, setExistingFileName] = useState('')
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [resumeStatus, setResumeStatus] = useState(
     isMeetings ? 'No file selected' : 'No resume selected',
@@ -61,6 +63,8 @@ export function useAssistantSettingsModal({
     setForm(defaultForm())
     setResumeFile(null)
     setExistingResumeText('')
+    setExistingStorageKey('')
+    setExistingFileName('')
     setResumeStatus(isMeetings ? 'No file selected' : 'No resume selected')
     setSaveError('')
     setFieldErrors({})
@@ -99,14 +103,24 @@ export function useAssistantSettingsModal({
             : assistant.resumeText || assistant.resume_text || '',
         ).trim(),
       )
+      setExistingStorageKey(
+        String(isMeetings ? assistant.contextStorageKey || '' : assistant.resumeStorageKey || ''),
+      )
+      setExistingFileName(
+        String(isMeetings ? assistant.contextFileName || '' : assistant.resumeFileName || ''),
+      )
       setResumeFile(null)
       setResumeStatus(
         isMeetings
-          ? assistant.contextText || assistant.context_text
-            ? 'Context file already saved'
+          ? assistant.contextStorageKey
+            ? `Uploaded: ${assistant.contextFileName || 'context file'}`
+            : assistant.contextText || assistant.context_text
+              ? 'Context text already saved'
             : 'No file selected'
-          : assistant.resumeText || assistant.resume_text
-            ? 'Resume already saved'
+          : assistant.resumeStorageKey
+            ? `Uploaded: ${assistant.resumeFileName || 'resume'}`
+            : assistant.resumeText || assistant.resume_text
+              ? 'Resume text already saved'
             : 'No resume selected',
       )
       setSaveError('')
@@ -137,7 +151,7 @@ export function useAssistantSettingsModal({
       setResumeFile(file)
       setResumeStatus(
         file
-          ? `Selected: ${file.name}`
+            ? `Selected: ${file.name}`
           : isMeetings
             ? 'No file selected'
             : 'No resume selected',
@@ -145,6 +159,30 @@ export function useAssistantSettingsModal({
     },
     [isMeetings],
   )
+
+  const onDownloadResume = useCallback(async () => {
+    if (!editingId) return
+    const token = localStorage.getItem('auth_token') || ''
+    const endpoint = isMeetings
+      ? `/api/meeting-assistants/${encodeURIComponent(editingId)}/context/download`
+      : `/api/assistants/${encodeURIComponent(editingId)}/resume/download`
+    const response = await fetch(apiUrl(endpoint), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) {
+      setResumeStatus('Download failed')
+      return
+    }
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = isMeetings ? 'meeting-context' : 'resume'
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+  }, [editingId, isMeetings])
 
   const onSave = useCallback(async () => {
     setSaveError('')
@@ -169,16 +207,33 @@ export function useAssistantSettingsModal({
     }
 
     let resumeText = existingResumeText
+    let storageKey = existingStorageKey
+    let fileName = existingFileName
     if (resumeFile) {
       setResumeStatus(isMeetings ? 'Parsing file...' : 'Parsing resume...')
       const formData = new FormData()
       formData.append('resume', resumeFile, resumeFile.name)
-      const parseResponse = await fetch(
-        apiUrl(isMeetings ? '/api/context/parse' : '/api/resume/parse'),
-        { method: 'POST', body: formData },
-      )
+      let parseResponse: Response
+      try {
+        parseResponse = await fetch(
+          apiUrl(isMeetings ? '/api/context/parse' : '/api/resume/parse'),
+          {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          },
+        )
+      } catch (error) {
+        setResumeStatus(
+          `File error: ${error instanceof Error ? error.message : 'Upload request failed'}`,
+        )
+        setIsSaving(false)
+        return
+      }
       const parsePayload = (await parseResponse.json().catch(() => ({}))) as {
         text?: string
+        storageKey?: string | null
+        originalName?: string
         error?: string
         details?: string
       }
@@ -188,6 +243,9 @@ export function useAssistantSettingsModal({
         return
       }
       resumeText = String(parsePayload.text || '').trim()
+      storageKey = String(parsePayload.storageKey || '').trim()
+      fileName = String(parsePayload.originalName || resumeFile.name).trim()
+      setExistingFileName(fileName)
       setResumeStatus(
         resumeText
           ? `${isMeetings ? 'File' : 'Resume'} loaded (${resumeFile.name})`
@@ -221,8 +279,16 @@ export function useAssistantSettingsModal({
         translate_language: form.translateLanguage,
         resumeText: isMeetings ? '' : resumeText,
         resume_text: isMeetings ? '' : resumeText,
+        resumeStorageKey: isMeetings ? '' : storageKey,
+        resume_storage_key: isMeetings ? '' : storageKey,
+        resumeFileName: isMeetings ? '' : fileName,
+        resume_file_name: isMeetings ? '' : fileName,
         contextText: isMeetings ? resumeText : '',
         context_text: isMeetings ? resumeText : '',
+        contextStorageKey: isMeetings ? storageKey : '',
+        context_storage_key: isMeetings ? storageKey : '',
+        contextFileName: isMeetings ? fileName : '',
+        context_file_name: isMeetings ? fileName : '',
         tone: form.suggestionTone,
         promptStyle: form.promptStyle,
         fontSize: form.fontSize,
@@ -258,6 +324,8 @@ export function useAssistantSettingsModal({
   }, [
     close,
     editingId,
+    existingStorageKey,
+    existingFileName,
     existingResumeText,
     form,
     isMeetings,
@@ -276,6 +344,7 @@ export function useAssistantSettingsModal({
     fieldErrors,
     clearFieldError,
     resumeStatus,
+    resumeFileName: existingFileName,
     isSaving,
     saveError,
     openCreate,
@@ -283,5 +352,6 @@ export function useAssistantSettingsModal({
     close,
     onSave,
     onResumeFileChange,
+    onDownloadResume,
   }
 }

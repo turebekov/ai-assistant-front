@@ -93,6 +93,8 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
     close,
     onSave,
     onResumeFileChange,
+    onDownloadResume,
+    resumeFileName,
   } = useAssistantSettingsModal({
     assistantKind: isMeetings ? 'meeting' : 'interview',
     redirectOnCreate: (id) => {
@@ -211,10 +213,12 @@ export function AssistantManager({ routeBase }: AssistantManagerProps) {
         fieldErrors={fieldErrors}
         onClearFieldError={clearFieldError}
         resumeStatus={resumeStatus}
+        resumeFileName={resumeFileName}
         isSaving={isSaving}
         mode={mode}
         assistantKind={isMeetings ? 'meeting' : 'interview'}
         onResumeFileChange={onResumeFileChange}
+        onDownloadResume={() => void onDownloadResume()}
         onClose={close}
         onSave={() => void onSave()}
       />

@@ -12,8 +12,12 @@ export type AssistantProfile = {
   translateLanguage?: string
   resumeText?: string
   resume_text?: string
+  resumeStorageKey?: string
+  resumeFileName?: string
   contextText?: string
   context_text?: string
+  contextStorageKey?: string
+  contextFileName?: string
   tone: string
   promptStyle: string
   fontSize?: number
