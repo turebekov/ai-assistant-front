@@ -26,12 +26,12 @@ interface AssistantSettingsModalProps {
   /** Clear server/client error for one field after user edits it */
   onClearFieldError?: (key: AssistantFormFieldErrorKey) => void
   resumeStatus: string
-  resumeFileName: string
+  resumeFileName?: string
   isSaving: boolean
   mode: 'create' | 'edit'
   assistantKind: 'interview' | 'meeting'
   onResumeFileChange: (file: File | null) => void
-  onDownloadResume: () => void
+  onDownloadResume?: () => void
   onClose: () => void
   onSave: () => void
 }
@@ -52,12 +52,12 @@ export function AssistantSettingsModal({
   fieldErrors = {},
   onClearFieldError,
   resumeStatus,
-  resumeFileName,
+  resumeFileName = '',
   isSaving,
   mode,
   assistantKind,
   onResumeFileChange,
-  onDownloadResume,
+  onDownloadResume = () => {},
   onClose,
   onSave,
 }: AssistantSettingsModalProps) {
