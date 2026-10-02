@@ -47,7 +47,7 @@ export function DiscountOffer({
     <div className="mt-auto rounded-xl bg-white p-4 text-center shadow-sm">
       <div className="flex items-center justify-center gap-2 text-2xl font-bold text-[#2045a7]">
         <Flame className="h-6 w-6 fill-[#f54b45] text-[#f54b45]" />
-        30% OFF
+        50% OFF
       </div>
       <p className="mt-1 text-sm font-semibold text-[#0b163d]">Standard plan only</p>
       {time && remainingSeconds > 0 ? (

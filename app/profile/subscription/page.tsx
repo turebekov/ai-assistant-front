@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check } from 'lucide-react'
+import { Check, ClipboardCopy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { apiUrl } from '@/lib/api-url'
 import { cn } from '@/lib/utils'
@@ -36,11 +36,23 @@ function defaultSelectedPlanId(plans: UiPlan[], paidEnabled: boolean): string | 
 export default function ProfileSubscriptionPage() {
   const router = useRouter()
   const [status, setStatus] = useState('')
+  const [copied, setCopied] = useState(false)
   const [plans, setPlans] = useState<UiPlan[]>([])
   const [plansLoading, setPlansLoading] = useState(true)
   const [paidEnabled, setPaidEnabled] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const discountCode = 'I2ODM4NW'
+
+  const copyDiscountCode = async () => {
+    try {
+      await navigator.clipboard.writeText(discountCode)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
+  }
 
   useEffect(() => {
     const run = async () => {
@@ -215,6 +227,15 @@ export default function ProfileSubscriptionPage() {
             : 'Only the free plan is available right now. Paid subscriptions are coming soon.'}
         </p>
         {status && <p className="mt-3 text-center text-sm text-destructive">{status}</p>}
+        <div className="mt-4 flex flex-col items-center justify-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 sm:flex-row sm:justify-between">
+          <p className="font-medium">
+            Use discount code <span className="font-semibold">{discountCode}</span> for 50% off the Standard plan only.
+          </p>
+          <Button size="sm" variant="secondary" onClick={copyDiscountCode} type="button">
+            <ClipboardCopy className="mr-2 h-4 w-4" />
+            {copied ? 'Copied' : 'Copy'}
+          </Button>
+        </div>
         {plansLoading ? (
           <p className="mt-8 text-center text-sm text-muted-foreground">Loading plans...</p>
         ) : (
