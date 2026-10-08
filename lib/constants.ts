@@ -143,8 +143,8 @@ export const pricingPlans = [
     description: 'Billed monthly',
     features: [
       'Everything in Standard',
+      'Faster AI suggestions powered by Claude Haiku',
       'Advanced coaching for complex interview questions',
-      'Sharper STAR-style answer framing',
       'Stronger reasoning on technical follow-ups',
       'Deeper, more detailed answer suggestions',
     ],
