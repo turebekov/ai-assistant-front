@@ -1,5 +1,5 @@
 const PROD_BACKEND_URL = 'https://ai-assistant-production-0f6a.up.railway.app'
-const LOCAL_BACKEND_URL = 'http://localhost:4000'
+const LOCAL_BACKEND_URL = 'http://127.0.0.1:4000'
 
 function isLocalBrowser(): boolean {
   if (typeof window === 'undefined') return false
@@ -8,6 +8,9 @@ function isLocalBrowser(): boolean {
 
 /** HTTP base for Express API (localhost in dev, Railway on prod unless overridden). */
 export function getBackendBaseUrl(): string {
+  if (typeof window !== 'undefined' && window.desktopRuntime?.backendBaseUrl) {
+    return window.desktopRuntime.backendBaseUrl.replace(/\/$/, '')
+  }
   const explicit = process.env.NEXT_PUBLIC_EXPRESS_BACKEND_URL?.trim()
   if (explicit) return explicit.replace(/\/$/, '')
 

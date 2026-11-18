@@ -533,12 +533,6 @@ export function InterviewClient({
       return
     }
 
-    const screenshotDataUrl = capturePreviewScreenshot(previewRef.current)
-    if (!screenshotDataUrl) {
-      setStatus('Cannot capture screenshot yet. Wait for video preview and try again.')
-      return
-    }
-
     const transcriptForPayload = tailText(
       [...transcriptLines, partial].map((line) => String(line || '').trim()).filter(Boolean),
       2400,
@@ -547,6 +541,18 @@ export function InterviewClient({
     setIsScreenshotSolving(true)
     setStatus('Analyzing screenshot...')
     try {
+      const screenshotDataUrl = window.desktopRuntime?.isElectron
+        ? await window.desktopRuntime.captureScreenshot()
+        : capturePreviewScreenshot(previewRef.current)
+      if (!screenshotDataUrl) {
+        setStatus(
+          window.desktopRuntime?.isElectron
+            ? 'Screenshot capture cancelled.'
+            : 'Cannot capture screenshot yet. Wait for video preview and try again.',
+        )
+        return
+      }
+
       const response = await fetch(apiUrl('/api/suggest-coding-screenshot'), {
         method: 'POST',
         headers: {
@@ -722,14 +728,20 @@ export function InterviewClient({
     }
     try {
       setStatus('Starting capture...')
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+      const isWindowsDesktopLoopback =
+        typeof window !== 'undefined' &&
+        window.desktopRuntime?.isElectron === true &&
+        window.desktopRuntime.systemAudioLoopback === true
+      const stream = await navigator.mediaDevices.getDisplayMedia(
+        isWindowsDesktopLoopback ? { video: false, audio: true } : { video: true, audio: true },
+      )
       streamRef.current = stream
-      if (previewRef.current) {
+      if (previewRef.current && stream.getVideoTracks().length > 0) {
         previewRef.current.srcObject = stream
         previewRef.current.play().catch(() => {})
       }
       const audioTrack = stream.getAudioTracks()[0]
-      if (!audioTrack) throw new Error('No tab audio track')
+      if (!audioTrack) throw new Error('No system audio loopback track')
       const audioOnly = new MediaStream([audioTrack])
 
       if (pipeline === 'http') await startHttp(audioOnly)
@@ -1136,7 +1148,7 @@ export function InterviewClient({
                         className="h-7 gap-1.5 px-2"
                         onClick={() => void solveCodingScreenshot()}
                         disabled={isSuggesting || isScreenshotSolving || !isRunning}
-                        title={isRunning ? 'Capture current frame and solve coding task' : 'Start capture first'}
+                        title={isRunning ? 'Capture a screen and solve coding task' : 'Start capture first'}
                       >
                         <Camera className="h-3.5 w-3.5" />
                         {isScreenshotSolving ? 'Analyzing...' : 'Solve screenshot'}
