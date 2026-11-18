@@ -84,9 +84,9 @@ export default function TutorialPage() {
                   Prefer a desktop app? Download JobTap Assistant for Windows to get the same powerful interview coaching on your desktop. No server setup needed — the full interface runs locally on your computer.
                 </p>
                 <div className="mt-6">
-                  {process.env.NEXT_PUBLIC_DESKTOP_DOWNLOAD_URL ? (
+                  {process.env.NEXT_DESKTOP_DOWNLOAD_URL ? (
                     <Button asChild size="lg" className="rounded-full">
-                      <a href={process.env.NEXT_PUBLIC_DESKTOP_DOWNLOAD_URL} download>
+                      <a href={process.env.NEXT_DESKTOP_DOWNLOAD_URL} download>
                         📥 Download JobTap Assistant (Windows)
                       </a>
                     </Button>
