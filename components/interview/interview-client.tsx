@@ -220,8 +220,11 @@ export function InterviewClient({
   const reportedCaptureSecondsRef = useRef(0)
   const usageTickRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const stopCaptureRef = useRef<(() => void) | null>(null)
-  const SUGGEST_RECENT_LINES = 24
-  const SUGGEST_SPLIT_PAUSE_MS = 4000
+  // Optimized for faster suggestions on Electron
+  // Reduced from 24 to 20 lines for faster context processing
+  // Reduced split pause from 4000ms to 3000ms for more frequent suggestions
+  const SUGGEST_RECENT_LINES = 20
+  const SUGGEST_SPLIT_PAUSE_MS = 3000
 
   const transcriptText = useMemo(
     () => `${transcriptLines.join('\n')}${partial ? `\n${partial}` : ''}`.trim(),
@@ -873,7 +876,10 @@ export function InterviewClient({
     const source = transcriptText.trim()
     if (!source) return
     if (quietTimerRef.current) clearTimeout(quietTimerRef.current)
-    const quietMs = pipeline === 'http' ? 2400 : 1800
+    // Optimized debounce timing for faster suggestions
+    // HTTP pipeline: 800ms (from 2400ms) - slight delay for network stability
+    // Realtime pipeline: 600ms (from 1800ms) - faster response for local/realtime
+    const quietMs = pipeline === 'http' ? 800 : 600
     quietTimerRef.current = setTimeout(() => {
       void requestSuggestion('quiet')
     }, quietMs)
