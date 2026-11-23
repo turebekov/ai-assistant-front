@@ -23,6 +23,7 @@ type Answer = { correctIndex: number; explanation: string }
 type Rating = 'know' | 'unsure' | 'dont-know'
 type Streak = { currentDays: number; completedToday: boolean; freezesRemaining: number; lastFrozenDay: string | null }
 type PracticeLanguage = { code: string; label: string }
+type QuestionSettings = Pick<Question, 'category' | 'role' | 'level' | 'topic' | 'language'>
 
 function localTimeZone(): string {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -72,6 +73,9 @@ export function PracticePage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  const [generating, setGenerating] = useState(false)
+  const [nextGenerated, setNextGenerated] = useState<Set<string>>(new Set())
+  const [nextErrors, setNextErrors] = useState<Record<string, string>>({})
   const [revision, setRevision] = useState(0)
   const [streak, setStreak] = useState<Streak | null>(null)
   const [streakError, setStreakError] = useState('')
@@ -158,6 +162,31 @@ export function PracticePage() {
     return () => controller.abort()
   }, [category, level, role, revision])
 
+  async function generateQuestion(settings: QuestionSettings, afterId?: string) {
+    setGenerating(true)
+    try {
+      const { question } = await request<{ question: Question }>('/api/practice/questions/generate', {
+        method: 'POST',
+        body: JSON.stringify(settings),
+      })
+      setQuestions((previous) => {
+        const index = afterId ? previous.findIndex((item) => item.id === afterId) : -1
+        if (index < 0) return [question, ...previous]
+        return [...previous.slice(0, index + 1), question, ...previous.slice(index + 1)]
+      })
+      if (afterId) {
+        setNextGenerated((previous) => new Set(previous).add(afterId))
+        setNextErrors((previous) => {
+          const next = { ...previous }
+          delete next[afterId]
+          return next
+        })
+      }
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   async function generate() {
     if (!role.trim()) {
       setError('Enter a role before generating a question.')
@@ -166,16 +195,35 @@ export function PracticePage() {
     setBusy(true)
     setError('')
     try {
-      await request('/api/practice/questions/generate', {
-        method: 'POST',
-        body: JSON.stringify({ category, role: role.trim(), level, topic: topic.trim(), language }),
-      })
-      refresh()
+      await generateQuestion({ category, role: role.trim(), level, topic: topic.trim(), language })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not generate question.')
     } finally {
       setBusy(false)
     }
+  }
+
+  async function generateNext(question: Question) {
+    try {
+      await generateQuestion({
+        category: question.category,
+        role: question.role,
+        level: question.level,
+        topic: question.topic,
+        language: question.language,
+      }, question.id)
+    } catch (err) {
+      setNextErrors((previous) => ({
+        ...previous,
+        [question.id]: err instanceof Error ? err.message : 'Could not generate the next question.',
+      }))
+    }
+  }
+
+  async function retryNext(question: Question) {
+    setBusy(true)
+    await generateNext(question)
+    setBusy(false)
   }
 
   async function showAnswer(question: Question, card = false) {
@@ -194,6 +242,7 @@ export function PracticePage() {
         setStreak(answer.streak)
         setStreakError('')
         setAnswers((previous) => ({ ...previous, [question.id]: answer }))
+        if (!nextGenerated.has(question.id)) await generateNext(question)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load answer.')
@@ -240,6 +289,7 @@ export function PracticePage() {
         <h2 className="text-2xl font-semibold">Interview practice</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Generate questions with Qwen and review your saved flashcards. AI answers can contain mistakes.
+          A new question is generated automatically after each answer.
         </p>
       </div>
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
@@ -270,24 +320,24 @@ export function PracticePage() {
         <TabsContent value="bank" className="space-y-5">
           <div className="grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
             <label className="space-y-1 text-sm">Category
-              <select className={fieldClass} value={category} onChange={(event) => setCategory(event.target.value)}>
+              <select className={fieldClass} value={category} disabled={busy} onChange={(event) => setCategory(event.target.value)}>
                 <option value="behavioral">Behavioral</option><option value="technical">Technical</option>
                 <option value="system-design">System design</option><option value="coding">Coding</option>
               </select>
             </label>
             <label className="space-y-1 text-sm">Role
-              <input className={fieldClass} value={role} maxLength={100} onChange={(event) => setRole(event.target.value)} placeholder="e.g. Frontend developer" />
+              <input className={fieldClass} value={role} maxLength={100} disabled={busy} onChange={(event) => setRole(event.target.value)} placeholder="e.g. Frontend developer" />
             </label>
             <label className="space-y-1 text-sm">Level
-              <select className={fieldClass} value={level} onChange={(event) => setLevel(event.target.value)}>
+              <select className={fieldClass} value={level} disabled={busy} onChange={(event) => setLevel(event.target.value)}>
                 <option value="junior">Junior</option><option value="middle">Middle</option><option value="senior">Senior</option>
               </select>
             </label>
             <label className="space-y-1 text-sm">Topic (optional)
-              <input className={fieldClass} value={topic} maxLength={150} onChange={(event) => setTopic(event.target.value)} placeholder="e.g. JavaScript event loop" />
+              <input className={fieldClass} value={topic} maxLength={150} disabled={busy} onChange={(event) => setTopic(event.target.value)} placeholder="e.g. JavaScript event loop" />
             </label>
             <label className="space-y-1 text-sm">Question and answer language
-              <select className={fieldClass} value={language} onChange={(event) => setLanguage(event.target.value)} disabled={languages.length === 0}>
+              <select className={fieldClass} value={language} onChange={(event) => setLanguage(event.target.value)} disabled={busy || languages.length === 0}>
                 {languages.length === 0 && <option value="en">{languageError ? 'Languages unavailable' : 'Loading languages...'}</option>}
                 {languages.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
               </select>
@@ -302,7 +352,7 @@ export function PracticePage() {
             </label>
             <div className="flex items-end">
               <Button type="button" onClick={() => void generate()} disabled={busy || languages.length === 0} className="w-full">
-                {busy ? 'Please wait...' : 'Generate question'}
+                {generating ? 'Generating question...' : 'Generate question'}
               </Button>
             </div>
           </div>
@@ -317,7 +367,7 @@ export function PracticePage() {
                     <div className="mt-4 space-y-2">
                       {question.options.map((option, index) => (
                         <label key={index} className="flex cursor-pointer items-start gap-2 rounded-md border border-border p-3 text-sm">
-                          <input type="radio" name={`question-${question.id}`} checked={selected[question.id] === index} disabled={Boolean(answer)} onChange={() => setSelected((previous) => ({ ...previous, [question.id]: index }))} />
+                          <input type="radio" name={`question-${question.id}`} checked={selected[question.id] === index} disabled={busy || Boolean(answer)} onChange={() => setSelected((previous) => ({ ...previous, [question.id]: index }))} />
                           <span>{option}</span>
                         </label>
                       ))}
@@ -326,7 +376,7 @@ export function PracticePage() {
                       <div className="mt-4 rounded-lg bg-muted p-4 text-sm">
                         <p className="font-semibold">{selected[question.id] === answer.correctIndex ? 'Correct!' : 'Not quite.'} Correct answer: {question.options[answer.correctIndex]}</p>
                         <p className="mt-2 whitespace-pre-wrap">{answer.explanation}</p>
-                        <Button type="button" variant="outline" className="mt-3" onClick={() => {
+                        <Button type="button" variant="outline" className="mt-3" disabled={busy} onClick={() => {
                           setAnswers((previous) => {
                             const next = { ...previous }
                             delete next[question.id]
@@ -341,6 +391,12 @@ export function PracticePage() {
                       </div>
                     ) : (
                       <Button type="button" className="mt-4" onClick={() => void showAnswer(question)} disabled={busy || selected[question.id] === undefined}>Check answer</Button>
+                    )}
+                    {answer && nextErrors[question.id] && (
+                      <div className="mt-3 text-sm">
+                        <p role="alert" className="text-destructive">Could not generate the next question: {nextErrors[question.id]}</p>
+                        <Button type="button" variant="outline" className="mt-2" disabled={busy} onClick={() => void retryNext(question)}>Retry next question</Button>
+                      </div>
                     )}
                     <div className="mt-4">
                       <Button type="button" variant="outline" onClick={() => void saveCard(question)} disabled={busy || question.saved}>
