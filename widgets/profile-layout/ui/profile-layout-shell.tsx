@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { AssistantSidebar } from '@/widgets/assistant-sidebar/ui/assistant-sidebar'
 import { Button } from '@/components/ui/button'
@@ -28,7 +29,7 @@ interface ProfileLayoutShellProps {
 interface AuthMeResponse {
   token?: string
   user?: { email?: string; plan?: string }
-  access?: { plan?: string }
+  access?: { plan?: string; hasSubscription?: boolean }
 }
 
 export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
@@ -37,6 +38,8 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState('')
   const [plan, setPlan] = useState('free')
+  const [hasSubscription, setHasSubscription] = useState<boolean | null>(null)
+  const [subscriptionCheckedPath, setSubscriptionCheckedPath] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [feedbackType, setFeedbackType] = useState('bug_report')
@@ -69,6 +72,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
   }, [pathname])
 
   useEffect(() => {
+    let cancelled = false
     const token = localStorage.getItem('auth_token') || ''
     if (!token) {
       router.replace('/auth')
@@ -80,11 +84,15 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
           headers: { Authorization: `Bearer ${token}` },
         })
         const mePayload = (await meRes.json().catch(() => ({}))) as AuthMeResponse
+        if (cancelled) return
         if (!meRes.ok) {
-          localStorage.removeItem('auth_token')
-          localStorage.removeItem('auth_plan')
-          router.replace('/auth')
-          return
+          if (meRes.status === 401 || meRes.status === 404) {
+            localStorage.removeItem('auth_token')
+            localStorage.removeItem('auth_plan')
+            router.replace('/auth')
+            return
+          }
+          throw new Error(`Profile request failed (${meRes.status})`)
         }
         if (mePayload.token) {
           localStorage.setItem('auth_token', mePayload.token)
@@ -97,15 +105,28 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
             'free'
         ).toLowerCase()
         setPlan(nextPlan)
-        if (mePayload.access?.plan) {
-          localStorage.setItem('auth_plan', mePayload.access.plan)
+        setHasSubscription(
+          typeof mePayload.access?.hasSubscription === 'boolean'
+            ? mePayload.access.hasSubscription
+            : null
+        )
+        setSubscriptionCheckedPath(pathname)
+        const planToStore = mePayload.user?.plan || mePayload.access?.plan
+        if (planToStore) {
+          localStorage.setItem('auth_plan', planToStore)
         }
+      } catch (error) {
+        if (cancelled) return
+        console.error('Failed to load profile', error)
+        setHasSubscription(null)
+        setSubscriptionCheckedPath(pathname)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
     void run()
-  }, [router])
+    return () => { cancelled = true }
+  }, [router, pathname])
 
   const signOut = () => {
     localStorage.removeItem('auth_token')
@@ -290,7 +311,31 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
           ) : (
             <>
               {profileHeader}
-              <main className={mainClassName}>{children}</main>
+              <main className={mainClassName}>
+                {pathname?.startsWith('/profile/practice') && subscriptionCheckedPath !== pathname ? (
+                  <p className="text-sm text-muted-foreground">Checking subscription...</p>
+                ) : pathname?.startsWith('/profile/practice') && hasSubscription !== true ? (
+                  <div className="mx-auto max-w-xl rounded-xl border bg-card p-6 text-center">
+                    {hasSubscription === false ? (
+                      <>
+                        <h2 className="text-xl font-semibold">Practice is available with a paid plan</h2>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Upgrade your plan to practice interview questions and review flashcards.
+                        </p>
+                        <Button asChild className="mt-4">
+                          <Link href="/profile/subscription">View plans</Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <h2 className="text-xl font-semibold">Unable to verify your subscription</h2>
+                        <p className="mt-2 text-sm text-muted-foreground">Please try again.</p>
+                        <Button className="mt-4" onClick={() => window.location.reload()}>Retry</Button>
+                      </>
+                    )}
+                  </div>
+                ) : children}
+              </main>
             </>
           )}
         </div>

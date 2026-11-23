@@ -30,6 +30,7 @@ import { requestSuggestions, suggestionEndpoint } from '@/lib/suggestion-request
 import { AssistantSettingsModal } from '@/features/assistant-settings/ui/assistant-settings-modal'
 import { getAssistantSessionPatch } from '@/features/assistant-settings/lib/assistant-session-patch'
 import { useAssistantSettingsModal } from '@/features/assistant-settings/model/use-assistant-settings-modal'
+import { useAuthSync } from '@/hooks/use-auth-sync'
 
 type Pipeline = 'realtime_asr' | 'realtime_translate' | 'http'
 type SessionSummary = {
@@ -128,6 +129,7 @@ export function InterviewClient({
   settingsId?: string
   mode?: 'interview' | 'meetings'
 }) {
+  useAuthSync()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { usage, refresh, setUsage } = useAssistantUsage()

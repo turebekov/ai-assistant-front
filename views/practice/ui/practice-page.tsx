@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { apiUrl } from '@/lib/api-url'
 import { readPracticeResponse } from '@/lib/practice/api-response'
+import { useAuthSync } from '@/hooks/use-auth-sync'
 
 type Question = {
   id: string
@@ -57,6 +58,7 @@ function QuestionBody({ question }: { question: Question }) {
 }
 
 export function PracticePage() {
+  useAuthSync()
   const [category, setCategory] = useState('technical')
   const [role, setRole] = useState('')
   const [level, setLevel] = useState('junior')
@@ -288,7 +290,7 @@ export function PracticePage() {
       <div>
         <h2 className="text-2xl font-semibold">Interview practice</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Generate questions with Qwen and review your saved flashcards. AI answers can contain mistakes.
+          Generate questions with Groq and review your saved flashcards. AI answers can contain mistakes.
           A new question is generated automatically after each answer.
         </p>
       </div>
