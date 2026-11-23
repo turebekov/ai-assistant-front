@@ -26,6 +26,7 @@ import {
   type SuggestionTone,
 } from '@/lib/suggestion-preferences'
 import { cn } from '@/lib/utils'
+import { requestSuggestions } from '@/lib/suggestion-request'
 import { AssistantSettingsModal } from '@/features/assistant-settings/ui/assistant-settings-modal'
 import { getAssistantSessionPatch } from '@/features/assistant-settings/lib/assistant-session-patch'
 import { useAssistantSettingsModal } from '@/features/assistant-settings/model/use-assistant-settings-modal'
@@ -152,6 +153,8 @@ export function InterviewClient({
   const [panelFontSize, setPanelFontSize] = useState<FontSizePx>(DEFAULT_FONT_SIZE)
   const [isRunning, setIsRunning] = useState(false)
   const [isSuggesting, setIsSuggesting] = useState(false)
+  const [suggestionError, setSuggestionError] = useState('')
+  const [suggestionPreview, setSuggestionPreview] = useState('')
   const [isAssistantLoading, setIsAssistantLoading] = useState(false)
   const [isHistoryLoading, setIsHistoryLoading] = useState(false)
   const [isSessionSaving, setIsSessionSaving] = useState(false)
@@ -428,40 +431,43 @@ export function InterviewClient({
     role: string
     language: string
     tone: string
-    promptStyle: string
+    promptStyle: PromptStyle
   }) => {
     const provider = enableClaudeSuggestion ? 'claude' : 'qwen'
     const timerLabel = `suggestion:${provider}:${Date.now()}`
     console.time(timerLabel)
     try {
-      if (enableClaudeSuggestion) {
-        const response = await fetch(apiUrl('/api/suggest-claude'), {
+      const request = async (promptStyle: PromptStyle) => {
+        const response = await fetch(apiUrl(enableClaudeSuggestion ? '/api/suggest-claude' : '/api/suggest'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}`,
+            ...(enableClaudeSuggestion
+              ? { Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}` }
+              : {}),
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ ...body, promptStyle }),
         })
         const payload = (await response.json().catch(() => ({}))) as { suggestion?: string; error?: string; details?: string }
         if (!response.ok) {
           throw new Error(payload.details || payload.error || 'Suggestion request failed')
         }
-        setSuggestionClaudeHistory((prev) => pushSuggestion(prev, String(payload.suggestion || '').trim()))
-        return
+        const suggestion = String(payload.suggestion || '').trim()
+        if (!suggestion) throw new Error('AI returned an empty suggestion.')
+        return suggestion
       }
 
-      const response = await fetch(apiUrl('/api/suggest'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+      const result = await requestSuggestions(body.promptStyle, request, (suggestion) => {
+        setSuggestionPreview(`**Concise:**\n${suggestion}`)
       })
-      const payload = (await response.json().catch(() => ({}))) as { suggestion?: string; error?: string; details?: string }
-      if (!response.ok) {
-        throw new Error(payload.details || payload.error || 'Suggestion request failed')
+      if (enableClaudeSuggestion) {
+        setSuggestionClaudeHistory((prev) => pushSuggestion(prev, result.suggestion))
+      } else {
+        setSuggestionPrimaryHistory((prev) => pushSuggestion(prev, result.suggestion))
       }
-      setSuggestionPrimaryHistory((prev) => pushSuggestion(prev, String(payload.suggestion || '').trim()))
+      return result.partialFailure
     } finally {
+      setSuggestionPreview('')
       console.timeEnd(timerLabel)
     }
   }, [enableClaudeSuggestion, pushSuggestion])
@@ -510,13 +516,16 @@ export function InterviewClient({
 
     suggestionInFlightRef.current = true
     setIsSuggesting(true)
+    setSuggestionError('')
     setStatus('Requesting suggestion...')
     try {
-      await runSuggestionForPayload(highlightBlock?.questionText || 'Current transcript', body)
-      setStatus('Suggestion received')
+      const partialFailure = await runSuggestionForPayload(highlightBlock?.questionText || 'Current transcript', body)
+      setStatus(partialFailure ? 'One suggestion could not be generated.' : 'Suggestion received')
       lastSuggestedKeyRef.current = key
     } catch (e) {
-      setStatus(`Suggest error: ${e instanceof Error ? e.message : String(e)}`)
+      const message = `Suggest error: ${e instanceof Error ? e.message : String(e)}`
+      setSuggestionError(message)
+      setStatus(message)
     } finally {
       suggestionInFlightRef.current = false
       setIsSuggesting(false)
@@ -776,7 +785,7 @@ export function InterviewClient({
       language: 'auto',
       transcript: transcriptText,
       suggestion: String(
-        (enableClaudeSuggestion ? suggestionClaudeHistory[0] : suggestionPrimaryHistory[0]) || ''
+        suggestionPreview || (enableClaudeSuggestion ? suggestionClaudeHistory[0] : suggestionPrimaryHistory[0]) || ''
       ).trim(),
       notes: '',
     }
@@ -800,7 +809,7 @@ export function InterviewClient({
     } finally {
       setIsSessionSaving(false)
     }
-  }, [enableClaudeSuggestion, role, suggestionClaudeHistory, suggestionPrimaryHistory, transcriptText])
+  }, [enableClaudeSuggestion, role, suggestionClaudeHistory, suggestionPreview, suggestionPrimaryHistory, transcriptText])
 
   const loadHistory = useCallback(async () => {
     setIsHistoryLoading(true)
@@ -828,6 +837,7 @@ export function InterviewClient({
     setTranscriptLineTimestamps(new Array(nextLines.length).fill(Date.now()))
     setPartial('')
     const loadedSuggestion = String(item.suggestion || '').trim()
+    setSuggestionError('')
     if (enableClaudeSuggestion) {
       setSuggestionClaudeHistory(loadedSuggestion ? [loadedSuggestion] : [])
       setSuggestionPrimaryHistory([])
@@ -1166,6 +1176,8 @@ export function InterviewClient({
                       className="h-7 px-2"
                       onClick={() => {
                         setSuggestionPrimaryHistory([])
+                        setSuggestionError('')
+                        setSuggestionPreview('')
                         setSentLineIndexes(new Set())
                         setHighlightedQuestionIdx(null)
                         lastSuggestedKeyRef.current = ''
@@ -1176,7 +1188,9 @@ export function InterviewClient({
                   </div>
                 </header>
                 <div className={cn('min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3', panelTextClass)}>
-                  {suggestionPrimaryHistory.length === 0 ? (
+                  {suggestionError ? <p role="alert" className="mb-3 text-red-600">{suggestionError}</p> : null}
+                  {suggestionPreview ? <div className="mb-4 border-b border-slate-100 pb-3" dangerouslySetInnerHTML={{ __html: formatSuggestion(suggestionPreview) }} /> : null}
+                  {suggestionPrimaryHistory.length === 0 && !suggestionPreview ? (
                     <span className="text-muted-foreground">No suggestion yet.</span>
                   ) : (
                     suggestionPrimaryHistory.map((item, idx) => (
@@ -1215,6 +1229,8 @@ export function InterviewClient({
                       className="h-7 px-2 text-xs"
                       onClick={() => {
                         setSuggestionClaudeHistory([])
+                        setSuggestionError('')
+                        setSuggestionPreview('')
                         setSentLineIndexes(new Set())
                         setHighlightedQuestionIdx(null)
                         lastSuggestedKeyRef.current = ''
@@ -1225,7 +1241,9 @@ export function InterviewClient({
                   </div>
                 </header>
                 <div className={cn('min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap p-3', panelTextClass)}>
-                  {suggestionClaudeHistory.length === 0 ? (
+                  {suggestionError ? <p role="alert" className="mb-3 text-red-600">{suggestionError}</p> : null}
+                  {suggestionPreview ? <div className="mb-4 border-b border-slate-100 pb-3" dangerouslySetInnerHTML={{ __html: formatSuggestion(suggestionPreview) }} /> : null}
+                  {suggestionClaudeHistory.length === 0 && !suggestionPreview ? (
                     <span className="text-muted-foreground">No suggestion yet.</span>
                   ) : (
                     suggestionClaudeHistory.map((item, idx) => (

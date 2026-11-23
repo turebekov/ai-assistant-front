@@ -239,6 +239,9 @@ export function AssistantSettingsModal({
                     ))}
                   </SelectContent>
                 </Select>
+                {form.promptStyle === 'Detailed' ? (
+                  <p className="text-xs text-slate-500">Generates a concise answer followed by a detailed answer using two requests.</p>
+                ) : null}
               </div>
             </div>
             <FontSizePicker
