@@ -4,11 +4,10 @@ import { useEffect } from 'react'
 import { apiUrl } from '@/lib/api-url'
 
 /**
- * Syncs the user's current plan from the backend on component mount.
- * This ensures that localStorage has the latest plan after a subscription change.
- * Without this, users see cached 'free' plan even after upgrading.
+ * Root app initializer that syncs the user's auth state on app mount.
+ * This runs once per app load and ensures plan is up-to-date before any page loads.
  */
-export function useAuthSync() {
+export function AppInitializer() {
   useEffect(() => {
     const token = localStorage.getItem('auth_token')
     if (!token) return
@@ -36,7 +35,7 @@ export function useAuthSync() {
           localStorage.setItem('auth_plan', plan)
         }
       } catch {
-        // Silently ignore sync errors - localStorage will be used as fallback
+        // Silently ignore - will fallback to cached value
       }
     })()
 
@@ -44,4 +43,6 @@ export function useAuthSync() {
       cancelled = true
     }
   }, [])
+
+  return null
 }

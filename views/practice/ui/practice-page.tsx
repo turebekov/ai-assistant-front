@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { apiUrl } from '@/lib/api-url'
 import { readPracticeResponse } from '@/lib/practice/api-response'
-import { useAuthSync } from '@/hooks/use-auth-sync'
 
 type Question = {
   id: string
@@ -58,7 +57,6 @@ function QuestionBody({ question }: { question: Question }) {
 }
 
 export function PracticePage() {
-  useAuthSync()
   const [category, setCategory] = useState('technical')
   const [role, setRole] = useState('')
   const [level, setLevel] = useState('junior')
