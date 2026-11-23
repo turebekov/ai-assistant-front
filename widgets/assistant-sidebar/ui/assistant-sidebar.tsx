@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { CreditCard, ExternalLink, Monitor, Waves } from 'lucide-react'
+import { BookOpen, CreditCard, ExternalLink, Monitor, Waves } from 'lucide-react'
 import { JobTapLogo } from '@/components/brand/jobtap-logo'
 import { DiscountOffer } from '@/widgets/discount-offer/ui/discount-offer'
 import { cn } from '@/lib/utils'
@@ -50,6 +50,16 @@ export function AssistantSidebar({
         >
           <Monitor className="h-4 w-4 shrink-0" />
           Meetings AI Assistant
+        </Link>
+        <Link
+          href="/profile/practice"
+          className={cn(
+            SIDEBAR_LINK_BASE,
+            pathname.startsWith('/profile/practice') ? SIDEBAR_LINK_ACTIVE : SIDEBAR_LINK_INACTIVE,
+          )}
+        >
+          <BookOpen className="h-4 w-4 shrink-0" />
+          Practice
         </Link>
         <Link
           href="/profile/subscription"

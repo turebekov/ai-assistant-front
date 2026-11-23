@@ -59,6 +59,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
   }, [pathname])
 
   const pageTitle = useMemo(() => {
+    if (pathname?.includes('/profile/practice')) return 'Practice'
     if (pathname?.includes('/profile/interview')) return 'Interview Assistant'
     if (pathname?.includes('/profile/meetings')) return 'Meetings Assistant'
     if (pathname?.includes('/profile/subscription/success')) return 'Subscription'
