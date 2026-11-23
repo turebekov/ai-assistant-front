@@ -5,6 +5,7 @@ import { Flame, Snowflake } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { apiUrl } from '@/lib/api-url'
+import { readPracticeResponse } from '@/lib/practice/api-response'
 
 type Question = {
   id: string
@@ -21,6 +22,7 @@ type Question = {
 type Answer = { correctIndex: number; explanation: string }
 type Rating = 'know' | 'unsure' | 'dont-know'
 type Streak = { currentDays: number; completedToday: boolean; freezesRemaining: number; lastFrozenDay: string | null }
+type PracticeLanguage = { code: string; label: string }
 
 function localTimeZone(): string {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -35,9 +37,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...init?.headers },
   })
-  const payload = await response.json() as T & { error?: string }
-  if (!response.ok) throw new Error(payload.error || 'Request failed.')
-  return payload
+  return readPracticeResponse<T>(response)
 }
 
 const fieldClass = 'h-10 w-full rounded-md border border-input bg-background px-3 text-sm'
@@ -61,6 +61,9 @@ export function PracticePage() {
   const [level, setLevel] = useState('junior')
   const [topic, setTopic] = useState('')
   const [language, setLanguage] = useState('en')
+  const [languages, setLanguages] = useState<PracticeLanguage[]>([])
+  const [languageError, setLanguageError] = useState('')
+  const [languageRevision, setLanguageRevision] = useState(0)
   const [questions, setQuestions] = useState<Question[]>([])
   const [cards, setCards] = useState<Question[]>([])
   const [answers, setAnswers] = useState<Record<string, Answer>>({})
@@ -75,6 +78,23 @@ export function PracticePage() {
   const streakRequest = useRef(0)
 
   const refresh = useCallback(() => setRevision((value) => value + 1), [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setLanguageError('')
+    request<{ languages: PracticeLanguage[] }>('/api/practice/languages', { signal: controller.signal })
+      .then((result) => {
+        if (!Array.isArray(result.languages) || result.languages.length === 0) {
+          throw new Error('Practice API returned an invalid language list.')
+        }
+        setLanguages(result.languages)
+        setLanguageError('')
+      })
+      .catch((err: unknown) => {
+        if (!controller.signal.aborted) setLanguageError(err instanceof Error ? err.message : 'Could not load languages.')
+      })
+    return () => controller.abort()
+  }, [languageRevision])
 
   useEffect(() => {
     let active = true
@@ -266,13 +286,22 @@ export function PracticePage() {
             <label className="space-y-1 text-sm">Topic (optional)
               <input className={fieldClass} value={topic} maxLength={150} onChange={(event) => setTopic(event.target.value)} placeholder="e.g. JavaScript event loop" />
             </label>
-            <label className="space-y-1 text-sm">Question language
-              <select className={fieldClass} value={language} onChange={(event) => setLanguage(event.target.value)}>
-                <option value="en">English</option><option value="ru">Russian</option>
+            <label className="space-y-1 text-sm">Question and answer language
+              <select className={fieldClass} value={language} onChange={(event) => setLanguage(event.target.value)} disabled={languages.length === 0}>
+                {languages.length === 0 && <option value="en">{languageError ? 'Languages unavailable' : 'Loading languages...'}</option>}
+                {languages.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
               </select>
+              {languageError && (
+                <span className="block space-y-1">
+                  <span role="alert" className="block text-destructive">{languageError}</span>
+                  <button type="button" className="text-primary underline" onClick={() => setLanguageRevision((value) => value + 1)}>
+                    Retry
+                  </button>
+                </span>
+              )}
             </label>
             <div className="flex items-end">
-              <Button type="button" onClick={() => void generate()} disabled={busy} className="w-full">
+              <Button type="button" onClick={() => void generate()} disabled={busy || languages.length === 0} className="w-full">
                 {busy ? 'Please wait...' : 'Generate question'}
               </Button>
             </div>
