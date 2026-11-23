@@ -26,7 +26,7 @@ import {
   type SuggestionTone,
 } from '@/lib/suggestion-preferences'
 import { cn } from '@/lib/utils'
-import { requestSuggestions } from '@/lib/suggestion-request'
+import { requestSuggestions, suggestionEndpoint } from '@/lib/suggestion-request'
 import { AssistantSettingsModal } from '@/features/assistant-settings/ui/assistant-settings-modal'
 import { getAssistantSessionPatch } from '@/features/assistant-settings/lib/assistant-session-patch'
 import { useAssistantSettingsModal } from '@/features/assistant-settings/model/use-assistant-settings-modal'
@@ -438,11 +438,12 @@ export function InterviewClient({
     console.time(timerLabel)
     try {
       const request = async (promptStyle: PromptStyle) => {
-        const response = await fetch(apiUrl(enableClaudeSuggestion ? '/api/suggest-claude' : '/api/suggest'), {
+        const endpoint = suggestionEndpoint(enableClaudeSuggestion, body.promptStyle, promptStyle)
+        const response = await fetch(apiUrl(endpoint), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(enableClaudeSuggestion
+            ...(endpoint === '/api/suggest-claude'
               ? { Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}` }
               : {}),
           },
@@ -458,7 +459,7 @@ export function InterviewClient({
       }
 
       const result = await requestSuggestions(body.promptStyle, request, (suggestion) => {
-        setSuggestionPreview(`**Concise:**\n${suggestion}`)
+        setSuggestionPreview(suggestion)
       })
       if (enableClaudeSuggestion) {
         setSuggestionClaudeHistory((prev) => pushSuggestion(prev, result.suggestion))

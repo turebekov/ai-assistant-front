@@ -1,5 +1,29 @@
 import type { PromptStyle } from './suggestion-preferences'
 
+export function suggestionEndpoint(useClaude: boolean, style: PromptStyle, variant: PromptStyle): string {
+  if (style === 'Detailed') {
+    if (variant === 'Concise') return '/api/suggest'
+    return useClaude ? '/api/suggest-claude' : '/api/suggest-qwen-max'
+  }
+  return useClaude ? '/api/suggest-claude' : '/api/suggest'
+}
+
+function splitQuestion(suggestion: string): { question: string; answer: string } {
+  const match = suggestion.match(/^\s*(\*\*Question(?:\s*\d+)?(?:\s*\/\s*topic)?:\*\*[ \t]*[^\r\n]+|Question:[ \t]*[^\r\n]+)(?:\r?\n|$)/i)
+  if (!match) return { question: '', answer: suggestion.trim() }
+  return { question: match[1], answer: suggestion.slice(match[0].length).trim() }
+}
+
+function formatDetailedAnswers(concise: string, detailed?: string): string {
+  const short = splitQuestion(concise)
+  const long = detailed === undefined ? undefined : splitQuestion(detailed)
+  return [
+    short.question || long?.question,
+    `**Concise:**\n${short.answer}`,
+    long && `**Detailed:**\n${long.answer}`,
+  ].filter(Boolean).join('\n\n')
+}
+
 export async function requestSuggestions(
   style: PromptStyle,
   request: (style: PromptStyle) => Promise<string>,
@@ -11,7 +35,7 @@ export async function requestSuggestions(
 
   const styles = ['Concise', 'Detailed'] as const
   const results = await Promise.allSettled(styles.map((variant) => request(variant).then((suggestion) => {
-    if (variant === 'Concise') onConcise?.(suggestion)
+    if (variant === 'Concise') onConcise?.(formatDetailedAnswers(suggestion))
     return suggestion
   })))
   const errors = results.flatMap((result, index) => {
@@ -25,10 +49,10 @@ export async function requestSuggestions(
     throw new Error(errors.join('; '))
   }
 
-  const suggestion = results.map((result, index) => {
-    const text = result.status === 'fulfilled' ? result.value : 'Unable to generate this answer.'
-    return `**${styles[index]}:**\n${text}`
-  }).join('\n\n')
+  const answers = results.map((result) =>
+    result.status === 'fulfilled' ? result.value : 'Unable to generate this answer.',
+  )
+  const suggestion = formatDetailedAnswers(answers[0], answers[1])
 
   return { suggestion, partialFailure: errors.length > 0 }
 }
