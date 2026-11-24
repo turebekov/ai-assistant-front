@@ -1,7 +1,6 @@
 ﻿'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { AssistantSidebar } from '@/widgets/assistant-sidebar/ui/assistant-sidebar'
 import { Button } from '@/components/ui/button'
@@ -38,8 +37,6 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState('')
   const [plan, setPlan] = useState('free')
-  const [hasSubscription, setHasSubscription] = useState<boolean | null>(null)
-  const [subscriptionCheckedPath, setSubscriptionCheckedPath] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [feedbackType, setFeedbackType] = useState('bug_report')
@@ -105,12 +102,6 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
             'free'
         ).toLowerCase()
         setPlan(nextPlan)
-        setHasSubscription(
-          typeof mePayload.access?.hasSubscription === 'boolean'
-            ? mePayload.access.hasSubscription
-            : null
-        )
-        setSubscriptionCheckedPath(pathname)
         const planToStore = mePayload.user?.plan || mePayload.access?.plan
         if (planToStore) {
           localStorage.setItem('auth_plan', planToStore)
@@ -118,15 +109,13 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
       } catch (error) {
         if (cancelled) return
         console.error('Failed to load profile', error)
-        setHasSubscription(null)
-        setSubscriptionCheckedPath(pathname)
       } finally {
         if (!cancelled) setLoading(false)
       }
     }
     void run()
     return () => { cancelled = true }
-  }, [router, pathname])
+  }, [router])
 
   const signOut = () => {
     localStorage.removeItem('auth_token')
@@ -312,29 +301,7 @@ export function ProfileLayoutShell({ children }: ProfileLayoutShellProps) {
             <>
               {profileHeader}
               <main className={mainClassName}>
-                {pathname?.startsWith('/profile/practice') && subscriptionCheckedPath !== pathname ? (
-                  <p className="text-sm text-muted-foreground">Checking subscription...</p>
-                ) : pathname?.startsWith('/profile/practice') && hasSubscription !== true ? (
-                  <div className="mx-auto max-w-xl rounded-xl border bg-card p-6 text-center">
-                    {hasSubscription === false ? (
-                      <>
-                        <h2 className="text-xl font-semibold">Practice is available with a paid plan</h2>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          Upgrade your plan to practice interview questions and review flashcards.
-                        </p>
-                        <Button asChild className="mt-4">
-                          <Link href="/profile/subscription">View plans</Link>
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <h2 className="text-xl font-semibold">Unable to verify your subscription</h2>
-                        <p className="mt-2 text-sm text-muted-foreground">Please try again.</p>
-                        <Button className="mt-4" onClick={() => window.location.reload()}>Retry</Button>
-                      </>
-                    )}
-                  </div>
-                ) : children}
+                {children}
               </main>
             </>
           )}

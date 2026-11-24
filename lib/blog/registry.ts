@@ -31,6 +31,7 @@ import { howToGetAJobAtAirbnbInterviewProcessTips2026 } from './posts/how-to-get
 import { howToHandleIllegalInterviewQuestions2026 } from './posts/how-to-handle-illegal-interview-questions-2026'
 import { howToAnswerWhatMakesYouUnique2026 } from './posts/how-to-answer-what-makes-you-unique-2026'
 import { howToUseAiTranslationAtWorkWithoutAnyoneKnowing2026 } from './posts/how-to-use-ai-translation-at-work-without-anyone-knowing-2026'
+import { howToPracticeInterviewsWithJobtap2026 } from './posts/how-to-practice-interviews-with-jobtap-2026'
 
 export const BLOG_POSTS: BlogPost[] = [
   howToUseAiDuringJobInterview,
@@ -65,6 +66,7 @@ export const BLOG_POSTS: BlogPost[] = [
   howToHandleIllegalInterviewQuestions2026,
   howToAnswerWhatMakesYouUnique2026,
   howToUseAiTranslationAtWorkWithoutAnyoneKnowing2026,
+  howToPracticeInterviewsWithJobtap2026,
 ]
 
 export function getBlogPost(slug: string): BlogPost | undefined {

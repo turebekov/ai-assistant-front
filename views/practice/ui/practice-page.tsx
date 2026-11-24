@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { Flame, Snowflake } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -24,6 +25,7 @@ type Rating = 'know' | 'unsure' | 'dont-know'
 type Streak = { currentDays: number; completedToday: boolean; freezesRemaining: number; lastFrozenDay: string | null }
 type PracticeLanguage = { code: string; label: string }
 type QuestionSettings = Pick<Question, 'category' | 'role' | 'level' | 'topic' | 'language'>
+type PracticeUsage = { generated: number; limit: number | null; remaining: number | null; reachedLimit: boolean }
 
 function localTimeZone(): string {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -80,10 +82,38 @@ export function PracticePage() {
   const [streak, setStreak] = useState<Streak | null>(null)
   const [streakError, setStreakError] = useState('')
   const streakRequest = useRef(0)
+  const [usage, setUsage] = useState<PracticeUsage | null>(null)
+  const [usageLoading, setUsageLoading] = useState(true)
+  const [usageError, setUsageError] = useState('')
+  const [usageRevision, setUsageRevision] = useState(0)
 
   const refresh = useCallback(() => setRevision((value) => value + 1), [])
+  const practiceEnabled = !usageLoading && usage !== null && !usage.reachedLimit
 
   useEffect(() => {
+    const controller = new AbortController()
+    setUsageLoading(true)
+    setUsageError('')
+    request<PracticeUsage>('/api/practice/usage', { signal: controller.signal })
+      .then((result) => {
+        if (!Number.isInteger(result.generated) || typeof result.reachedLimit !== 'boolean') {
+          throw new Error('Practice API returned invalid usage information.')
+        }
+        setUsage(result)
+      })
+      .catch((err: unknown) => {
+        if (!controller.signal.aborted) {
+          setUsageError(err instanceof Error ? err.message : 'Could not verify practice access.')
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setUsageLoading(false)
+      })
+    return () => controller.abort()
+  }, [usageRevision])
+
+  useEffect(() => {
+    if (!practiceEnabled) return
     const controller = new AbortController()
     setLanguageError('')
     request<{ languages: PracticeLanguage[] }>('/api/practice/languages', { signal: controller.signal })
@@ -98,9 +128,10 @@ export function PracticePage() {
         if (!controller.signal.aborted) setLanguageError(err instanceof Error ? err.message : 'Could not load languages.')
       })
     return () => controller.abort()
-  }, [languageRevision])
+  }, [languageRevision, practiceEnabled])
 
   useEffect(() => {
+    if (!practiceEnabled) return
     let active = true
     async function loadStreak() {
       const requestId = ++streakRequest.current
@@ -142,9 +173,10 @@ export function PracticePage() {
       window.clearTimeout(timer)
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [])
+  }, [practiceEnabled])
 
   useEffect(() => {
+    if (!practiceEnabled) return
     const controller = new AbortController()
     setLoading(true)
     const params = new URLSearchParams({ category, level, role: role.trim() })
@@ -160,15 +192,22 @@ export function PracticePage() {
       if (!controller.signal.aborted) setLoading(false)
     })
     return () => controller.abort()
-  }, [category, level, role, revision])
+  }, [category, level, role, revision, practiceEnabled])
 
   async function generateQuestion(settings: QuestionSettings, afterId?: string) {
     setGenerating(true)
     try {
-      const { question } = await request<{ question: Question }>('/api/practice/questions/generate', {
+      const { question, usage: nextUsage } = await request<{ question: Question; usage: { generated: number; limit: number } | null }>('/api/practice/questions/generate', {
         method: 'POST',
         body: JSON.stringify(settings),
       })
+      if (nextUsage) {
+        setUsage({
+          ...nextUsage,
+          remaining: Math.max(0, nextUsage.limit - nextUsage.generated),
+          reachedLimit: nextUsage.generated >= nextUsage.limit,
+        })
+      }
       setQuestions((previous) => {
         const index = afterId ? previous.findIndex((item) => item.id === afterId) : -1
         if (index < 0) return [question, ...previous]
@@ -292,6 +331,34 @@ export function PracticePage() {
           A new question is generated automatically after each answer.
         </p>
       </div>
+      {usageLoading ? (
+        <p className="text-sm text-muted-foreground">Checking practice access...</p>
+      ) : usageError ? (
+        <div className="rounded-xl border bg-card p-6 text-center">
+          <p role="alert" className="text-sm text-destructive">{usageError}</p>
+          <Button type="button" className="mt-4" onClick={() => setUsageRevision((value) => value + 1)}>
+            Retry
+          </Button>
+        </div>
+      ) : usage?.reachedLimit ? (
+        <div className="mx-auto max-w-xl rounded-xl border bg-card p-6 text-center">
+          <h3 className="text-xl font-semibold">Free practice limit reached</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            You&apos;ve used all 20 free practice questions. Connect a paid plan to continue using Practice.
+          </p>
+          <Button asChild className="mt-4">
+            <Link href="/profile/subscription">View plans</Link>
+          </Button>
+        </div>
+      ) : !usage ? (
+        <p role="alert" className="text-sm text-destructive">Unable to verify practice access.</p>
+      ) : (
+      <>
+      {usage.limit !== null && (
+        <p className="text-sm text-muted-foreground">
+          {usage.remaining} of {usage.limit} free question generations remaining.
+        </p>
+      )}
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
         {streak ? (
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -434,6 +501,8 @@ export function PracticePage() {
           )}
         </TabsContent>
       </Tabs>
+      </>
+      )}
     </section>
   )
 }

@@ -22,7 +22,7 @@ export default function BlogIndexPage() {
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-gray">
             Practical SEO guides on AI interview assistants, STAR answers, FAANG prep, and live meeting
-            translation. New articles from our 8-week content plan.
+            translation. 
           </p>
         </div>
       </section>

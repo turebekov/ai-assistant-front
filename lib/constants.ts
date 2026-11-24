@@ -114,6 +114,7 @@ export const pricingPlans = [
       'Live meeting translation',
       '4 AI assistant',
       'Basic context uploads',
+      'Practice: 20 free question generations',
     ],
     cta: 'Choose Free',
     highlighted: false,
