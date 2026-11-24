@@ -122,9 +122,11 @@ export const pricingPlans = [
   {
     planId: 'month',
     name: 'Standard',
-    price: 17,
+    price: 8.5,
+    originalPrice: 17,
     period: 'month',
     description: 'Billed monthly',
+    badge: 'Save 50%',
     features: [
       'Interview assistant supported',
       'Meetings assistant supported',

@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 interface PricingCardProps {
   name: string
   price: number
+  originalPrice?: number
   period: string
   description: string
   features: readonly string[]
@@ -25,6 +26,7 @@ interface PricingCardProps {
 export function PricingCard({
   name,
   price,
+  originalPrice,
   period,
   description,
   features,
@@ -70,12 +72,20 @@ export function PricingCard({
       </div>
 
       <div className="mb-6">
-        <div className="flex items-baseline">
+        <div className="flex items-baseline gap-2">
           <span className="text-4xl font-bold text-heading">${displayPrice}</span>
-          <span className="ml-1 text-gray">/{period}</span>
+          {originalPrice && (
+            <span className="text-sm text-gray line-through">${originalPrice}</span>
+          )}
+          <span className="text-gray">/{period}</span>
         </div>
         {isAnnual && price > 0 && (
           <p className="mt-1 text-sm text-success">Save 20% with annual billing</p>
+        )}
+        {originalPrice && (
+          <p className="mt-1 text-sm text-success">
+            Save ${(originalPrice - displayPrice).toFixed(2)}/month
+          </p>
         )}
       </div>
 
