@@ -1,3 +1,5 @@
+import { withSentryConfig } from '@sentry/nextjs/config'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   outputFileTracingRoot: process.cwd(),
@@ -31,4 +33,14 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  org: 'jobtap-de',
+  project: 'ai-assistant-front',
+
+  // Only print source map upload logs in CI
+  silent: !process.env.CI,
+
+  // Needed for readable production stack traces; keep it out of version control
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  widenClientFileUpload: true,
+})
