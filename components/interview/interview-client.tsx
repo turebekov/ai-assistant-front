@@ -1017,6 +1017,17 @@ export function InterviewClient({
                 ) : null}
             </div>
               </div>
+            <div
+              role="status"
+              className="flex shrink-0 items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 lg:hidden"
+            >
+              <CircleHelp className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              <p className="text-sm text-inherit">
+                Connection issues may occur on phones and tablets because the browser may not
+                support screen or audio capture. For a more reliable experience, we recommend
+                using the web version on a laptop.
+              </p>
+            </div>
             {settingsSaveError ? (
               <p className="shrink-0 text-sm text-red-600">{settingsSaveError}</p>
             ) : null}
