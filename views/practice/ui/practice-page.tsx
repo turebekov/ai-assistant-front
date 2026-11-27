@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, BookOpen, CheckCircle2, Flame, Layers, Loader2, RotateCcw, Snowflake, Sparkles } from 'lucide-react'
+import { ArrowRight, BarChart3, BookOpen, CheckCircle2, Flame, Layers, Loader2, RotateCcw, Snowflake, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { apiUrl } from '@/lib/api-url'
@@ -27,6 +27,16 @@ type Streak = { currentDays: number; completedToday: boolean; freezesRemaining: 
 type PracticeLanguage = { code: string; label: string }
 type QuestionSettings = Pick<Question, 'category' | 'role' | 'level' | 'topic' | 'language'>
 type PracticeUsage = { generated: number; limit: number | null; remaining: number | null; reachedLimit: boolean }
+type PracticeStatsBucket = { total: number; correct: number; incorrect: number; accuracy: number | null }
+type PracticeStats = PracticeStatsBucket & {
+  today: PracticeStatsBucket
+  last7Days: PracticeStatsBucket
+  last30Days: PracticeStatsBucket
+  byCategory: (PracticeStatsBucket & { key: string })[]
+  byLevel: (PracticeStatsBucket & { key: string })[]
+  weakTopics: (PracticeStatsBucket & { topic: string })[]
+  activity: (PracticeStatsBucket & { day: string })[]
+}
 
 function localTimeZone(): string {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -48,6 +58,44 @@ const fieldClass = 'mt-1.5 h-11 w-full rounded-lg border border-input bg-backgro
 
 function Loading({ children }: { children: React.ReactNode }) {
   return <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{children}</div>
+}
+
+function formatAccuracy(value: number | null) {
+  return value === null ? '—' : `${value}%`
+}
+
+function StatCard({ label, value, detail, tone }: { label: string; value: React.ReactNode; detail?: string; tone?: 'good' | 'bad' }) {
+  return (
+    <div className="rounded-xl border bg-card p-4">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className={cn('mt-1 text-2xl font-semibold', tone === 'good' && 'text-emerald-600', tone === 'bad' && 'text-red-600')}>{value}</p>
+      {detail && <p className="mt-1 text-xs text-muted-foreground">{detail}</p>}
+    </div>
+  )
+}
+
+function BreakdownTable({ title, rows }: { title: string; rows: { key: string; total: number; correct: number; incorrect: number; accuracy: number | null }[] }) {
+  if (rows.length === 0) return null
+  return (
+    <div className="rounded-xl border bg-card p-5">
+      <h3 className="font-semibold">{title}</h3>
+      <table className="mt-3 w-full text-sm">
+        <thead className="text-left text-xs text-muted-foreground">
+          <tr><th className="py-1 font-medium">Name</th><th className="py-1 text-right font-medium">Correct</th><th className="py-1 text-right font-medium">Incorrect</th><th className="py-1 text-right font-medium">Accuracy</th></tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.key} className="border-t">
+              <td className="py-2 capitalize">{row.key.replace('-', ' ')}</td>
+              <td className="py-2 text-right">{row.correct} / {row.total}</td>
+              <td className="py-2 text-right">{row.incorrect}</td>
+              <td className="py-2 text-right font-medium">{formatAccuracy(row.accuracy)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
 }
 
 function QuestionBody({ question }: { question: Question }) {
@@ -97,6 +145,14 @@ export function PracticePage() {
   const [usageLoading, setUsageLoading] = useState(true)
   const [usageError, setUsageError] = useState('')
   const [usageRevision, setUsageRevision] = useState(0)
+  const [stats, setStats] = useState<PracticeStats | null>(null)
+  const [statsLoading, setStatsLoading] = useState(false)
+  const [statsError, setStatsError] = useState('')
+  const [statsRevision, setStatsRevision] = useState(0)
+  const [mistakes, setMistakes] = useState<Question[]>([])
+  const [mistakesLoading, setMistakesLoading] = useState(false)
+  const [mistakesError, setMistakesError] = useState('')
+  const [mistakesRevision, setMistakesRevision] = useState(0)
 
   const refresh = useCallback(() => setRevision((value) => value + 1), [])
   const practiceEnabled = !usageLoading && usage !== null && !usage.reachedLimit
@@ -206,6 +262,38 @@ export function PracticePage() {
     })
     return () => controller.abort()
   }, [historyCategory, historyLevel, historyRole, revision, practiceEnabled])
+
+  useEffect(() => {
+    if (tab !== 'stats' || !practiceEnabled) return
+    const controller = new AbortController()
+    setStatsLoading(true)
+    setStatsError('')
+    request<PracticeStats>(`/api/practice/stats?${new URLSearchParams({ timeZone: localTimeZone() })}`, { signal: controller.signal })
+      .then((result) => setStats(result))
+      .catch((err: unknown) => {
+        if (!controller.signal.aborted) setStatsError(err instanceof Error ? err.message : 'Could not load statistics.')
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setStatsLoading(false)
+      })
+    return () => controller.abort()
+  }, [tab, statsRevision, practiceEnabled])
+
+  useEffect(() => {
+    if (tab !== 'stats' || !practiceEnabled) return
+    const controller = new AbortController()
+    setMistakesLoading(true)
+    setMistakesError('')
+    request<{ questions: Question[] }>('/api/practice/mistakes', { signal: controller.signal })
+      .then((result) => setMistakes(result.questions))
+      .catch((err: unknown) => {
+        if (!controller.signal.aborted) setMistakesError(err instanceof Error ? err.message : 'Could not load mistakes.')
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setMistakesLoading(false)
+      })
+    return () => controller.abort()
+  }, [tab, mistakesRevision, practiceEnabled])
 
   async function generateQuestion(settings: QuestionSettings, afterId?: string) {
     setGenerating(true)
@@ -341,6 +429,8 @@ export function PracticePage() {
     }
   }
 
+  const maxDailyTotal = Math.max(1, ...(stats?.activity.map((day) => day.total) ?? []))
+
   return (
     <section className="mx-auto max-w-5xl space-y-6">
       <div>
@@ -402,6 +492,7 @@ export function PracticePage() {
           <TabsTrigger value="practice"><Sparkles /> Practice</TabsTrigger>
           <TabsTrigger value="history"><BookOpen /> Question Bank</TabsTrigger>
           <TabsTrigger value="cards"><Layers /> Flashcards{cards.length > 0 ? ` (${cards.length})` : ''}</TabsTrigger>
+          <TabsTrigger value="stats"><BarChart3 /> Statistics</TabsTrigger>
         </TabsList>
         <TabsContent value="practice" className="space-y-5 pt-3">
           {!activeQuestion ? (
@@ -582,6 +673,73 @@ export function PracticePage() {
                 </div>
               ) : <Button type="button" className="mt-5" disabled={busy} onClick={() => void showAnswer(cards[0], true)}>{busy ? <><Loader2 className="animate-spin" /> Loading answer...</> : 'Reveal answer'}</Button>}
             </article>
+          )}
+        </TabsContent>
+        <TabsContent value="stats" className="space-y-4 pt-3">
+          {statsLoading && !stats ? <Loading>Loading statistics...</Loading> : statsError ? (
+            <div className="rounded-xl border p-5"><p role="alert" className="text-sm text-destructive">{statsError}</p><Button type="button" variant="outline" className="mt-3" onClick={() => setStatsRevision((value) => value + 1)}>Retry</Button></div>
+          ) : !stats || stats.total === 0 ? (
+            <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">Answer a practice question to see your statistics here.</div>
+          ) : (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard label="Answered" value={stats.total} />
+                <StatCard label="Correct" value={stats.correct} tone="good" />
+                <StatCard label="Incorrect" value={stats.incorrect} tone="bad" />
+                <StatCard label="Accuracy" value={formatAccuracy(stats.accuracy)} />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <StatCard label="Today" value={formatAccuracy(stats.today.accuracy)} detail={`${stats.today.correct} of ${stats.today.total} correct`} />
+                <StatCard label="Last 7 days" value={formatAccuracy(stats.last7Days.accuracy)} detail={`${stats.last7Days.correct} of ${stats.last7Days.total} correct`} />
+                <StatCard label="Last 30 days" value={formatAccuracy(stats.last30Days.accuracy)} detail={`${stats.last30Days.correct} of ${stats.last30Days.total} correct`} />
+              </div>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <BreakdownTable title="By category" rows={stats.byCategory} />
+                <BreakdownTable title="By level" rows={stats.byLevel} />
+              </div>
+              <BreakdownTable title="Weakest topics" rows={stats.weakTopics.map((row) => ({ ...row, key: row.topic }))} />
+              <div className="rounded-xl border bg-card p-5">
+                <h3 className="font-semibold">Activity, last 30 days</h3>
+                <div className="mt-4 flex h-32 items-end gap-1" role="img" aria-label="Questions answered per day">
+                  {stats.activity.map((day) => (
+                    <div
+                      key={day.day}
+                      title={`${day.day}: ${day.correct} of ${day.total} correct`}
+                      className="flex-1 rounded-t bg-primary/70"
+                      style={{ height: `${Math.max(8, (day.total / maxDailyTotal) * 100)}%` }}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-xl border bg-card p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-semibold">Repeat mistakes</h3>
+                  {!mistakesLoading && !mistakesError && <span className="text-sm text-muted-foreground">{mistakes.length} to review</span>}
+                </div>
+                {mistakesLoading ? <div className="mt-3"><Loading>Loading mistakes...</Loading></div> : mistakesError ? (
+                  <div className="mt-3">
+                    <p role="alert" className="text-sm text-destructive">{mistakesError}</p>
+                    <Button type="button" variant="outline" className="mt-3" onClick={() => setMistakesRevision((value) => value + 1)}>Retry</Button>
+                  </div>
+                ) : mistakes.length === 0 ? (
+                  <p className="mt-3 text-sm text-muted-foreground">No mistakes to review. Questions you answer incorrectly appear here until you answer them correctly.</p>
+                ) : (
+                  <ul className="mt-3 space-y-3">
+                    {mistakes.map((item) => (
+                      <li key={item.id} className="flex flex-wrap items-start justify-between gap-3 border-t pt-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-muted-foreground">{item.role} · {item.level} · {item.category.replace('-', ' ')}{item.topic && ` · ${item.topic}`}</p>
+                          <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-sm">{item.question}</p>
+                        </div>
+                        <Button type="button" variant="outline" size="sm" disabled={busy || generating} onClick={() => { setActiveQuestion(item); setError(''); setTab('practice') }}>
+                          Practice again <ArrowRight />
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
           )}
         </TabsContent>
       </Tabs>
