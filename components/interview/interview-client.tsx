@@ -46,6 +46,12 @@ function tailText(lines: string[], maxChars = 1000) {
   return joined.length <= maxChars ? joined : joined.slice(-maxChars)
 }
 
+function isSafariBrowser() {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent
+  return /Safari/i.test(ua) && !/Chrome|Chromium|Android|Edg/i.test(ua)
+}
+
 function escapeHtml(value: string) {
   return String(value || '')
     .replace(/&/g, '&amp;')
@@ -728,6 +734,13 @@ export function InterviewClient({
     if (!token) {
       setStatus('Sign in required to start capture.')
       router.push('/auth')
+      return
+    }
+    const isElectron = window.desktopRuntime?.isElectron === true
+    if (isSafariBrowser() && !isElectron) {
+      setStatus(
+        'Safari cannot capture tab audio. Please open this page in Chrome or Edge, or use the desktop app.'
+      )
       return
     }
     const quota = await refresh()
